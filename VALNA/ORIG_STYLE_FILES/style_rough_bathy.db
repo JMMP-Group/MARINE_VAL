@@ -1,0 +1,32 @@
+ runid     |     name       |   line   |   color        |
+ u-ar435   | GO6-1deg       | --       | red            |
+ u-ah494   | GO6-1/4deg     | --       | firebrick      |
+ u-am916   | GO6-1/4deg     | --       | chocolate      |
+ mi-aq915  | GO6-1/12deg    | --       | darkorchid     |
+ u-ai424   | GO6 rough bathymetry + ice changes      | --       | navy
+ u-bn900   | GO8p3-025      | -        | orange   |
+ u-bs558   | GO8p3 weak Gent-McWilliams       | -          | teal         |
+ u-bt128   | GO8p3 partial slip shlat=1.0     | -          | fuchsia      |
+ u-bt574   | GO8p3 partial slip polewd of 50deg | -        | deeppink     |
+ u-bv730   | GO8p3 weak GM + partial slip polewd of 50deg | -  |  yellow  |
+ u-bt577   | GO8p3 bottom friction x5  | -          | chartreuse      |
+ u-by601   | GO8p5-025                  | -.       | coral          |              
+ u-cb172   | GO8p5 rough bathymetry     | -.       | blue           |              
+ u-cb088   | GC5p long timestep         | -.       | sandybrown     |              
+ u-cb189   | GC5p rough bathymetry      | -.       | mediumorchid   |              
+ u-cb678   | GO6 rough bathymetry       | --       | lightskyblue   |
+ u-cc607   | GO8p5 topog drake_pass_blend       | -.    | lightskyblue   |
+ u-cc608   | GO8p5 topog kerg_blend             | -.    | steelblue   |
+ u-cc609   | GO8p5 topog so_oc_blend            | -.    | yellowgreen |
+ u-cc610   | GO8p5 topog wed_sea_to_kerg_blend  | -.    | lime        |
+ u-cc611   | GO8p5 topog ai424_S16TT            | -.    | violet      |
+ u-cc612   | GO8p5 topog ai424_S26TT            | -.    | fuchsia     |
+ u-cc613   | GO8p5 topog ai424_S36TT            | -.    | deeppink    |
+ u-cc614   | GO8p5 topog ai424_S46TT            | -.    | crimson     |
+ u-ch520   | GO8p5 GEBCO2021 bathy              | -.    | lightskyblue | 
+ u-cj054   | GO8p5 GEBCO2021 bathy S21TT        | -.    | steelblue   | 
+ u-cj671   | GC5 GEBCO2021 bathy                | -.    | tomato      | 
+ u-cj672   | GC5 GEBCO2021 bathy S21TT          | -.    | firebrick   | 
+ u-cd733   | GO8p6 ORCA1                        | -     | red         |
+ u-cc441   | GO8p6 ORCA025                      | -     | firebrick   |
+ u-cc989   | GO8p6 ORCA12                       | -     | darkorchid     |

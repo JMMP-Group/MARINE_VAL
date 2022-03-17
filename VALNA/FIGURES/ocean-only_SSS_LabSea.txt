@@ -1,0 +1,1 @@
+ python2.7 SCRIPT/plot_time_series.py -noshow -runid u-ar435 u-ah494 mi-aq915 -f SSSav_LabSea_*1y*T.nc -var (mean_so|mean_vosaline) -title Mean SSS in Labrador Sea (PSU) -dir /data/users/smoreton/VALNA/DATA -o ocean-only_SSS_LabSea -obs OBS/SSS_LabSea_obs.txt

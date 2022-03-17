@@ -1,0 +1,1 @@
+ python2.7 SCRIPT/plot_time_series.py -noshow -runid u-ak108 u-ai758 u-aj393 -f *1y*osnap_Xsection_Irmin_basin_only.nc -var S_av_27_8_rho -title Mean S>27.8 kg/m3 (Irmin b, osnap) -dir /data/users/smoreton/VALNA/DATA -o ovf_coupled_OSN_IRM_S -obs OBS/OVF_S_osnap_irminger_obs.txt

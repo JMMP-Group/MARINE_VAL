@@ -1,0 +1,1 @@
+ python2.7 SCRIPT/plot_time_series.py -noshow -runid u-ar435 u-ah494 mi-aq915 -f *1y*ovide_Xsection_Irminger_only.nc -var S_av_27_8_rho -title Mean S>27.8 kg/m3 (ovide_Irm) -dir /data/users/smoreton/VALNA/DATA -o ovf_ocean_only_OVI_IRM_S -obs OBS/OVF_S_ovide_irminger_obs.txt

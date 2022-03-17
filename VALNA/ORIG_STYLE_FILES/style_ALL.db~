@@ -1,0 +1,43 @@
+ runid     |     name       |   line   |   color        |
+ u-ar435   | GO6-1deg       | --       | red            |
+ u-bw812   | GO6-1deg no GM | --       | fuchsia        |
+ u-ah494   | GO6-1/4deg   | --       | firebrick      |
+ u-am916   | GO6-1/4deg   | --       | chocolate      |
+ mi-aq915  | GO6-1/12deg  | --       | darkorchid     |
+ u-az867   | GO8p0-025    | -.       | green             |
+ u-ba470   | GO8p0 EEN_new | -.        | lime            |
+ u-ba475   | GO8p0 UBS    | -.        | mediumseagreen   |
+ u-bf407   | GO8p0 4th order hor T advn    | -.        | aquamarine   |
+ u-bq539   | GO8p0 Smag C=2 | -.        | turquoise   |
+ u-bn900   | GO8p3-025    | -        | cornflowerblue |
+ u-bs558   | GO8p3 weak Gent-McWilliams       | -          | teal         |
+ u-bu102   | GO8p3 weak GM spatial cutoff     | -          | darkturquoise      |
+ u-bu802   | GO8p3 weak GM ramp type 1        | -          | cadetblue    |
+ u-bu881   | GO8p3 weak GM ramp type 2        | -          | powderblue   |
+ u-bs582   | GO8p3 biharmonic Gent-McWilliams | -          | navy         |
+ u-bt127   | GO8p3 zero viscosity             | -          | mediumblue   |
+ u-bt128   | GO8p3 partial slip shlat=1.0     | -          | fuchsia      |
+ u-bt573   | GO8p3 partial slip Antarc coast  | -          | plum         |
+ u-bt574   | GO8p3 partial slip polewd of 50deg | -        | deeppink     |
+ u-bt576   | GO8p3 partial slip Antarc Peninsula  | -      | lightpink    |
+ u-bw811   | GO8p3 full slip Weddell bicycle wheel | -     | blueviolet   |
+ u-bt577   | GO8p3 bottom friction x5  | -          | chartreuse      |
+ u-bv730   | GO8p3 weak GM + partial slip polewd of 50deg | -  |  yellow  |
+#u-ar685   | GC3.1N96025  | --       | sienna         |
+ u-bj000   | GC4.0N96025  | --       | sandybrown     |
+ u-bn477   | GC5.0N96025  | --       | royalblue      |
+ u-bo738   | GC3.1botfri  | --       | royalblue      |
+ u-bc970   | GC3.1        | --       | cornflowerblue |
+ u-ak108   | GC3.1 1deg    | -    | blue           |
+ u-ai758   | GC3.1 1/4 deg | -    | chocolate      |
+ u-aj393   | GC3.1 1/12 deg| -    | darkorchid     |
+ u-ar685   | GC3.1 Control              | -        | sienna         |
+ u-bo112   | GC3.1 3xbilap viscosity    | -        | PaleTurquoise  |    
+ u-bo117   | GC3.1 weak Gent-McWilliams | -        | teal           |  
+ u-bo119   | GC3.1 sss restoring        | -        | navy           |
+ u-bn943   | GC3.1 FOAM start dump      | -        | chocolate      |
+ u-ai424   | GO6 rough bathymetry       | --       | navy           |
+ u-by601   | GO8p5-025                  | -.       | firebrick      |              
+ u-cb172   | GO8p5 rough bathymetry     | -.       | cornflowerblue |              
+ u-cb088   | GC5p long timestep         | -.       | sandybrown     |              
+ u-cb189   | GC5p rough bathymetry      | -.       | blueviolet     |              

@@ -1,0 +1,1 @@
+ python2.7 SCRIPT/plot_time_series.py -noshow -runid u-ak108 u-ai758 u-aj393 -f *LAB_MXL*1m*0301*T*003*.nc -var mean_somxl030 -title Mean MXL in Lab Sea in March (m) -dir /data/users/smoreton/VALNA/DATA -o coupled_MXL_LAB -obs OBS/MXL_LAB_obs.txt

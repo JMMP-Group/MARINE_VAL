@@ -1,0 +1,9 @@
+ runid     |     name     |   line   |   color        |
+ u-bn900   | GO8p3 1/4 deg                         | -          | cornflowerblue |
+ u-bs558   | GO8p3 weak GM, cap=75m2/s             | -          | teal           |
+ u-bu102   | GO8p3 weak GM spatial cutoff on  cap  | -          | darkturquoise  |
+ u-bu802   | GO8p3 weak GM ramp type 1 on cap      | -          | aquamarine     |
+ u-bu881   | GO8p3 weak GM ramp type 2 on cap      | -          | springgreen    |
+ u-bv514   | GO8p3 weak GM + bathy ramp            | -          | sandybrown     |
+ u-bv719   | GO8p3 weak GM ramp to 5% of coeff     | -          | purple         |
+ 

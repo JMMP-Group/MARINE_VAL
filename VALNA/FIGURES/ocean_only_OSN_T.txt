@@ -1,0 +1,1 @@
+ python2.7 SCRIPT/plot_time_series.py -noshow -runid u-ar435 u-ah494 mi-aq915 -f *1y*osnap_Xsection.nc -var T_av_27_8_rho -title Mean T>27.8 kg/m3 (osnap) -dir /data/users/smoreton/VALNA/DATA -o ocean_only_OSN_T -obs OBS/OVF_T_osnap_obs.txt

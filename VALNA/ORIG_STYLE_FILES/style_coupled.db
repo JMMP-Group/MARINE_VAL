@@ -1,0 +1,14 @@
+ runid     |     name          |   line   |   color       |
+ u-ar685   | GC3.1N96025       | --       | royalblue     |
+ u-bj000   | GC4.0N96025       | --       | chocolate     |
+ u-bu697   | GC5 NEMO 4.0.1    | --       | lightcoral    |
+ u-bv120   | GC5 NEMO 4.0.1 OI drag x2 | --  |  dodgerblue  |
+ u-bs129   | GC5P N96O025 CNTRL| -        | sienna        |
+ u-bt100   | GC5P Wk GM 150    | -        | firebrick     |    
+ u-bt235   | GC5P Smag 2.0     | -        | purple        |  
+ u-bu016   | GC5P loc par slp  | -        | sandybrown    |
+ u-bt771   | GC5P Wk GM 300    | -        | navy          |
+ u-bw658   | GC5P WKgm 4ad lps | -        | green         |
+ u-cb088   | GC5P long timestep         | -.       | sandybrown     |              
+ u-cb189   | GC5P rough bathymetry      | -.       | mediumorchid   |              
+

@@ -1,0 +1,32 @@
+name: valna
+channels:
+  - conda-forge
+dependencies:
+  - bottleneck
+  - cf_xarray
+  - dask
+  - gsw
+  - netCDF4
+  - pandas
+  - pooch
+  - scipy
+  - xarray
+  - numpy
+  - matplotlib
+  - cmocean
+  - ipython
+  - cartopy
+  - curl
+  - geopy
+  - pip
+  - proj
+  - pyproj
+  - scikit-learn
+  - xoak
+  - gsw
+  - gcc
+  - mpi
+  - hdf5
+  - pip:
+    - notebook
+

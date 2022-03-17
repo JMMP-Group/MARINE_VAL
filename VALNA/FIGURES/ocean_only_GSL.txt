@@ -1,0 +1,1 @@
+ python2.7 SCRIPT/plot_time_series.py -noshow -runid u-ar435 u-ah494 mi-aq915 -f *1y*NA_crop_T.nc -var GS_sep_lat -title GS separation latitude @72degW -dir /data/users/smoreton/VALNA/DATA -o ocean_only_GSL -obs OBS/GS_sep_lat_obs.txt

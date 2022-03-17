@@ -1,0 +1,1 @@
+ python2.7 SCRIPT/plot_time_series.py -noshow -runid u-aj393 u-ai758 u-ak108 -f *SSTav_NWC_*1y*T.nc -var (mean_thetao|mean_thetao_con|mean_votemper) -title Mean SST in NW (degC) -dir /data/users/smoreton/VALNA/DATA -o coupled_SST_NW -obs OBS/NWC_sst_mean_obs.txt

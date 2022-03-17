@@ -1,0 +1,1 @@
+ python2.7 SCRIPT/plot_time_series.py -noshow -runid u-ak108 u-ai758 u-aj393 -f SSTav_Newfound_*1y*T.nc -var (mean_thetao|mean_thetao_con|mean_votemper) -title Mean SST off Newfoundland (degC) -dir /data/users/smoreton/VALNA/DATA -o coupled_SST_newf -obs OBS/SST_newf_obs.txt
