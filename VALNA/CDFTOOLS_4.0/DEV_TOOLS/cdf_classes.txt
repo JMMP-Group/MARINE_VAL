@@ -1,0 +1,32 @@
+#!/bin/bash
+ for line in $( cat $0 | grep -v '^#' | grep -v '^ ' | awk '{print $0}' ) ; do
+   echo $line
+      grep -e "@class $line" *90
+   echo ====
+ done
+ exit
+
+Equation_of_state
+ice_shelf_processing
+file_informations
+file_operations
+passive_tracer
+ensemble_processing
+statistics
+data_transformation
+transport
+integration
+mixed_layer
+mask
+bottom
+derived_fields
+energy_diagnostics
+forcing
+ice_diagnostics
+iceberg_processing
+miscellaneous
+obsolete
+preprocessing
+second_order_moments
+system
+

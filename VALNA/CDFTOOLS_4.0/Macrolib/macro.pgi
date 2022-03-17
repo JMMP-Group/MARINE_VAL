@@ -1,0 +1,22 @@
+# Makefile for CDFTOOLS (Linux with pgi)
+# !!  $Rev$
+# !!  $Date$
+# !!  $Id$
+# !!--------------------------------------------------------------
+#
+NCDF = -lnetcdf
+ 
+F90=pgf90
+MPF90=pgf90
+OMP=
+#OMP=-mp
+
+#NC4 = -D key_netcdf4
+NC4 =
+
+#CMIP6 = -D key_CMIP6
+CMIP6 =
+
+FFLAGS = -fast $(NCDF)  $(NC4) $(CMIP6)-byteswapio $(OMP)
+
+INSTALL=/usr/local/bin
