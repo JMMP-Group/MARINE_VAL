@@ -56,7 +56,7 @@ to be installed locally as following.
    python -c "import nsv"
 ```
 
-* Download CDFTOOLs_4.0 toolbox and compile it as following (or use compiled verision in VALNA directory)
+* Download CDFTOOLs_4.0 toolbox and compile it as following.
 
 ```
    git clone https://github.com/meom-group/CDFTOOLS
