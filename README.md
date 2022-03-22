@@ -8,5 +8,5 @@ A series of software packages for ocean scientists to calculate and plot various
 
 First, clone the directory:
 ```
-git clone git@github.com:JMMP-Group/MARINE_VAL.git
+git clone https://github.com/JMMP-Group/MARINE_VAL.git
 ```
