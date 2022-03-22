@@ -31,11 +31,9 @@ A software package for ocean scientists to calculate and plot the following eval
 <a name="getting_started"></a>
 ## Getting Started
 
-* Copy the VALNA directory and create and activate the conda environment. 
+* Creating and activating the Conda environment. 
 
 ```
-   git clone git@github.com:JMMP-Group/VALNA.git
-   
    cd VALNA
 
    conda env create -f valna.yml
@@ -56,26 +54,11 @@ to be installed locally as following.
    python -c "import nsv"
 ```
 
-* Download CDFTOOLs_4.0 toolbox and compile it as following.
+* Download CDFTOOLs_4.0 toolbox and compile it using the instructions in the CDFTOOLS repository.
 
 ```
    git clone https://github.com/meom-group/CDFTOOLS
 
-   cd src/
-
-   ln -sf ../Macrolib/macro.MACHINE make.macro
-```
-In the make.macro file, the PATH for the netcdf library is specified, as well as compiler name and used flags. In order to activate netcdf4/HDF5 chunking and deflation ( available in some cdftools), you need to set:
-```
-   NC4=-Dkey_netcdf4
-```
-in the make.macro file, otherwise set
-```
-   NC4=
-```
-In order to activate CMIP6 variable naming convention (for input files), you need to set:
-```
-   CMIP6=-Dkey_CMIP6
 ```
 
 * Edit `param.bash` to fit your setup/need

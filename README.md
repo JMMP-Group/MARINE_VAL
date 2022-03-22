@@ -5,3 +5,8 @@ A series of software packages for ocean scientists to calculate and plot various
 * VALNA - for the North Atlantic
 * VALSO - for the Southern Ocean
 * VALIND - for the Indian Ocean
+
+First, clone the directory:
+```
+git clone https://github.com/JMMP-Group/MARINE_VAL.git
+```
