@@ -108,6 +108,8 @@ For example:
 ~~~~~~~
 VALNA
       |-- FIGURES
+            |--
+      |-- FILTERS
             |-- 
       |-- OBS
             |-- 
