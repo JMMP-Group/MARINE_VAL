@@ -1,0 +1,24 @@
+# Makefile for CDFTOOLS : AIX (zahir)
+# !!  $Rev: 82 $
+# !!  $Date: 2007-07-17 10:24:09 +0200 (Tue, 17 Jul 2007) $
+# !!  $Id: macro.zahir 82 2007-07-17 08:24:09Z molines $
+# !!--------------------------------------------------------------
+#
+NCDF= -lnetcdf
+
+F90=xlf90
+MPF90=mpxlf90_r
+#OMP= qsmp=omp
+OMP=
+#NC4 = -D key_netcdf4
+NC4 =
+
+#CMIP6 = -D key_CMIP6
+CMIP6 =
+
+#FFLAGS= -O4   $(NC4) $(CMIP6) -qsuffix=f=f90   $(NCDF)  -q64 -qsave $(OMP)
+FDATE_FLAG= -brename:.fdate,.fdate_
+FFLAGS= -O4   $(NC4) $(CMIP6) -qsuffix=f=f90   $(NCDF)  -q64  $(OMP)
+
+INSTALL=./
+ 

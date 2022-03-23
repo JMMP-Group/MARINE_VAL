@@ -1,0 +1,5 @@
+To run these executables you need to load the relevant modules:
+
+. ~frsy/bin/cdftools_modules.sh
+
+DS. Oct 2021
