@@ -1,68 +1,95 @@
-# VALSO
+# VALSO-VALTRANS
 
-## Purpose
-* This toolbox only assess the order 0 of the southern ocean circulation :
-   * ACC
-   * Weddell gyre
-   * Ross gyre strength
-   * Salinity of HSSW 
-   * Intrusion of CDW in Amundsen sea
-   * Intrusion of CDW on East Ross shelf
+## Table of Contents
+1. [Introduction](#introduction)
+2. [Getting Started](#getting_started)
+3. [How to run](#howtorun)
+4. [File Structure](#files)
+5. [Output](#output)
+6. [Authors](#authors)
+7. [Licence](#licence)
+8. [Acknowledgements](#acknowledgement)
 
-* Compare simulated metrics with what is called a good-enough simulation (this range is estimated from expert judgements not observation dataset)
+<a name="introduction"></a>
+## Introduction
 
-![Alt text](FIGURES/example.png?raw=true "Example of the VALSO output")
+A software package for ocean scientists to calculate and plot the following evaluation metrics to compare North Atlantic ocean biases between CMIP models
+  with a NEMO ocean:
 
-## Limitation
-* only work for eORCA025 at the moment (section and box hard coded by index not lat/lon):
-   * need to find a better management of the box indexes (need CDFTOOLS modification or an other step to build the mask on the fily with lat/lon boxes)
-   * need a better management of section (need CDFTOOLS modification)
-* only work on Met Office computer
-* plot should not be used for publication as it is (std and mean value of observation should be corrected if you want to do so)
+   * VALSO metrics (Southern Ocean assessment):
+     * Drake Passage net eastward transport (ACC)
+     * Weddell gyre strength
+     * Ross gyre strength
+     * Salinity of HSSW in west Weddell and west Ross Seas
+     * Intrusion of CDW in Amundsen sea
+     * Intrusion of CDW on East Ross shelf
 
-## Installation
-Simplest instalation (maybe not the most optimal)
-* copy the VALSO directory
-* clean what is inside SLURM directory (optional)
-* clean ERROR.txt file (optional)
-* edit param.bash to fit your setup/need
+   * VALTRANS metrics (Straits transports and exchanges):
+     * North Atlantic deep overflows: Denmark Strait and Faroe Bank Channel.
+     * Marginal Seas exchanges: Gibraltar, Bab el Mandeb, Strait of Hormuz.
+     * Indonesian Throughflow: Lombok Strait, Ombai Strait, Timor Passage.
+
+Note that there is also a set of metrics called VALGLO but this needs debugging.
+
+Currently works for output from eORCA1, eORCA025 and eORCA12 models. 
+
+<a name="getting_started"></a>
+## Installation and running
+
+Clone the MARINE_VAL repository:
+
+```
+git clone https://github.com/JMMP-Group/MARINE_VAL
+```
+
+Build the CDFTOOLS executables. Note the make macro and modules shown 
+below work for the current Met Office linux servers
+
+```
+module load gcc/8.1.0 mpi/mpich/3.2.1/gnu/8.1.0 \
+            hdf5/1.8.20/gnu/8.1.0               \
+            netcdf/4.6.1/gnu/8.1.0
+cd MARINE_VAL/CDFTOOLS-4.0/src
+ln -s ../Macrolib/macro.gfortran_metoffice make.macro
+make
+```
+Edit environment variables in `param.bash` to fit your setup/need.
    * mesh mask location with mesh mask name
-   * location of the toolbox (optional if you install it on your home directory)
-   * where to store the data (optional if you stick to SPICE scratch directory)
-   * where are your CDFTOOLS version 4.0 (optional if you stick to already installed cdftools)
+   * location of the CDFTOOLS toolbox
+   * where to store the data output (or link to existing data location) 
 
-* these module are required : 
-```
-   gcc/8.1.0 
-   mpi/mpich/3.2.1/gnu/8.1.0 
-   hdf5/1.8.20/gnu/8.1.0 
-   netcdf/4.6.1/gnu/8.1.0
-   scitools/production-os41-1
-```
+Edit `param.bash` to define which metrics you want to calculate, 
+normally a package like VALSO or VALTRANS, but you can pick and choose
+individual metrics.
 
-## Usage
-* define your style for each simulation (file style.db)
-* `./run_all.bash [CONFIG] [YEARB] [YEARE] [RUNID list]` as example : 
-```
-./run_all.bash eORCA025 1976 1977 u-ar685 u-bj000 u-bn477 u-az867 u-am916 u-ba470
-```
+Edit `style.db` to define labels, colours and line styles for the 
+integrations you want to plot (some examples provided). 
 
-Once this is done and if no error or minor error 
-(ie for example we ask from 2000 to 2020 
-but some simulation only span between 2010 and 2020. In this case no data will be built for the period 2000 2009 but erro will show up)
+Process the data to generate the timeseries data:   
 
-you can now build the plot for the Southern Ocean:
-* `./run_plot_VALSO.bash [KEY] [FREQ] [RUNID list]` as example : 
+`./run_all.bash [CONFIG] [YEARB] [YEARE] [FREQ] [RUNID list]`, for example : 
+
+```
+./run_all.bash eORCA025 1976 1977 1y u-ar685 u-bj000 u-bn477 u-az867 u-am916 u-ba470
+```
+`[CONFIG]` options currently eORCA1, eORCA025 or eORCA12.
+`[FREQ]` options currently 1y for annual means or 1m for monthly means.
+
+
+Output from the processing scripts appears under the SLURM directory. 
+
+Build the plot for the Southern Ocean:
+* `./run_plot_VALSO.bash [KEY] [FREQ] [RUNID list]`, for example : 
 ```
 ./run_plot_VALSO.bash cpl_and_forced 1y u-am916 u-az867 u-ba470 u-ar685 u-bj000 u-bn477
 ```
-you can build the plot for global evaluation:
-* `./run_plot_VALGLO.bash [KEY] [RUNID list]` as example : 
-```
-./run_plot_VALGLO.bash cpl_and_forced u-am916 u-az867 u-ba470 u-ar685 u-bj000 u-bn477
-```
+`[KEY]` is an arbitrary label that will be used to name the output PNG file.
 
 ## Output
+
+![Alt text](FIGURES/example.png?raw=true "Example of the VALSO output")
+
+
 * figure [KEY].png
 
 Other output : 

@@ -18,24 +18,24 @@ EXEPATH=${MARINE_VAL}/VALSO-VALTRANS/
 SCRPATH=${MARINE_VAL}/VALSO-VALTRANS/SCRIPT/
 
 # diagnostics bundle
-RUNVALSO=1
-RUNVALGLO=0
-RUNVALTRANS=0
-RUNALL=0
+RUNVALSO=1     # Southern Ocean metrics
+RUNVALGLO=0    # Global metrics (bit flakey)
+RUNVALTRANS=0  # Transports/exchanges
+RUNALL=0       # All of the above
 # custom
-runACC=0
-runMargSea=0
-runITF=0
-runNAtlOverflows=0
-runMLD=0
-runBSF=0
-runBOT=0
-runMOC=0
-runMHT=0
-runSIE=0
-runSST=0
-runQHF=0
-runTRP2=0
+runACC=0            # Drake Passage net eastward transport
+runMargSea=0        # Marginal Seas exchanges: Gibraltar, Bab el Mandeb, Strait of Hormuz
+runITF=0            # Indonesian Throughflow: Lombok Strait, Ombai Strait, Timor Passage
+runNAtlOverflows=0  # North Atlantic deep overflows: Denmark Strait, Faroe Bank Channel
+runMLD=0            # Max wintertime mixed layer depth in Weddell Sea
+runBSF=0            # Max streamfunction in Weddell gyre and Ross gyre
+runBOT=0            # Bottom salinity in West Weddell and West Ross Seas
+                    # and bottom temperature in Amundsen and East Ross Seas
+runMOC=0            # Atlantic meridional overturning
+runMHT=0            # Atlantic meridional heat transport
+runSIE=0            # Southern Ocean sea ice extent
+runSST=0            #
+runQHF=0            #
 #
 if [[ $RUNALL == 1 || $RUNTEST == 1 ]]; then
    runACC=1 #acc  ts
@@ -47,7 +47,9 @@ if [[ $RUNALL == 1 || $RUNTEST == 1 ]]; then
    runSIE=1
    runSST=1
    runQHF=1
-   runTRP2=1
+   runITF=1
+   runMargSea=1
+   runNAtlOverflows=1
 fi
 if [[ $RUNVALSO == 1 ]]; then
    runACC=1 #acc  ts
