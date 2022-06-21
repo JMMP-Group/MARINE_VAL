@@ -2,13 +2,11 @@
 
 ## Table of Contents
 1. [Introduction](#introduction)
-2. [Getting Started](#getting_started)
-3. [How to run](#howtorun)
-4. [File Structure](#files)
-5. [Output](#output)
-6. [Authors](#authors)
-7. [Licence](#licence)
-8. [Acknowledgements](#acknowledgement)
+2. [Installation and running](#installation_and_running)
+3. [Output](#output)
+4. [Authors](#authors)
+5. [Licence](#licence)
+6. [Acknowledgements](#acknowledgement)
 
 <a name="introduction"></a>
 ## Introduction
@@ -33,7 +31,7 @@ Note that there is also a set of metrics called VALGLO but this needs debugging.
 
 Currently works for output from eORCA1, eORCA025 and eORCA12 models. 
 
-<a name="getting_started"></a>
+<a name="installation_and_running"></a>
 ## Installation and running
 
 Clone the MARINE_VAL repository:
@@ -90,6 +88,7 @@ for example :
 ```
  * `[KEY]` is an arbitrary label that will be used to name the output PNG file.
 
+<a name="output"></a>
 ## Output
 
 VALSO output:
@@ -103,4 +102,18 @@ VALTRANS output:
 Other output : 
 * bsf, bottom T, bottom S, september mld netcdf file for each year in your DATPATH directory.
 * all individual time series are saved in FIGURES along with the txt file describing the exact command line done to build it
+
+<a name="authors"></a>
+## Authors
+* [pmathiot](https://github.com/pmathiot)
+* [DaveStorkey](https://github.com/DaveStorkey)
+
+<a name="licence"></a>
+## Licence
+
+[comment]: <> ([![License: MIT]&#40;https://img.shields.io/badge/License-MIT-yellow.svg&#41;]&#40;https://opensource.org/licenses/MIT&#41;)
+
+<a name="acknowledgement"></a>
+## Acknowledgements
+* VALSO (Southern Ocean evaluation metrics) original code by Pierre Mathiot
 
