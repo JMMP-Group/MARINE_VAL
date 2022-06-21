@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # create repository
-DATPATH=${SCRATCH}/ACC/$RUNID/           
+DATPATH=${SCRATCH}/MARINE_VAL/$RUNID/           
 if [ ! -d $DATPATH ]; then mkdir -p $DATPATH ; fi
 
 # check mesh mask

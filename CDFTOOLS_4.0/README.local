@@ -1,5 +1,12 @@
-To run these executables you need to load the relevant modules:
+This is a version of CDFTOOLS-4.0 with some modifications by Pierre 
+Mathiot, mainly to do with recognising the CMIP6 variable naming convention.
 
-. ~frsy/bin/cdftools_modules.sh
+To compile and run these executables on Met Office linux servers, 
+you need to load the relevant modules:
 
-DS. Oct 2021
+module load gcc/8.1.0 mpi/mpich/3.2.1/gnu/8.1.0 \
+            hdf5/1.8.20/gnu/8.1.0               \
+            netcdf/4.6.1/gnu/8.1.0
+
+Dave Storkey
+June 2022

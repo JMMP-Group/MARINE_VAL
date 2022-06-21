@@ -3,7 +3,7 @@
 ulimit -s unlimited
 
 # top level directory
-MARINE_VAL=${HOME}/MARINE_VAL
+MARINE_VAL=${HOME}/Git_Repos/MARINE_VAL
 
 # where mask are stored (name of mesh mask in SCRIPT/common.bash)
 MSKPATH=/data/users/frsy/MESH_MASK/
@@ -16,9 +16,6 @@ EXEPATH=${MARINE_VAL}/VALSO-VALTRANS/
 
 # SCRIPT location
 SCRPATH=${MARINE_VAL}/VALSO-VALTRANS/SCRIPT/
-
-# DATA path (CONFIG and RUNID are filled by script)
-DATPATH=${SCRATCH}/ACC/$CONFIG/$RUNID/           
 
 # diagnostics bundle
 RUNVALSO=1

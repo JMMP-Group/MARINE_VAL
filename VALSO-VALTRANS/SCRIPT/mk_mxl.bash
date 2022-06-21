@@ -38,4 +38,8 @@ if [[ $? -eq 0 ]]; then
 else 
    echo "error when running cdfmxl; exit"; echo "E R R O R in : ./mk_mxl.bash $@ (see SLURM/${CONFIG}/${RUNID}/mxl_${FREQ}_${TAG}.out)" >> ${EXEPATH}/ERROR.txt ; exit 1
 fi
+
+# this step needed because cdfmean sets a strange value for valid_max and that messes up the plotting routines.
+ncatted -a valid_max,max_somxzint1,d,, $FILEOUT
+
 #
