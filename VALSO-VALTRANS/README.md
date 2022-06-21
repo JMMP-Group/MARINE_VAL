@@ -115,5 +115,6 @@ Other output :
 
 <a name="acknowledgement"></a>
 ## Acknowledgements
-* VALSO (Southern Ocean evaluation metrics) original code by Pierre Mathiot
+* This is the Met Office development of the original VALSO code by Pierre Mathiot.
+  Pierre's repository is [here](https://github.com/pmathiot/VALSO)
 
