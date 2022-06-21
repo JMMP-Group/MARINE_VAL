@@ -67,30 +67,38 @@ integrations you want to plot (some examples provided).
 
 Process the data to generate the timeseries data:   
 
-`./run_all.bash [CONFIG] [YEARB] [YEARE] [FREQ] [RUNID list]`, for example : 
-
+```
+./run_all.bash [CONFIG] [YEARB] [YEARE] [FREQ] [RUNID list]
+``` 
+for example : 
 ```
 ./run_all.bash eORCA025 1976 1977 1y u-ar685 u-bj000 u-bn477 u-az867 u-am916 u-ba470
 ```
-`[CONFIG]` options currently eORCA1, eORCA025 or eORCA12.
-`[FREQ]` options currently 1y for annual means or 1m for monthly means.
+ * `[CONFIG]` options currently eORCA1, eORCA025 or eORCA12.
+ * `[FREQ]` options currently 1y for annual means or 1m for monthly means.
 
 
 Output from the processing scripts appears under the SLURM directory. 
 
 Build the plot for the Southern Ocean:
-* `./run_plot_VALSO.bash [KEY] [FREQ] [RUNID list]`, for example : 
+```
+./run_plot_VALSO.bash [KEY] [FREQ] [RUNID list]
+``` 
+for example : 
 ```
 ./run_plot_VALSO.bash cpl_and_forced 1y u-am916 u-az867 u-ba470 u-ar685 u-bj000 u-bn477
 ```
-`[KEY]` is an arbitrary label that will be used to name the output PNG file.
+ * `[KEY]` is an arbitrary label that will be used to name the output PNG file.
 
 ## Output
 
-![Alt text](FIGURES/example.png?raw=true "Example of the VALSO output")
+VALSO output:
 
+![Alt text](FIGURES/example_VALSO.png?raw=true "Example of the VALSO output")
 
-* figure [KEY].png
+VALTRANS output:
+
+![Alt text](FIGURES/example_VALTRANS.png?raw=true "Example of the VALSO output")
 
 Other output : 
 * bsf, bottom T, bottom S, september mld netcdf file for each year in your DATPATH directory.
