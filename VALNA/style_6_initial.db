@@ -5,3 +5,62 @@
  u-ak108   | GC3.1 1deg    | -        | indianred       |
  u-ai758   | GC3.1 1/4deg  | -        | cornflowerblue  |
  u-aj393   | GC3.1 1/12deg | -        | teal            |
+ u-ak356   | GC3.1 LL-1    | -        | red       |
+ u-ay585   | GC3.1 HM-1    | -        | green       |
+ u-ay652   | GC3.1 HH-1    | -        | blue       |
+ u-ak356   | GC3.1 LL-1    | -        | red       |
+ u-ak731   | GC3.1 LL-2    | -        | darkred       |
+ u-ak743   | GC3.1 LL-3    | -        | indianred       |
+ u-bd064   | GC3.1 LL-1    | -        | red       |
+ u-bd244   | GC3.1 LL-2    | -        | darkred       |
+ u-bd410   | GC3.1 LL-3    | -        | indianred       |
+ u-aj354   | GC3.1 MM-1    | -        | green       |
+ u-ak141   | GC3.1 MM-2    | -        | lightgreen       |
+ u-ak144   | GC3.1 MM-3    | -        | darkgreen       |
+ u-bd066   | GC3.1 MM-1    | -        | green       |
+ u-bd414   | GC3.1 MM-2    | -        | lightgreen       |
+ u-bd656   | GC3.1 MM-3    | -        | darkgreen       |
+ u-ay652   | GC3.1 HH-1    | -        | blue       |
+ u-bw805   | GC3.1 HH-2    | -        | navy       |
+ u-bx814   | GC3.1 HH-3    | -        | cyan       |
+ u-bj590   | GC3.1 HH-1    | -        | blue       |
+ u-cb038   | GC3.1 HH-2    | -        | navy       |
+ u-cc671   | GC3.1 HH-3    | -        | cyan       |
+ u-bk610   | GC3.1 1/12deg | -        | navy            |
+ u-ah984   | GC3.1 N216-O025 | -       | red            |
+ u-bs992   | GC4 N216-O025 | -       | blue            |
+ u-cn049   | GC5_nearly N216-O025 | -        | red             |
+ u-co779   | GC5_N216-O025 | -        | silver             |
+ u-co957   | GC5_N216-O025-PI | -        | black             |
+ u-cn238   | GC5 N216-O12  | -        | blue            |
+ u-cn457   | GC5 N216-O025_CoM  | -        | green            |
+ u-cm315   | GC5 N216-O025  | -        | orange            |
+ u-co268   | GC5 N216-O025_CoM9.8  | -        | darkgreen            |
+ u-co237   | GC5 N216-O12_CoM9.8  | -        | cyan            |
+ u-co329   | GC5 N216-O025_CoM9.8tune  | -        | navy            |
+ u-co394   | GC5 N216-O025_CoM9.8tune2  | -        | indianred            |
+ u-co367   | GC5 N216-O12_CoM9.8tune  | -        | teal            |
+ u-co445   | GC5 N216-O12_CoM9.8tune2+slip  | -        | cornflowerblue            |
+ u-co507   | GC5 N216-O025_CoM9.8tune2+slip  | -        | lightgreen            |
+ u-co729   | GC5 N216-O025_CoM9.8tune3+slip+BF  | -        | navy            |
+ u-co666   | GC5 N216-O12_CoM9.8tune2+slip+BF  | -        | yellow            |
+ u-co883   | GC5 N216-O025_CoM9.8tune4+nl+slip+BF2  | -        | darkturquoise            |
+ u-co896   | GC5 N216-O12_CoM9.8tune4+nl+slip+BF2  | -        | red            |
+
+ u-co993   | GC5 N216-O025_CoM9.8tune5+slip+BF2  | -        | orange            |
+ u-co991   | GC5 N216-O12_CoM9.8tune5+slip+BF2  | -        | yellow            |
+ u-cp220   | GC5 N216-O025_CoM9.8tune5+slip+BF2+ocnbathy  | -        |  cornflowerblue           |
+ u-cp545   | GC5 N216-O025_CoM9.8tune5+slip+BF2+ocnbathy  | -        |  orange           |
+ u-cp514   | GC5 N216-O12_CoM9.8tune5+slip+BF2+ocnbathy  | -        | cyan            |
+ u-cp539   | GC5 N216-O12_CoM9.8tune5+slip+BF3+ocnbathy  | -        | navy            |
+ u-cp836   | GC5 N216-O12_CoM9.8tune5+slip+BF3+ocnbathy  | -        | orange            |
+ u-cq098   | GC5 N216-O12_CoM9.8tune5+slip+BF3+nosm_ocnbathy  | -        | orange            |
+ u-cq175   | GC5 N216-O025_CoM9.9_GOSI9.1_PI_spinup  | -        |  silver           |
+ u-cq413   | GC5 N216-O12_CoM9.8tune5+slip+BF3+nosm_ocnbathy+IC  | -        | yellow            |
+ u-cq538   | GC5 N216-O025_CoM9.9_GOSI9.1_PI_spinup  | -      |  red           |
+ u-cq525   | GC5 N216-O12_CoM9.9_GOSI9.1_PI_spinup  | -       |  blue         |
+ u-cq536   | GC5 N216-O025_CoM9.9_GOSI9.1_PD  | -       |  magenta           |
+ u-cq537   | GC5 N216-O12_CoM9.9_GOSI9.1_PD  | -       |  cyan         |
+ u-cq768   | GC5 N216-O12_CoM9.9_GOSI9.1_PI_spinup_2  | -       |  skyblue         |
+ u-cq866   | GC5 N216-O12_CoM9.9_GOSI9.1_PI_spinup_3  | -       |  cornflowerblue         |
+ u-cr623   | GC5 N216-O12_CoM9.9_GOSI9.1_PI_spinup_from1950  | -       |  cyan         |

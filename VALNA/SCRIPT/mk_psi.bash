@@ -15,14 +15,14 @@ FREQ=$4
 . ${SCRPATH}/common.bash
 
 cd $DATPATH/
-JOBOUT_PATH=$DATPATH/JOBOUT
+JOBOUT_PATH=$DATPATH/JOBOUT/
 
 # name
 RUN_NAME=${RUNID#*-}
 
 # check presence of input file
-FILEU=`ls [nu]*${RUN_NAME}o_${FREQ}_${TAG}*_grid[-_]U.nc`
-FILEV=`ls [nu]*${RUN_NAME}o_${FREQ}_${TAG}*_grid[-_]V.nc`
+FILEU=`ls ${DATINPATH}/[nu]*${RUN_NAME}o_${FREQ}_${TAG}*_grid[-_]U.nc`
+FILEV=`ls ${DATINPATH}/[nu]*${RUN_NAME}o_${FREQ}_${TAG}*_grid[-_]V.nc`
 if [ ! -f $FILEV ] ; then echo "$FILEV is missing; exit"; echo "E R R O R in : ./mk_psi.bash $@ (see SLURM/${CONFIG}/${RUNID}/mk_psi_${FREQ}_${TAG}.out)" >> ${EXEPATH}/ERROR.txt ; exit 1 ; fi
 if [ ! -f $FILEU ] ; then echo "$FILEU is missing; exit"; echo "E R R O R in : ./mk_psi.bash $@ (see SLURM/${CONFIG}/${RUNID}/mk_psi_${FREQ}_${TAG}.out)" >> ${EXEPATH}/ERROR.txt ; exit 1 ; fi
 
@@ -70,3 +70,4 @@ $CDFPATH/cdfmean -f $FILEOUT -v sobarstf -p T -w ${ijbox} 0 0 -minmax -o BSF_NA_
 #         a horizontal mean for each level is also given. If a 2D spatial window
 #         is specified, the mean value is computed only in this window.
 if [ $? -ne 0 ] ; then echo "error when running cdfmean (WG)"; echo "E R R O R in : ./mk_psi.bash $@ (see ${JOBOUT_PATH}/mk_psi_${FREQ}_${TAG}.out)" >> ${EXEPATH}/ERROR.txt ; fi
+ncatted -a valid_min,min_sobarstf,d,, -a valid_max,min_sobarstf,d,,BSF_NA_$FILEOUT

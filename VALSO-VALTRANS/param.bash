@@ -3,10 +3,11 @@
 ulimit -s unlimited
 
 # top level directory
-MARINE_VAL=${HOME}/Git_Repos/MARINE_VAL
+MARINE_VAL=/data/users/hadom/branches/git/MARINE_VAL/
 
 # where mask are stored (name of mesh mask in SCRIPT/common.bash)
-MSKPATH=/data/users/frsy/MESH_MASK/
+#MSKPATH=/data/users/frsy/MESH_MASK/
+MSKPATH=/data/users/hadom/MESH_MASK/
 
 # where cdftools are stored
 CDFPATH=${MARINE_VAL}/CDFTOOLS_4.0/bin
@@ -16,6 +17,8 @@ EXEPATH=${MARINE_VAL}/VALSO-VALTRANS/
 
 # SCRIPT location
 SCRPATH=${MARINE_VAL}/VALSO-VALTRANS/SCRIPT/
+
+DATPATH=/scratch/hadom/MARINE_VAL/VALSO/
 
 # diagnostics bundle
 RUNVALSO=1     # Southern Ocean metrics

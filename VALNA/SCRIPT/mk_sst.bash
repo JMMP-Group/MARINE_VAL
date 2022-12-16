@@ -18,7 +18,7 @@ echo '$runSST'
 . ${SCRPATH}/common.bash
 
 cd $DATPATH/
-JOBOUT_PATH=$DATPATH/JOBOUT
+JOBOUT_PATH=$DATPATH/JOBOUT/
 
 # name
 RUN_NAME=${RUNID#*-}
@@ -27,9 +27,9 @@ RUN_NAME=${RUNID#*-}
 echo $RUNID
 echo $TAG
 if [[ ${RUNID} = u-ah494 ]]; then
-  FILE=`ls ${RUNID}o_${FREQ}_${TAG}*T.nc`
+  FILE=`ls ${DATINPATH}/${RUNID}o_${FREQ}_${TAG}*T.nc`
 else
-  FILE=`ls [nu]*${RUN_NAME}o_${FREQ}_${TAG}*_grid-T.nc`
+  FILE=`ls ${DATINPATH}/[nu]*${RUN_NAME}o_${FREQ}_${TAG}*_grid-T.nc`
 fi
 
 echo $FILE

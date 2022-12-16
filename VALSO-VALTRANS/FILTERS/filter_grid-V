@@ -1,1 +1,1 @@
---cnk_dmn depthv,1 --cnk_dmn time_counter,1 --cnk_dmn x,200 --cnk_dmn y,200
+--cnk_dmn depthv,1 --cnk_dmn time_counter,1 --cnk_dmn x,200 --cnk_dmn y,200 -v (^vo$)+,(^e3v_0)+,(^e3v)+,(^thkcello)

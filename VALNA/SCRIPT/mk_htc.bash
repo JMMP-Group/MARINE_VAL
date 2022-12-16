@@ -15,13 +15,13 @@ FREQ=$4
 . ${SCRPATH}/common.bash
 
 cd $DATPATH/
-JOBOUT_PATH=$DATPATH/JOBOUT
+JOBOUT_PATH=$DATPATH/JOBOUT/
 
 # name
 RUN_NAME=${RUNID#*-}
 
 # check presence of input file
-FILET=`ls [nu]*${RUN_NAME}o_${FREQ}_${TAG}*_grid[-_]T.nc`
+FILET=`ls ${DATINPATH}/[nu]*${RUN_NAME}o_${FREQ}_${TAG}*_grid[-_]T.nc`
 if [ ! -f $FILET ] ; then echo "$FILET is missing; exit"; echo "E R R O R in : ./mk_htc.bash $@ (see ${JOBOUT_PATH}/mk_htc_${FREQ}_${TAG}.out)" >> ${EXEPATH}/ERROR.txt ; exit 1 ; fi
 
 # calculate heat content of NA subpolar gyre in Joules --> area of heat content for each layer

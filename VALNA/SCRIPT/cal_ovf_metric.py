@@ -88,7 +88,7 @@ def extract_model_at_Xsection(ds_obs, domain, ds_tgrid, obs_name, runid):
         grid="t"
     )
 
-    if runid == 'u-ai758' or runid == 'u-ar435' or runid == 'u-ah494':
+    if runid == 'u-ai758' or runid == 'u-ar435' or runid == 'u-ah494' or runid == 'u-cq175':
         ds_tgrid = ds_tgrid.rename_dims({'x_grid_T': 'x', 'y_grid_T': 'y'})
 
     section_model = ds_tgrid.isel({dim: stations[f"{dim}_index"] for dim in ("x", "y")})
@@ -96,21 +96,25 @@ def extract_model_at_Xsection(ds_obs, domain, ds_tgrid, obs_name, runid):
     return section_model
 
 
-def interp_model_depth_to_obs(section_model, ds_obs, runid):
+def interp_model_depth_to_obs(section_model, ds_obs, runid, var_thetao, var_lon):
     # interpolating model depths to obs, changing depth attribute name and saving model T & S to single dataset with obs
 
     # temperature
-    if runid == 'u-ah494':
+    if var_thetao == 'votemper':
         thetao_int_obs = section_model.votemper.interp({"deptht": ds_obs.depth.values}, method="linear")
-    else:
+    elif var_thetao == 'thetao':
         thetao_int_obs = section_model.thetao.interp({"deptht": ds_obs.depth.values}, method="linear")
+    elif var_thetao == 'thetao_con':
+        thetao_int_obs = section_model.thetao_con.interp({"deptht": ds_obs.depth.values}, method="linear")
     thetao_int_obs.deptht.attrs['long_name'] = 'Observational levels'
 
     # salinity
-    if runid == 'u-ah494':
+    if var_thetao == 'votemper':
         so_int_obs = section_model.vosaline.interp({"deptht": ds_obs.depth.values}, method="linear")
-    else:
+    elif var_thetao == 'thetao':
         so_int_obs = section_model.so.interp({"deptht": ds_obs.depth.values}, method="linear")
+    elif var_thetao == 'thetao_con':
+        so_int_obs = section_model.so_abs.interp({"deptht": ds_obs.depth.values}, method="linear")
     so_int_obs.deptht.attrs['long_name'] = 'Observational levels'
 
     return thetao_int_obs, so_int_obs
@@ -140,6 +144,7 @@ def aver_densest_T_S_in_model(new_ds, obs_name, crop_to_Irmin_basin, crop_to_Ice
 
     isopyc_thres = 27.8
 
+    print('calc aver_densest')
     if obs_name == 'osnap':
         # cropping osnap west
         if crop_to_Irmin_basin == 'True':
@@ -208,8 +213,7 @@ def main():
     fileout = sys.argv[6]
     crop_to_Irmin_basin = sys.argv[7]
     crop_to_Icel_basin = sys.argv[8]
-
-    obs_dir = '/data/users/smoreton/Obs/NA_overflows/'
+    obs_dir = sys.argv[9]
 
     # Save all observational data locally in netcdf (run once):
     # create_obs_overflow_data_locally(obs_dir)
@@ -218,21 +222,41 @@ def main():
     ds_obs = xr.open_dataset(obs_dir+obs_name+'_Xsection.nc')
 
     # meshmask file:
-    domain = xr.open_dataset(mskpath+'/mesh_mask_e'+config+'-GO6.nc')
+    domain = xr.open_dataset(mskpath+'/mesh_mask_'+config+'-GO6.nc')
+
+    print('fileout, file_in ',fileout, t_s_file)
+
+    with nc.Dataset(t_s_file, 'r') as fname:
+        variables = fname.variables
+        if 'thetao' in variables:
+            var_thetao = 'thetao'
+        elif 'votemper' in variables:
+            var_thetao = 'votemper'
+        elif 'thetao_con' in variables:
+            var_thetao = 'thetao_con'
+        else:
+            raise Exception('Did not find suitable thetao variable in '+tfile_NA)
+
+        if 'nav_lon_grid_T' in variables:
+            var_lon = 'nav_lon_grid_T'
+        elif 'nav_lon' in variables:
+            var_lon = 'nav_lon'
+        else:
+            raise Exception('Did not find suitable nav_lon variable in '+tfile_NA)
 
     # model temperature file:
     ds_tgrid = xr.open_dataset(t_s_file)
 
     ###################
 
-    if config == 'ORCA12':
+    if config == 'eORCA12':
         # cropping domain to reduce memory load
         domain = domain.isel(x=slice(2800, 3500), y=slice(2800, 3500))
         ds_tgrid = ds_tgrid.isel(x=slice(2800, 3500), y=slice(2800, 3500))
 
     section_model = extract_model_at_Xsection(ds_obs, domain, ds_tgrid, obs_name, runid)
 
-    thetao_int_obs, so_int_obs = interp_model_depth_to_obs(section_model, ds_obs, runid)
+    thetao_int_obs, so_int_obs = interp_model_depth_to_obs(section_model, ds_obs, runid, var_thetao, var_lon)
 
     new_ds = create_new_ds_of_model_obs_T_S_den(thetao_int_obs, so_int_obs, ds_obs, obs_name)
 

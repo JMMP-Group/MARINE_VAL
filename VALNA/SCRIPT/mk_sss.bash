@@ -18,7 +18,7 @@ echo '$runSSS'
 . ${SCRPATH}/common.bash
 
 cd $DATPATH/
-JOBOUT_PATH=$DATPATH/JOBOUT
+JOBOUT_PATH=$DATPATH/JOBOUT/
 
 # name
 RUN_NAME=${RUNID#*-}
@@ -27,9 +27,9 @@ RUN_NAME=${RUNID#*-}
 echo $RUNID
 echo $TAG
 if [[ ${RUNID} = u-ah494 ]]; then
-  FILE=`ls ${RUNID}o_${FREQ}_${TAG}*T.nc`
+  FILE=`ls ${DATINPATH}/${RUNID}o_${FREQ}_${TAG}*T.nc`
 else
-  FILE=`ls [nu]*${RUN_NAME}o_${FREQ}_${TAG}*_grid-T.nc`
+  FILE=`ls ${DATINPATH}/[nu]*${RUN_NAME}o_${FREQ}_${TAG}*_grid-T.nc`
 fi
 
 echo $FILE
@@ -40,7 +40,7 @@ set -x
 FILEOUT=SSSav_LabSea_${RUN_NAME}o_${FREQ}_${TAG}_grid-${GRID}.nc
 ijbox=$($CDFPATH/cdffindij -w -60.000 -50.000  55.000  62.000 -c mesh.nc -p T | tail -2 | head -1 )
 echo "ijbox : $ijbox"
-$CDFPATH/cdfmean -f $FILE -surf -v '|so|vosaline|' -w ${ijbox} 1 1 -p T -minmax -o tmp_$FILEOUT
+$CDFPATH/cdfmean -f $FILE -surf -v '|so|vosaline|so_abs' -w ${ijbox} 1 1 -p T -minmax -o tmp_$FILEOUT
 
 
 #mv output file

@@ -1,8 +1,11 @@
+import matplotlib
+matplotlib.use('Agg')
 import numpy as np
 import glob
 import netCDF4 as nc
 import matplotlib.pyplot as plt
 import sys
+import os
 import re
 import datetime as dt
 import argparse
@@ -25,7 +28,10 @@ class run(object):
         # define unit
         nf = len(cfile)
         df=[None]*nf
+        file_issue = False
         for kf,cf in enumerate(cfile):
+            cmd = 'touch '+cf
+            os.system(cmd)
             try:
                 ncid    = nc.Dataset(cf)
 
@@ -58,11 +64,16 @@ class run(object):
                 # build series
                 cnam=get_varname(cf,cvar)
                 df[kf] = pd.Series(ncid.variables[cnam][:].squeeze()*self.sf, index = timeidx, name = self.name)
+                first_time = ncid.variables[ctime][0]
+                #print('df[kf] ',ncid.variables[cnam][:], ncid.variables[ctime][0], len(ncid.variables[ctime][:]))
 
             except Exception as e: 
                 print ('issue in trying to load file : '+cf)
                 print (e)
-                sys.exit(42) 
+                file_issue = True
+        if file_issue:
+            print('file issues ')
+            sys.exit(42) 
 
 
         # build dataframe
@@ -75,21 +86,21 @@ class run(object):
     def __str__(self):
         return 'runid = {}, name = {}, line = {}, color = {}'.format(self.runid, self.name, self.line, self.color)
 
-def get_name(regex,varlst):
+def get_name(regex,varlst,cfile):
     revar = re.compile(r'\b%s\b'%regex,re.I)
     cvar  = revar.findall(','.join(varlst))
     if (len(cvar) > 1):
         print (regex+' name list is longer than 1 or 0; error')
         print (cvar[0]+' is selected')
     if (len(cvar) == 0):
-        print ('no match between '+regex+' and :')
+        print ('no match between '+regex+' and in file '+cfile )
         print (varlst)
         sys.exit(42)
     return cvar[0]
 
 def get_varname(cfile,cvar):
     ncid   = nc.Dataset(cfile)
-    cnam=get_name(cvar,ncid.variables.keys())
+    cnam=get_name(cvar,ncid.variables.keys(),cfile)
     ncid.close()
     return cnam
 
@@ -147,21 +158,23 @@ def get_ybnd(run_lst, omin, omax):
         rmax = max(rmax, run.ts[run.name].max())
     return rmin, rmax
 
-def add_legend(lg, ax, ncol=3, lvis=True):
+def add_legend(lg, ax, ncol=3, lvis=True, fontsize=36, legend=''):
     x0, x1, y0, y1 = get_corner(ax)
     lax = plt.axes([0.0, 0.0, 1, 0.15])
 
     lline, llabel = lg.get_legend_handles_labels()
-    leg=plt.legend(lline, llabel, loc='upper left', ncol = ncol, fontsize=36, frameon=False)
+    #print('add_legend ',llabel)
+    llabel=legend
+    leg=plt.legend(lline, llabel, loc='upper left', ncol = ncol, fontsize=fontsize, frameon=False)
     for item in leg.legendHandles:
         item.set_visible(lvis)
     lax.set_axis_off() 
 
-def add_text(lg, ax, clabel, ncol=3, lvis=True):
+def add_text(lg, ax, clabel, ncol=3, lvis=True, fontsize=36):
     x0, x1, y0, y1 = get_corner(ax)
     lax = plt.axes([0.0, 0.0, 1, 0.15])
     lline, llabel = lg.get_legend_handles_labels()
-    leg=plt.legend(lline, clabel, loc='upper left', ncol = ncol, fontsize=36, frameon=False)
+    leg=plt.legend(lline, clabel, loc='upper left', ncol = ncol, fontsize=fontsize, frameon=False)
     for item in leg.legendHandles:
         item.set_visible(lvis)
     lax.set_axis_off() 
@@ -270,7 +283,8 @@ def main():
                     fglob = args.f[0]
                 else :
                     fglob = args.f[irun]
-                cfile = glob.glob(args.dir[0]+'/'+runid+'/'+fglob)
+                cfile = sorted(glob.glob(args.dir[0]+'/'+runid+'/'+fglob))
+                #print('cfile ',cfile)
                 if len(cfile)==0:
                     print ('no file found with this pattern '+args.dir[0]+'/'+runid+'/'+fglob)
                     sys.exit(42)
@@ -280,19 +294,19 @@ def main():
                     fglob = args.varf[0]
                 else :
                     fglob = args.varf[ivar]
-                cfile = glob.glob(args.dir[0]+'/'+runid+'/'+fglob)
+                cfile = sorted(glob.glob(args.dir[0]+'/'+runid+'/'+fglob))
                 if len(cfile)==0:
                     print ('no file found with this pattern '+args.dir[0]+'/'+runid+'/'+fglob)
                     sys.exit(42)
             else:
-                cfile = glob.glob(args.dir[0]+'/'+runid+'_'+cvar+'.nc')
+                cfile = sorted(glob.glob(args.dir[0]+'/'+runid+'_'+cvar+'.nc'))
                 if len(cfile)==0:
                     print ('no file found with this pattern '+args.dir[0]+'/'+runid+'_'+cvar+'.nc')
                     sys.exit(42)
 
             run_lst[irun].load_time_series(cfile, cvar)
             ts_lst[irun] = run_lst[irun].ts
-            lg = ts_lst[irun].plot(ax=ax[ivar], legend=False, style=run_lst[irun].line,color=run_lst[irun].color,label=run_lst[irun].name, x_compat=True, linewidth=2, rot=0)
+            lg = ts_lst[irun].plot(ax=ax[ivar], legend=False, style=run_lst[irun].line,color=run_lst[irun].color,label=runid, x_compat=True, linewidth=2, rot=0)
 
             # limit of time axis
             mintime=min([mintime,ts_lst[irun].index[0].to_pydatetime().date()])
@@ -311,7 +325,9 @@ def main():
         elif 10<=nyear<50:
             nyt=5
         elif 50<=nyear<100:
-            nyt=10
+            nyt=20
+        elif 100<=nyear<300:
+            nyt=50
         else:
             nyt=100
         nmt=ts_lst[irun].index[0].to_pydatetime().date().month
@@ -373,7 +389,7 @@ def main():
     plt.figure(figsize=np.array([210*3, 210*3]) / 25.4)
     ax = plt.subplot(1, 1, 1)
     ax.axis('off')
-    add_legend(lg,ax,ncol=4)
+    add_legend(lg,ax,ncol=4,fontsize=20,legend=args.runid)
     #ax.patch.set_facecolor('lightgray')
     plt.savefig('legend.png', format='png', dpi=150)
 
@@ -383,8 +399,8 @@ def main():
     ax.axis('off')
     clabel=['']*len(args.runid)
     for irun, runid in enumerate(args.runid):
-        clabel[irun]=run_lst[irun].name+' = '+runid
-    add_text(lg,ax,clabel,ncol=4,lvis=False)
+        clabel[irun]=runid+' = '+run_lst[irun].name
+    add_text(lg,ax,clabel,ncol=4,lvis=False,fontsize=20)
     #ax.patch.set_facecolor('lightgray')
     plt.savefig('runidname.png', format='png', dpi=150)
 

@@ -12,7 +12,8 @@ GRID=$5
 . param.bash
 . ${SCRPATH}/common.bash
 
-cd ${DATPATH}
+#cd ${DATPATH}/${RUNID}
+cd ${DATINPATH}
 
 FILTER=${EXEPATH}/FILTERS/filter_${GRID}
 
@@ -44,6 +45,14 @@ for MFILE in `echo ${FILE_LST}`; do
    fi
    if [ ! -f $FILE ]; then
       echo "downloading file ${FILE}"
-      moo filter $FILTER $MFILE .
+      if [ -f $FILTER ]; then
+        moo filter -i $FILTER $MFILE .
+      else
+        moo get -i $MFILE .
+      fi
+   fi
+   if [ -f $FILE ]; then
+      TIME=`ncdump -h $FILE | grep UNLIMITED | sed -e 's/(//' | awk '{print $6}'`
+      if [[ $TIME -eq 0 ]]; then echo " $FILE is corrupted "; rm $FILE; fi
    fi
 done

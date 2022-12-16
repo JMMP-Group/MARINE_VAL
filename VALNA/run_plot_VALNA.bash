@@ -1,4 +1,6 @@
 #!/bin/bash
+. param.bash
+module load scitools
 
 if [ $# -eq 0 ] ; then echo 'need a [KEYWORD] (will be inserted inside the figure title and output name) and a list of id [RUNIDS RUNID ...] (definition of line style need to be done in RUNID.db)'; exit; fi
 
@@ -9,14 +11,14 @@ FREQ=${2}
 RUNIDS=${@:3}
 
 #existing data stored in:
-DATPATH=${DATADIR}/VALNA/DATA
+#DATPATH=${DATADIR}/VALNA/DATA
 
 echo '  '
 
 # NA subpolar gyre max strength
 echo 'plot NA subpolar gyre strength time series'
 # note python2.7 is deliberately stated otherwise fails to plot
-python2.7 SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f *BSF_NA*${FREQ}*psi.nc -var min_sobarstf -title "SPG max strength (Sv)" -dir ${DATPATH} -o ${KEY}_BSF -sf -0.000001 #-obs OBS/SUBP_PSI_obs.txt
+python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f *BSF_NA*${FREQ}*psi.nc -var min_sobarstf -title "SPG max strength (Sv)" -dir ${DATPATH} -o ${KEY}_BSF -sf -0.000001 #-obs OBS/SUBP_PSI_obs.txt
 #-sf is scale factor i.e. m3/s to Sv
 #using min and negative scale factor because streamf is negative in subpolar gyre
 if [[ $? -ne 0 ]]; then exit 42; fi
@@ -33,19 +35,19 @@ if [[ $? -ne 0 ]]; then exit 42; fi
 
 # OHT at 26.5N
 echo 'plot OHT time series'
-python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f *OHT*${FREQ}*mht_26_5N.nc -var zomht_glo -title "MHT @26.5N (PW)" -dir ${DATPATH} -o ${KEY}_OHT -obs OBS/AMHT_obs.txt
+python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f *OHT*${FREQ}*mht_26_5N.nc -var zomht_atl -title "MHT @26.5N (PW)" -dir ${DATPATH} -o ${KEY}_OHT -obs OBS/AMHT_obs.txt
 if [[ $? -ne 0 ]]; then exit 42; fi
 
 
 # mean MXL depth in Lab Sea in March (averaged in small region)
 echo 'plot mean MXL depth in Lab Sea time series'
 # note python2.7 is deliberately stated rather than just python otherwise error: attributes of masked are not writeable
-python2.7 SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f *LAB_MXL*1m*0301*T*003*.nc -var mean_somxl030 -title "Mean MXL in Lab Sea in March (m)" -dir ${DATPATH} -o ${KEY}_MXL_LAB_MEAN -sf -1 -obs OBS/MXL_lab_mean_obs.txt
+python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f *LAB_MXL*1m*0301*T*003*.nc -var mean_somxl030 -title "Mean MXL in Lab Sea in March (m)" -dir ${DATPATH} -o ${KEY}_MXL_LAB_MEAN -sf -1 -obs OBS/MXL_lab_mean_obs.txt
 if [[ $? -ne 0 ]]; then exit 42; fi
 
 # mean SSS in Labrador Sea
 echo 'plot mean SSS in Labrador Sea time series'
-python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f SSSav_LabSea_*${FREQ}*T.nc -var '(mean_so|mean_vosaline)' -title "Mean SSS in Labrador Sea (PSU)" -dir ${DATPATH} -o ${KEY}_SSS_LabSea -obs OBS/SSS_LabSea_obs.txt
+python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f SSSav_LabSea_*${FREQ}*T.nc -var '(mean_so|mean_vosaline|mean_so_abs)' -title "Mean SSS in Labrador Sea (PSU)" -dir ${DATPATH} -o ${KEY}_SSS_LabSea -obs OBS/SSS_LabSea_obs.txt
 if [[ $? -ne 0 ]]; then exit 42; fi
 
 # mean SST off Newfoundland
@@ -71,12 +73,12 @@ if [[ $? -ne 0 ]]; then exit 42; fi
 
 # GS separation latitude
 echo 'plot GS separation latitude time series'
-python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f *${FREQ}*NA_crop_T.nc -var GS_sep_lat -title "GS separation latitude @72degW" -dir ${DATPATH} -o ${KEY}_GSL -obs OBS/GS_sep_lat_obs.txt
+python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f nemo_*${FREQ}*NA_crop_T.nc -var GS_sep_lat -title "GS separation latitude @72degW" -dir ${DATPATH} -o ${KEY}_GSL -obs OBS/GS_sep_lat_obs.txt
 if [[ $? -ne 0 ]]; then exit 42; fi
 
 # NAC latitude
 echo 'plot NAC latitude time series'
-python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f *${FREQ}*NA_crop_T.nc -var NAC_lat -title "NAC latitude @41degW" -dir ${DATPATH} -o ${KEY}_NAC -obs OBS/NAC_lat_obs.txt
+python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f nemo_*${FREQ}*NA_crop_T.nc -var NAC_lat -title "NAC latitude @41degW" -dir ${DATPATH} -o ${KEY}_NAC -obs OBS/NAC_lat_obs.txt
 if [[ $? -ne 0 ]]; then exit 42; fi
 
 
@@ -121,4 +123,4 @@ rm runidname.png
 rm legend.png
 
 #display
-display -resize 30% $KEY.png
+#display -resize 30% $KEY.png

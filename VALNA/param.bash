@@ -4,18 +4,25 @@ ulimit -s unlimited
 
 # where mask are stored (name of mesh mask in SCRIPT/common.bash)
 MSKPATH=${HOME}/Documents/MESH_MASK/
-
-# where cdftools are stored
-CDFPATH=${HOME}/CDFTOOLS_4.0/bin
+#MSKPATH=/data/users/frsy/MESH_MASK/
+MSKPATH=/data/users/hadom/MESH_MASK/
 
 # main VALNA directory
-EXEPATH=${HOME}/Documents/VALNA/
+EXEPATH=/data/users/hadom/branches/git/MARINE_VAL/VALNA/
+
+# where cdftools are stored
+CDFPATH=${EXEPATH}/../CDFTOOLS_4.0/bin/
 
 # SCRIPT location
-SCRPATH=${EXEPATH}SCRIPT/
+SCRPATH=${EXEPATH}/SCRIPT/
+
+# OBS directory (including from nordic_seas-validation generated sections)
+OBSPATH=${EXEPATH}/OBS/
 
 # DATA path (CONFIG and RUNID are fill by script)
-DATPATH=${DATADIR}/VALNA/DATA/${RUNID}
+#DATPATH=${DATADIR}/VALNA/DATA/${RUNID}
+#DATPATH=/scratch/hadom/VALNA/DATA/
+DATPATH=/scratch/hadom/MARINE_VAL/VALNA/
 
 # evaluation diagnostics:
 

@@ -24,7 +24,7 @@ RUN_NAME=${RUNID#*-}
 #${SCRPATH}/get_data.bash $RUNID $FREQ $TAG grid-${GRID}
 
 # check presence of input file
-FILE=`ls [nu]*${RUN_NAME}o_${FREQ}_${TAG}*_grid[-_]${GRID}.nc`
+FILE=`ls ${DATINPATH}/[nu]*${RUN_NAME}o_${FREQ}_${TAG}*_grid[-_]${GRID}.nc`
 if [ ! -f $FILE ] ; then echo "$FILE is missing; exit"; echo "E R R O R in : ./mk_mxl.bash $@ (see SLURM/${CONFIG}/${RUNID}/mk_mxl_${FREQ}_${TAG}.out)" >> ${EXEPATH}/ERROR.txt ; exit 1 ; fi
 
 # make mxl

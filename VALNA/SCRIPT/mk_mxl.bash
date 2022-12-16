@@ -16,13 +16,13 @@ GRID='T'
 . ${SCRPATH}/common.bash
 
 cd $DATPATH/
-JOBOUT_PATH=$DATPATH/JOBOUT
+JOBOUT_PATH=$DATPATH/JOBOUT/
 
 # name
 RUN_NAME=${RUNID#*-}
 
 # check presence of input file
-FILE=`ls [nu]*${RUN_NAME}o_${FREQ}_${TAG}*_grid[-_]${GRID}.nc`
+FILE=`ls ${DATINPATH}/[nu]*${RUN_NAME}o_${FREQ}_${TAG}*_grid[-_]${GRID}.nc`
 if [ ! -f $FILE ] ; then echo "$FILE is missing; exit"; echo "E R R O R in : ./mk_mxl.bash $@ (see S${JOBOUT_PATH}/mk_mxl_${FREQ}_${TAG}.out)" >> ${EXEPATH}/ERROR.txt ; exit 1 ; fi
 
 # calculate MXL in Labrador Sea in March using density criteria (0.03 kg/m3 difference between rho at surface and MLD)
@@ -68,6 +68,7 @@ if [[ $? -eq 0 ]]; then
 else
    echo "error when running cdfmean; exit"; echo "E R R O R in : ./mk_mxl.bash $@ (see ${JOBOUT_PATH}/mxl_${FREQ}_${TAG}.out)" >> ${EXEPATH}/ERROR.txt ; exit 1
 fi
+ncatted -a valid_min,mean_somxl030,d,, -a valid_max,mean_somxl030,d,,LAB_MXL_$FILEOUT
 
 
 

@@ -1,9 +1,11 @@
+import matplotlib
+matplotlib.use('agg')
 import numpy as np
 import glob
 import netCDF4 as nc
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
-import sys
+import sys, os
 import re
 import datetime as dt
 import argparse
@@ -27,7 +29,10 @@ class run(object):
         # define unit
         nf = len(cfile)
         df=[None]*nf
+        file_issue = False
         for kf,cf in enumerate(cfile):
+            cmd = 'touch '+cf
+            os.system(cmd)
             try:
                 ncid    = nc.Dataset(cf)
 
@@ -60,11 +65,15 @@ class run(object):
                 # build series
                 cnam=get_varname(cf,cvar)
                 df[kf] = pd.Series(ncid.variables[cnam][:].squeeze()*self.sf, index = timeidx, name = self.name)
+                #print('df ',ncid.variables[cnam][:])
 
             except Exception as e: 
                 print ('issue in trying to load file : '+cf)
                 print (e)
-                sys.exit(42) 
+                file_issue = True
+        if file_issue:
+            print('file issues ')
+            sys.exit(42) 
 
 
         # build dataframe
@@ -73,7 +82,7 @@ class run(object):
         self.std  = self.ts[self.name].std()
         self.min  = self.ts[self.name].min()
         self.max  = self.ts[self.name].max()
-
+        #print('mean ',self.ts[self.name])
     def __str__(self):
         return 'runid = {}, name = {}, line = {}, color = {}'.format(self.runid, self.name, self.line, self.color)
 
@@ -97,7 +106,7 @@ def get_varname(cfile,cvar):
 
 #=============================== obs management =================================
 def load_obs(cfile):
-    print ('open file '+cfile)
+    #print ('open file '+cfile)
     with open(cfile) as fid:
         cmean = find_key('mean', fid)
         cstd  = find_key('std' , fid)
@@ -218,7 +227,6 @@ def main():
 
 # load argument
     args = load_argument()
-
 # output argument list
     output_argument_lst(args.o[0]+'.txt', sys.argv)
 
@@ -236,7 +244,7 @@ def main():
         # initialise run
         run_lst[irun] = run(runid, args.sf[0])
 
-    plt.figure(figsize=np.array([210, 210]) / 25.4)
+    fig = plt.figure(figsize=np.array([210, 210]) / 25.4)
  
 # need to deal with multivar
     mintime=dt.date.max
@@ -252,7 +260,7 @@ def main():
             obs_mean[ivar] = float(obs_mean[ivar])
             if obs_std[ivar] is not None:
                 obs_std[ivar] = float(obs_std[ivar])
-            print('obs_mean[ivar], obs_std[ivar], obs_min[ivar], obs_max[ivar] : ',obs_mean[ivar], obs_std[ivar], obs_min[ivar], obs_max[ivar])
+            #print('obs_mean[ivar], obs_std[ivar], obs_min[ivar], obs_max[ivar] : ',obs_mean[ivar], obs_std[ivar], obs_min[ivar], obs_max[ivar])
             if obs_min[ivar] is None:
                 obs_min[ivar] = float(obs_mean[ivar])-float(obs_std[ivar])
             else:
@@ -271,7 +279,8 @@ def main():
                     fglob = args.f[0]
                 else :
                     fglob = args.f[irun]
-                cfile = glob.glob(args.dir[0]+'/'+runid+'/'+fglob)
+                cfile = sorted(glob.glob(args.dir[0]+'/'+runid+'/'+fglob))
+                #print('cfile ',cfile)
                 if len(cfile)==0:
                     print ('no file found with this pattern '+args.dir[0]+'/'+runid+'/'+fglob)
                     sys.exit(42)
@@ -281,18 +290,19 @@ def main():
                     fglob = args.varf[0]
                 else :
                     fglob = args.varf[ivar]
-                cfile = glob.glob(args.dir[0]+'/'+runid+'/'+fglob)
+                cfile = sorted(glob.glob(args.dir[0]+'/'+runid+'/'+fglob))
                 if len(cfile)==0:
                     print ('no file found with this pattern '+args.dir[0]+'/'+runid+'/'+fglob)
                     sys.exit(42)
             else:
-                cfile = glob.glob(args.dir[0]+'/'+runid+'_'+cvar+'.nc')
+                cfile = sorted(glob.glob(args.dir[0]+'/'+runid+'_'+cvar+'.nc'))
                 if len(cfile)==0:
                     print ('no file found with this pattern '+args.dir[0]+'/'+runid+'_'+cvar+'.nc')
                     sys.exit(42)
 
             run_lst[irun].load_time_series(cfile, cvar)
             ts_lst[irun] = run_lst[irun].ts
+            #print('ts_lst ',ts_lst[irun].index[:])
             lg = ts_lst[irun].plot(ax=ax[ivar], legend=False, style=run_lst[irun].line,color=run_lst[irun].color,label=run_lst[irun].name, x_compat=True, linewidth=2, rot=0)
             #
             # limit of time axis
@@ -312,9 +322,9 @@ def main():
         elif 10<=nyear<50:
             nyt=5
         elif 50<=nyear<100:
-            nyt=10
+            nyt=20
         else:
-            nyt=100
+            nyt=50
         nmt=ts_lst[irun].index[0].to_pydatetime().date().month
         ndt=ts_lst[irun].index[0].to_pydatetime().date().day
          

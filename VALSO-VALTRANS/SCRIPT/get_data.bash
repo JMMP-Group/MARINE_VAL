@@ -12,7 +12,7 @@ GRID=$5
 . param.bash
 . ${SCRPATH}/common.bash
 
-cd ${DATPATH}
+cd ${DATINPATH}
 
 FILTER=${EXEPATH}/FILTERS/filter_${GRID}
 
@@ -44,6 +44,7 @@ for MFILE in `echo ${FILE_LST}`; do
    fi
    if [ ! -f $FILE ]; then
       echo "downloading file ${FILE}"
-      moo filter $FILTER $MFILE .
+      moo filter -i $FILTER $MFILE .
+      if [[ $TIME -eq 0 ]]; then echo " $FILE is corrupted "; fi
    fi
 done

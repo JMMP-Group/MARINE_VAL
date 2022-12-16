@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --mem=1G
+#SBATCH --mem=2G
 #SBATCH --time=10
 #SBATCH --ntasks=1
 
@@ -15,19 +15,22 @@ FREQ=$4
 . ${SCRPATH}/common.bash
 
 cd $DATPATH/
-JOBOUT_PATH=$DATPATH/JOBOUT
+JOBOUT_PATH=$DATPATH/JOBOUT/
 
 # name
 RUN_NAME=${RUNID#*-}
 
 # check presence of input file
-FILEV=`ls [nu]*${RUN_NAME}o_${FREQ}_${TAG}*_grid[-_]V.nc`
+FILEV=`ls ${DATINPATH}/[nu]*${RUN_NAME}o_${FREQ}_${TAG}*_grid[-_]V.nc`
+FILET=`ls ${DATINPATH}/[nu]*${RUN_NAME}o_${FREQ}_${TAG}*_grid[-_]T.nc`
 if [ ! -f $FILEV ] ; then echo "$FILEV is missing; exit"; echo "E R R O R in : ./mk_mht.bash $@ (see ${JOBOUT_PATH}/mk_mht_${FREQ}_${TAG}.out)" >> ${EXEPATH}/ERROR.txt ; exit 1 ; fi
+if [ ! -f $FILET ] ; then echo "$FILET is missing; exit"; echo "E R R O R in : ./mk_mht.bash $@ (see ${JOBOUT_PATH}/mk_mht_${FREQ}_${TAG}.out)" >> ${EXEPATH}/ERROR.txt ; exit 1 ; fi
 
 # calculate mht
 set -x
 FILEOUT=nemo_${RUN_NAME}o_${FREQ}_${TAG}_mht.nc
-$CDFPATH/cdfmhst -vt $FILEV -vvl -o tmp_$FILEOUT
+#$CDFPATH/cdfmhst -vt $FILEV -vvl -o tmp_$FILEOUT
+$CDFPATH/cdfmhst -v $FILEV -t $FILET  -o tmp_$FILEOUT # note -vvl removed due to bug in cdfmhst when using separate V,T files
 #[ -vvl ] : use time-varying  e3t for integration
 
 # mv output file
@@ -39,12 +42,16 @@ fi
 
 # extract only 26.5N (hard coded from Pierre)
 
-if [[ $CONFIG -eq eORCA1 ]]; then
+if [[ "$CONFIG" == "eORCA1" ]]; then
     ncks -O -d y,227,227 $FILEOUT OHT_${RUN_NAME}o_${FREQ}_${TAG}_mht_26_5N.nc
 fi
-if [[ $CONFIG -eq eORCA025 ]]; then
-    ncks -O -d y_grid_V,793,793 $FILEOUT OHT_${RUN_NAME}o_${FREQ}_${TAG}_mht_26_5N.nc
+if [[ "$CONFIG" == "eORCA025" ]]; then
+   if [[ "$RUNID" == "u-ai758" ]]; then
+      ncks -O -d y_grid_V,793,793 $FILEOUT OHT_${RUN_NAME}o_${FREQ}_${TAG}_mht_26_5N.nc
+   else
+      ncks -O -d y,793,793 $FILEOUT OHT_${RUN_NAME}o_${FREQ}_${TAG}_mht_26_5N.nc
+   fi
 fi
-if [[ $CONFIG -eq eORCA12 ]]; then
+if [[ "$CONFIG" == "eORCA12" ]]; then
     ncks -O -d y,2364,2364 $FILEOUT OHT_${RUN_NAME}o_${FREQ}_${TAG}_mht_26_5N.nc
 fi
