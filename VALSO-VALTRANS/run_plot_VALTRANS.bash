@@ -2,9 +2,10 @@
 
 if [ $# -eq 0 ] ; then echo 'need a [KEYWORD] (will be inserted inside the figure title and output name) and a list of id [RUNIDS RUNID ...] (definition of line style need to be done in RUNID.db)'; exit; fi
 
+. param.bash
 module load scitools
 
-DATPATH=${SCRATCH}/MARINE_VAL
+#DATPATH=${SCRATCH}/MARINE_VAL
 
 KEY=${1}
 FREQ=${2}

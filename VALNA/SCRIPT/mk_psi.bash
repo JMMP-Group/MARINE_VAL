@@ -70,4 +70,4 @@ $CDFPATH/cdfmean -f $FILEOUT -v sobarstf -p T -w ${ijbox} 0 0 -minmax -o BSF_NA_
 #         a horizontal mean for each level is also given. If a 2D spatial window
 #         is specified, the mean value is computed only in this window.
 if [ $? -ne 0 ] ; then echo "error when running cdfmean (WG)"; echo "E R R O R in : ./mk_psi.bash $@ (see ${JOBOUT_PATH}/mk_psi_${FREQ}_${TAG}.out)" >> ${EXEPATH}/ERROR.txt ; fi
-ncatted -a valid_min,min_sobarstf,d,, -a valid_max,min_sobarstf,d,,BSF_NA_$FILEOUT
+ncatted -a valid_min,min_sobarstf,d,, -a valid_max,min_sobarstf,d,, BSF_NA_$FILEOUT

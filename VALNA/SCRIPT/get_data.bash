@@ -51,8 +51,8 @@ for MFILE in `echo ${FILE_LST}`; do
         moo get -i $MFILE .
       fi
    fi
-   if [ -f $FILE ]; then
-      TIME=`ncdump -h $FILE | grep UNLIMITED | sed -e 's/(//' | awk '{print $6}'`
-      if [[ $TIME -eq 0 ]]; then echo " $FILE is corrupted "; rm $FILE; fi
-   fi
+   #if [ -f $FILE ]; then
+   #   TIME=`ncdump -h $FILE | grep UNLIMITED | sed -e 's/(//' | awk '{print $6}'`
+   #   if [[ $TIME -eq 0 ]]; then echo " $FILE is corrupted "; rm $FILE; fi
+   #fi
 done

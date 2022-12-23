@@ -208,7 +208,7 @@ def main():
     t_s_file = sys.argv[1] #input file
     runid = sys.argv[2]
     config = sys.argv[3]
-    mskpath = sys.argv[4]
+    datpath = sys.argv[4]
     obs_name = sys.argv[5]
     fileout = sys.argv[6]
     crop_to_Irmin_basin = sys.argv[7]
@@ -222,7 +222,8 @@ def main():
     ds_obs = xr.open_dataset(obs_dir+obs_name+'_Xsection.nc')
 
     # meshmask file:
-    domain = xr.open_dataset(mskpath+'/mesh_mask_'+config+'-GO6.nc')
+    #domain = xr.open_dataset(mskpath+'/mesh_mask_'+config+'-GO6.nc')
+    domain = xr.open_dataset(datpath+'/mesh.nc')
 
     print('fileout, file_in ',fileout, t_s_file)
 

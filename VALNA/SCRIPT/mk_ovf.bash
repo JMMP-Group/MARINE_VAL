@@ -44,5 +44,5 @@ crop_to_Icel_basin=False
 FILEOUT=$DATPATH/nemo_${RUN_NAME}o_${FREQ}_${TAG}_${OBS_NAME}_Xsection.nc
 
 cd ${SCRPATH}/
-python3 cal_ovf_metric.py $DATPATH/$FILET ${RUNID} ${CONFIG} $MSKPATH $OBS_NAME $FILEOUT $crop_to_Irmin_basin $crop_to_Icel_basin ${OBSPATH}
+python3 cal_ovf_metric.py $FILET ${RUNID} ${CONFIG} $DATPATH $OBS_NAME $FILEOUT $crop_to_Irmin_basin $crop_to_Icel_basin ${OBSPATH}
 

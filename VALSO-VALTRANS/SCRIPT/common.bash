@@ -17,6 +17,7 @@ basin_mask=${MSKPATH}/subbasins_${CONFIG}-GO6.nc
 if [ ! -f ${basin_mask} ] ; then
   basin_mask=${MSKPATH}/subbasins_${CONFIG}.nc
 fi
+if [ ! -L bathymetry.nc ] ; then ln -s ${MSKPATH}/bathymetry_${CONFIG}-GOSI9-Tenten.nc bathymetry.nc ; fi
 if [ ! -L subbasin.nc     ] ; then ln -s ${basin_mask} subbasin.nc ; fi
 if [ ! -L mesh.nc     ] ; then echo "mesh.nc is missing; exit"; exit 1 ; fi
 if [ ! -L mask.nc     ] ; then echo "mask.nc is missing; exit"; exit 1 ; fi

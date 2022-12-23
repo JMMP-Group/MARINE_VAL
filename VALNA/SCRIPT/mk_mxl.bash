@@ -68,7 +68,7 @@ if [[ $? -eq 0 ]]; then
 else
    echo "error when running cdfmean; exit"; echo "E R R O R in : ./mk_mxl.bash $@ (see ${JOBOUT_PATH}/mxl_${FREQ}_${TAG}.out)" >> ${EXEPATH}/ERROR.txt ; exit 1
 fi
-ncatted -a valid_min,mean_somxl030,d,, -a valid_max,mean_somxl030,d,,LAB_MXL_$FILEOUT
+ncatted -a valid_min,mean_somxl030,d,, -a valid_max,mean_somxl030,d,, LAB_MXL_$FILEOUT
 
 
 

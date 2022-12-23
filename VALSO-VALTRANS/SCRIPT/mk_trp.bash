@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --mem=10G
-#SBATCH --time=10
+#SBATCH --time=20
 #SBATCH --ntasks=1
 
 xtrac=false
@@ -61,7 +61,7 @@ if [ ! -f $FILET ] ; then echo "$FILET is missing; exit"; echo "E R R O R in : .
 if [[ "$xtrac" == "true" ]]; then
   # extract cross section if required
   echo "section is $section"
-  $CDFPATH/cdf_xtrac_brokenline -t $FILET -u $FILEU -v $FILEV -l ${EXEPATH}/SECTIONS/section_XTRAC_${section}.dat -b ${MSKPATH}/bathymetry_${CONFIG}-GO6.nc -vecrot -o nemoXsec_${RUN_NAME}o_${FREQ}_${TAG}_
+  $CDFPATH/cdf_xtrac_brokenline -t $FILET -u $FILEU -v $FILEV -l ${EXEPATH}/SECTIONS/section_XTRAC_${section}.dat -b ${DATPATH}/bathymetry.nc -vecrot -o nemoXsec_${RUN_NAME}o_${FREQ}_${TAG}_
   if [[ $? -ne 0 ]]; then 
      echo "error when running cdf_xtrac_brokenline; exit" ; echo "E R R O R in : ./mk_trp.bash $@ (see SLURM/${CONFIG}/${RUNID}/mk_trp_${section}_${FREQ}_${TAG}.out)" >> ${EXEPATH}/ERROR.txt ; exit 1
   fi

@@ -45,6 +45,10 @@ for MFILE in `echo ${FILE_LST}`; do
    if [ ! -f $FILE ]; then
       echo "downloading file ${FILE}"
       moo filter -i $FILTER $MFILE .
+   fi
+   sleep 10
+   if [ -f $FILE ]; then 
+      TIME=`ncdump -h $FILE | grep UNLIMITED | sed -e 's/(//' | awk '{print $6}'`
       if [[ $TIME -eq 0 ]]; then echo " $FILE is corrupted "; fi
    fi
 done
