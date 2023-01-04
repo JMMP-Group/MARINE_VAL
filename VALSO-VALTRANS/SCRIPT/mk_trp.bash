@@ -19,10 +19,10 @@ if [[ -z "$section" || $# -ne 4 ]]; then echo 'mk_trp.bash -s/S [name of section
 if [[ ${section} == "DenmarkStrait" ]]; then 
   xtrac=true ; 
 #  dens_cutoff=1029.0  seemed appropriate for forced runs
-  dens_cutoff=1027.8
+  dens_cutoff=27.8
 elif [[ ${section} == "FaroeBankChannel" ]]; then 
   xtrac=true
-  dens_cutoff=1027.8
+  dens_cutoff=27.8
 fi
 
 CONFIG=$1
@@ -54,7 +54,7 @@ if [ ! -f $FILET ] ; then echo "$FILET is missing; exit"; echo "E R R O R in : .
 if [[ "$xtrac" == "true" ]]; then
   # extract cross section if required
   echo "section is $section"
-  $CDFPATH/cdf_xtrac_brokenline -t $FILET -u $FILEU -v $FILEV -l ${EXEPATH}/SECTIONS/section_XTRAC_${section}.dat -b ${MSKPATH}/bathymetry_${CONFIG}-GO6.nc -vecrot -o nemoXsec_${RUN_NAME}o_${FREQ}_${TAG}_
+  $CDFPATH/cdf_xtrac_brokenline -t $FILET -u $FILEU -v $FILEV -l ${EXEPATH}/SECTIONS/section_XTRAC_${section}.dat -b  ${MSKPATH}/bathymetry_${CONFIG}-GO6.nc -vecrot -o nemoXsec_${RUN_NAME}o_${FREQ}_${TAG}_
   if [[ $? -ne 0 ]]; then 
      echo "error when running cdf_xtrac_brokenline; exit" ; echo "E R R O R in : ./mk_trp.bash $@ (see SLURM/${CONFIG}/${RUNID}/mk_trp_${section}_${FREQ}_${TAG}.out)" >> ${EXEPATH}/ERROR.txt ; exit 1
   fi
@@ -66,7 +66,7 @@ if [[ -n "$dens_cutoff" ]]; then
   xsec_file=$(ls nemoXsec_${RUN_NAME}o_${FREQ}_${TAG}_${section}.nc)
   #xsec_file="$(echo $xsec | rev | cut -d"_" -f2- | rev).nc"
   echo "xsec_file = $xsec_file"
-  $CDFPATH/cdfsigtrp -brk $xsec_file -smin 28.0 -smax 30.0 -nbins 1 -o ${xsec_file%.nc}_
+  $CDFPATH/cdfsigtrp -brk $xsec_file -smin ${dens_cutoff} -smax 40.0 -nbins 1 -o ${xsec_file%.nc}_
   if [[ $? -ne 0 ]]; then 
     echo "error when running cdfsigtrp for section file ${xsec}; exit" ; echo "E R R O R in : ./mk_trp.bash $@ (see SLURM/${CONFIG}/${RUNID}/mk_trp_${section}_${FREQ}_${TAG}.out)" >> ${EXEPATH}/ERROR.txt ; exit 1
   fi
