@@ -6,6 +6,7 @@ ulimit -s unlimited
 MSKPATH=${HOME}/Documents/MESH_MASK/
 #MSKPATH=/data/users/frsy/MESH_MASK/
 MSKPATH=/data/users/hadom/MESH_MASK/
+BASINPATH=/data/users/frsy/MESH_MASK/
 
 # main VALNA directory
 EXEPATH=/data/users/hadom/branches/git/MARINE_VAL/VALNA/

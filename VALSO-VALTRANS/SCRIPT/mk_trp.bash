@@ -73,7 +73,7 @@ if [[ -n "$dens_cutoff" ]]; then
   xsec_file=$(ls nemoXsec_${RUN_NAME}o_${FREQ}_${TAG}_${section}.nc)
   #xsec_file="$(echo $xsec | rev | cut -d"_" -f2- | rev).nc"
   echo "xsec_file = $xsec_file"
-  $CDFPATH/cdfsigtrp -brk $xsec_file -smin 28.0 -smax 30.0 -nbins 1 -o ${xsec_file%.nc}_
+  $CDFPATH/cdfsigtrp -brk $xsec_file -smin 27.8 -smax 30.0 -nbins 1 -o ${xsec_file%.nc}_
   if [[ $? -ne 0 ]]; then 
     echo "error when running cdfsigtrp for section file ${xsec}; exit" ; echo "E R R O R in : ./mk_trp.bash $@ (see SLURM/${CONFIG}/${RUNID}/mk_trp_${section}_${FREQ}_${TAG}.out)" >> ${EXEPATH}/ERROR.txt ; exit 1
   fi

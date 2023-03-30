@@ -11,6 +11,7 @@ import datetime as dt
 import argparse
 import pandas as pd
 import matplotlib.dates as mdates
+import shutil
 
 # def class runid
 class run(object):
@@ -69,6 +70,10 @@ class run(object):
 
             except Exception as e: 
                 print ('issue in trying to load file : '+cf)
+                print ('move file '+cf+' '+cf+'.tmp')
+                if os.path.exists(cf+'.tmp'):
+                    os.remove(cf+'.tmp')
+                shutil.move(cf, cf+'.tmp')
                 print (e)
                 file_issue = True
         if file_issue:
@@ -223,7 +228,12 @@ def parse_dbfile(runid):
                     cpltcolor = att[3].strip()
                     lstyle=True
         if not lstyle:
-            raise Exception(runid+' not found in style_6_initial.db')
+            #raise Exception(runid+' not found in style_6_initial.db')
+            print(runid+' not found in style_6_initial.db, using defaults')
+            cpltrunid = runid
+            cpltname = 'unknown'
+            cpltline = '-'
+            cpltcolor = 'yellow'
 
     except Exception as e:
         print ('Issue with file : style_6_initial.db')
