@@ -230,6 +230,7 @@ def main():
     ts_lst   = [None]*nrun ; style_lst = [None]*nrun ;
     ax       = [None]*nvar
     obs_mean = [None]*nvar; obs_std = [None]*nvar; obs_min = [999999.9]*nvar; obs_max = [-999999.9]*nvar
+    obs_err_lower = [None]*nvar; obs_err_upper = [None]*nvar 
     rmin = [None]*nvar; rmax = [None]*nvar;
 
     for irun, runid in enumerate(args.runid):
@@ -251,17 +252,26 @@ def main():
             obs_mean[ivar], obs_std[ivar], obs_min[ivar], obs_max[ivar] = load_obs(args.obs[ivar])
             obs_mean[ivar] = float(obs_mean[ivar])
             if obs_std[ivar] is not None:
-                obs_std[ivar] = float(obs_std[ivar])
+                obs_err_lower[ivar] = float(obs_std[ivar])
+                obs_err_upper[ivar] = float(obs_std[ivar])
             print('obs_mean[ivar], obs_std[ivar], obs_min[ivar], obs_max[ivar] : ',obs_mean[ivar], obs_std[ivar], obs_min[ivar], obs_max[ivar])
-            if obs_min[ivar] is None:
-                obs_min[ivar] = float(obs_mean[ivar])-float(obs_std[ivar])
+
+            if obs_min[ivar] is not None:
+                obs_err_lower[ivar] = abs( float((obs_mean[ivar])-float(obs_min[ivar])) )
+            elif obs_std[ivar] is not None:
+                obs_min[ivar] = obs_mean[ivar] - obs_std[ivar]
             else:
-                obs_min[ivar] = float(obs_min[ivar])
-            if obs_max[ivar] is None:
-                obs_max[ivar] = float(obs_mean[ivar])+float(obs_std[ivar])
+                obs_min[ivar] = obs_mean[ivar]
+                obs_err_lower[ivar] = 0.0
+
+            if obs_max[ivar] is not None:
+                obs_err_upper[ivar] = abs( float(obs_mean[ivar])-float(obs_max[ivar]) )
+            elif obs_std[ivar] is not None:
+                obs_max[ivar] = obs_mean[ivar] + obs_std[ivar]
             else:
-                obs_max[ivar] = float(obs_max[ivar])
- 
+                obs_max[ivar] = obs_mean[ivar]
+                obs_err_upper[ivar] = 0.0
+                 
         for irun, runid in enumerate(args.runid):
 
             # load data
@@ -349,10 +359,8 @@ def main():
             if args.obs:
                 xmin = min(xmin, -1)
                 xmax = max(xmax,  1)
-                if obs_std[ivar] is not None:
-                    add_obsstat(cax, obs_mean[ivar], obs_std[ivar])
-                else:
-                    add_obsstat(cax, obs_mean[ivar], [[obs_min[ivar]],[obs_max[ivar]]] ) 
+                print([[obs_min[ivar]],[obs_max[ivar]]])
+                add_obsstat(cax, obs_mean[ivar], [[obs_err_lower[ivar]],[obs_err_upper[ivar]]] ) 
             # plot mean model
             if args.mean:
                 xmax = max(xmax, len(run_lst)+1)

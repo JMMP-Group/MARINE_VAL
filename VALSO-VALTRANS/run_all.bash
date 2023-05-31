@@ -5,7 +5,7 @@
 #=============================================================================================================================
 retreive_data() {
    # $1 = $CONFIG ; $2 = $RUNID ; $3 = $FREQ ; $4 = $TAG ; $5 = $GRID
-   sbatch --job-name=moo_${4}_${5} --output=${JOBOUT_PATH}/moo_${3}_${4}_${5} ${SCRPATH}/get_data.bash $1 $2 $3 $4 $5 | awk '{print $4}'
+   sbatch --job-name=moo_${4}_${5} --output=${JOBOUT_PATH}/moo_${3}_${4}_${5}.out ${SCRPATH}/get_data.bash $1 $2 $3 $4 $5 | awk '{print $4}'
 }
 run_tool() {
    # $1 = TOOL ; [possible flags]; $2 = $CONFIG ; $3 = $TAG ; $4 = $RUNID ; $5 = $FREQ ; $6+ = ID
@@ -14,7 +14,7 @@ run_tool() {
    TOOL=$1;shift
    flags=""
    jobtag=""
-   while getopts S:s: opt ; do
+   while getopts S:s:A: opt ; do
      flags="$flags -${opt} $OPTARG"
      jobtag=$OPTARG 
    done
@@ -84,10 +84,11 @@ for RUNID in `echo $RUNIDS`; do
          # get data (retreive_data function are defined in this script)
          [[ $runTRP == 1 || $runBSF == 1 || $runMOC == 1 || $runMHT == 1  ]] && mooVyid=$(retreive_data $CONFIG $RUNID $FREQ $TAG grid-V)
          [[ $runTRP == 1 || $runBSF == 1 || $runTRP2 == 1 || $runMOC == 1 ]] && mooUyid=$(retreive_data $CONFIG $RUNID $FREQ $TAG grid-U)
-         [[ $runTRP == 1 || $runBOT == 1 || $runQHF == 1 || $runSST == 1 || $runMOC == 1 ]] && mooTyid=$(retreive_data $CONFIG $RUNID $FREQ $TAG grid-T)
+         [[ $runTRP == 1 || $runDEEPTS == 1 || $runQHF == 1 || $runSST == 1 || $runMOC == 1 ]] && mooTyid=$(retreive_data $CONFIG $RUNID $FREQ $TAG grid-T)
           
          # run cdftools
          [[ $runACC == 1 ]]     && run_tool mk_trp  -S ACC            $CONFIG $TAG $RUNID $FREQ $mooVyid:$mooUyid:$mooTyid
+         [[ $runACC == 1 ]]     && run_tool mk_trp  -S ACC-shelfbreak $CONFIG $TAG $RUNID $FREQ $mooVyid:$mooUyid:$mooTyid
          [[ $runNAtlOverflows == 1 ]] && run_tool mk_trp  -S DenmarkStrait      $CONFIG $TAG $RUNID $FREQ $mooVyid:$mooUyid:$mooTyid
          [[ $runNAtlOverflows == 1 ]] && run_tool mk_trp  -S FaroeBankChannel   $CONFIG $TAG $RUNID $FREQ $mooVyid:$mooUyid:$mooTyid
          [[ $runMargSea == 1 ]] && run_tool mk_trp  -S Gibraltar      $CONFIG $TAG $RUNID $FREQ $mooVyid:$mooUyid:$mooTyid
@@ -97,7 +98,8 @@ for RUNID in `echo $RUNIDS`; do
          [[ $runITF == 1 ]]     && run_tool mk_trp  -S OmbaiStrait    $CONFIG $TAG $RUNID $FREQ $mooVyid:$mooUyid:$mooTyid
          [[ $runITF == 1 ]]     && run_tool mk_trp  -S TimorPassage   $CONFIG $TAG $RUNID $FREQ $mooVyid:$mooUyid:$mooTyid 
          [[ $runBSF == 1 ]]     && run_tool mk_psi  $CONFIG $TAG $RUNID $FREQ $mooVyid:$mooUyid
-         [[ $runBOT == 1 ]]     && run_tool mk_bot  $CONFIG $TAG $RUNID $FREQ $mooTyid
+         [[ $runDEEPTS == 1 ]]  && run_tool mk_deepTS -A AMU $CONFIG $TAG $RUNID $FREQ $mooTyid
+         [[ $runDEEPTS == 1 ]]  && run_tool mk_deepTS -A WROSS $CONFIG $TAG $RUNID $FREQ $mooTyid
          [[ $runMOC == 1 ]]     && run_tool mk_moc  $CONFIG $TAG $RUNID $FREQ $mooVyid:$mooUyid:$mooTyid
          [[ $runMHT == 1 ]]     && run_tool mk_mht  $CONFIG $TAG $RUNID $FREQ $mooVyid:$mooVyid
          [[ $runQHF == 1 ]]     && run_tool mk_hfds $CONFIG $TAG $RUNID $FREQ $mooTyid 
@@ -105,16 +107,20 @@ for RUNID in `echo $RUNIDS`; do
       done
 
       # define tag      
+      TAGDJF=${YEAR}1201
       TAG09=${YEAR}0901
       TAG02=${YEAR}0201
       TAG03=${YEAR}0301
 
       # get data (retreive_data function are defined in this script)
+      [[ $runDEEPTS == 1 ]]                                              && mooDJFsid=$(retreive_data $CONFIG $RUNID 1s $TAGDJF grid-T)
       [[ $runSIE == 1 || $runMLD == 1 ]]                                 && mooT09mid=$(retreive_data $CONFIG $RUNID 1m $TAG09 grid-T)
       [[ $runSIE == 1 ]]                                                 && mooT02mid=$(retreive_data $CONFIG $RUNID 1m $TAG02 grid-T)
       [[ $runSIE == 1 ]]                                                 && mooT03mid=$(retreive_data $CONFIG $RUNID 1m $TAG03 grid-T)
 
       # run cdftools
+      [[ $runDEEPTS == 1 ]]  && run_tool mk_deepTS -A WWED $CONFIG $TAG $RUNID 1s $mooDJFsid
+      [[ $runDEEPTS == 1 ]]  && run_tool mk_deepTS -A EROSS $CONFIG $TAG $RUNID 1y $mooDJFsid
       [[ $runMLD == 1 ]] && run_tool mk_mxl  $CONFIG $TAG09 $RUNID 1m    $mooT09mid
       [[ $runSIE == 1 ]] && run_tool mk_sie  $CONFIG $TAG09 $RUNID 1m    $mooT09mid 
       [[ $runSIE == 1 ]] && run_tool mk_sie  $CONFIG $TAG02 $RUNID 1m    $mooT02mid
