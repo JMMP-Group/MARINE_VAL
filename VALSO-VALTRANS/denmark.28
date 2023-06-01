@@ -1,0 +1,114 @@
+netcdf nemoXsec_co957o_1y_19791201_DenmarkStrait_DenmarkStrait_trpsig {
+dimensions:
+	x = 1 ;
+	y = 1 ;
+	levels = 1 ;
+	time_counter = UNLIMITED ; // (1 currently)
+variables:
+	float nav_lon(y, x) ;
+		nav_lon:standard_name = "longitude" ;
+		nav_lon:long_name = "Longitude" ;
+		nav_lon:units = "degrees_east" ;
+		nav_lon:bounds = "bounds_nav_lon" ;
+	float nav_lat(y, x) ;
+		nav_lat:standard_name = "latitude" ;
+		nav_lat:long_name = "Latitude" ;
+		nav_lat:units = "degrees_north" ;
+		nav_lat:bounds = "bounds_nav_lat" ;
+	float levels(levels) ;
+		levels:units = "kg/m3" ;
+		levels:positive = "unknown" ;
+		levels:valid_min = 0.f ;
+		levels:valid_max = 40.f ;
+		levels:title = "levels" ;
+		levels:long_name = "Sigma bin limits" ;
+	double time_centered(time_counter) ;
+		time_centered:standard_name = "time" ;
+		time_centered:long_name = "Time axis" ;
+		time_centered:calendar = "360_day" ;
+		time_centered:units = "seconds since 1900-01-01 00:00:00" ;
+		time_centered:time_origin = "1900-01-01 00:00:00" ;
+		time_centered:bounds = "time_centered_bounds" ;
+	float sigma_class(time_counter, y, x) ;
+		sigma_class:units = "[]" ;
+		sigma_class:_FillValue = 99999.f ;
+		sigma_class:valid_min = 0.f ;
+		sigma_class:valid_max = 100.f ;
+		sigma_class:long_name = "class of potential density" ;
+		sigma_class:short_name = "sigma_class" ;
+		sigma_class:iweight = 1 ;
+		sigma_class:online_operation = "N/A" ;
+		sigma_class:axis = "ZT" ;
+		sigma_class:scale_factor = 1.f ;
+		sigma_class:add_offset = 0.f ;
+		sigma_class:savelog10 = 0.f ;
+	float sigtrp_DenmarkStrait(time_counter, y, x) ;
+		sigtrp_DenmarkStrait:units = "Sv" ;
+		sigtrp_DenmarkStrait:_FillValue = 99999.f ;
+		sigtrp_DenmarkStrait:valid_min = -1000.f ;
+		sigtrp_DenmarkStrait:valid_max = 1000.f ;
+		sigtrp_DenmarkStrait:long_name = "DenmarkStrait_transport in sigma class" ;
+		sigtrp_DenmarkStrait:short_name = "sigtrp" ;
+		sigtrp_DenmarkStrait:iweight = 1 ;
+		sigtrp_DenmarkStrait:online_operation = "N/A" ;
+		sigtrp_DenmarkStrait:axis = "ZT" ;
+		sigtrp_DenmarkStrait:scale_factor = 1.f ;
+		sigtrp_DenmarkStrait:add_offset = 0.f ;
+		sigtrp_DenmarkStrait:savelog10 = 0.f ;
+	float sigtrppos_DenmarkStrait(time_counter, y, x) ;
+		sigtrppos_DenmarkStrait:units = "Sv" ;
+		sigtrppos_DenmarkStrait:_FillValue = 99999.f ;
+		sigtrppos_DenmarkStrait:valid_min = -1000.f ;
+		sigtrppos_DenmarkStrait:valid_max = 1000.f ;
+		sigtrppos_DenmarkStrait:long_name = "DenmarkStrait_transport in sigma class (positive)" ;
+		sigtrppos_DenmarkStrait:short_name = "sigtrppos" ;
+		sigtrppos_DenmarkStrait:iweight = 1 ;
+		sigtrppos_DenmarkStrait:online_operation = "N/A" ;
+		sigtrppos_DenmarkStrait:axis = "ZT" ;
+		sigtrppos_DenmarkStrait:scale_factor = 1.f ;
+		sigtrppos_DenmarkStrait:add_offset = 0.f ;
+		sigtrppos_DenmarkStrait:savelog10 = 0.f ;
+	float sigtrpneg_DenmarkStrait(time_counter, y, x) ;
+		sigtrpneg_DenmarkStrait:units = "Sv" ;
+		sigtrpneg_DenmarkStrait:_FillValue = 99999.f ;
+		sigtrpneg_DenmarkStrait:valid_min = -1000.f ;
+		sigtrpneg_DenmarkStrait:valid_max = 1000.f ;
+		sigtrpneg_DenmarkStrait:long_name = "DenmarkStrait_transport in sigma class (negative)" ;
+		sigtrpneg_DenmarkStrait:short_name = "sigtrpneg" ;
+		sigtrpneg_DenmarkStrait:iweight = 1 ;
+		sigtrpneg_DenmarkStrait:online_operation = "N/A" ;
+		sigtrpneg_DenmarkStrait:axis = "ZT" ;
+		sigtrpneg_DenmarkStrait:scale_factor = 1.f ;
+		sigtrpneg_DenmarkStrait:add_offset = 0.f ;
+		sigtrpneg_DenmarkStrait:savelog10 = 0.f ;
+
+// global attributes:
+		:start_date = -1 ;
+		:output_frequency = "N/A" ;
+		:CONFIG = "N/A" ;
+		:CASE = "N/A" ;
+		:history = "/data/users/hadom/branches/git/MARINE_VAL//CDFTOOLS_4.0/bin/cdfsigtrp -brk nemoXsec_co957o_1y_19791201_DenmarkStrait.nc -smin 28.0 -smax 30.0 -nbins 1 -o nemoXsec_co957o_1y_19791201_DenmarkStrait_" ;
+data:
+
+ nav_lon =
+  0 ;
+
+ nav_lat =
+  0 ;
+
+ levels = 28 ;
+
+ time_centered = 2501280000 ;
+
+ sigma_class =
+  28 ;
+
+ sigtrp_DenmarkStrait =
+  1.944954 ;
+
+ sigtrppos_DenmarkStrait =
+  1.944954 ;
+
+ sigtrpneg_DenmarkStrait =
+  0 ;
+}

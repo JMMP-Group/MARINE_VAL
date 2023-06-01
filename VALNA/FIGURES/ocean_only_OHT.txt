@@ -1,1 +1,0 @@
- python2.7 SCRIPT/plot_time_series.py -noshow -runid u-ar435 u-ah494 mi-aq915 -f *OHT*1y*mht_26_5N.nc -var zomht_glo -title MHT @26.5N (PW) -dir /data/users/smoreton/VALNA/DATA -o ocean_only_OHT -obs OBS/AMHT_obs.txt

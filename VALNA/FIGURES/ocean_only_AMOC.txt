@@ -1,1 +1,0 @@
- python2.7 SCRIPT/plot_time_series.py -noshow -runid u-ar435 u-ah494 mi-aq915 -f *AMOC*1y*moc.nc -var Total_max_amoc_rapid -title AMOC @26.5N (Sv) -dir /data/users/smoreton/VALNA/DATA -o ocean_only_AMOC -obs OBS/AMOC_max_obs.txt
