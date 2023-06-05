@@ -259,17 +259,17 @@ def main():
             if obs_min[ivar] is not None:
                 obs_err_lower[ivar] = abs( float((obs_mean[ivar])-float(obs_min[ivar])) )
             elif obs_std[ivar] is not None:
-                obs_min[ivar] = obs_mean[ivar] - obs_std[ivar]
+                obs_min[ivar] = float(obs_mean[ivar]) - float(obs_std[ivar])
             else:
-                obs_min[ivar] = obs_mean[ivar]
+                obs_min[ivar] = float(obs_mean[ivar])
                 obs_err_lower[ivar] = 0.0
 
             if obs_max[ivar] is not None:
                 obs_err_upper[ivar] = abs( float(obs_mean[ivar])-float(obs_max[ivar]) )
             elif obs_std[ivar] is not None:
-                obs_max[ivar] = obs_mean[ivar] + obs_std[ivar]
+                obs_max[ivar] = float(obs_mean[ivar]) + float(obs_std[ivar])
             else:
-                obs_max[ivar] = obs_mean[ivar]
+                obs_max[ivar] = float(obs_mean[ivar])
                 obs_err_upper[ivar] = 0.0
                  
         for irun, runid in enumerate(args.runid):

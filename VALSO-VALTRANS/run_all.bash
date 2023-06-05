@@ -120,7 +120,7 @@ for RUNID in `echo $RUNIDS`; do
 
       # run cdftools
       [[ $runDEEPTS == 1 ]]  && run_tool mk_deepTS -A WWED $CONFIG $TAG $RUNID 1s $mooDJFsid
-      [[ $runDEEPTS == 1 ]]  && run_tool mk_deepTS -A EROSS $CONFIG $TAG $RUNID 1y $mooDJFsid
+      [[ $runDEEPTS == 1 ]]  && run_tool mk_deepTS -A EROSS $CONFIG $TAG $RUNID 1s $mooDJFsid
       [[ $runMLD == 1 ]] && run_tool mk_mxl  $CONFIG $TAG09 $RUNID 1m    $mooT09mid
       [[ $runSIE == 1 ]] && run_tool mk_sie  $CONFIG $TAG09 $RUNID 1m    $mooT09mid 
       [[ $runSIE == 1 ]] && run_tool mk_sie  $CONFIG $TAG02 $RUNID 1m    $mooT02mid

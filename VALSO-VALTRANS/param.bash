@@ -29,8 +29,8 @@ runITF=0            # Indonesian Throughflow: Lombok Strait, Ombai Strait, Timor
 runNAtlOverflows=0  # North Atlantic deep overflows: Denmark Strait, Faroe Bank Channel
 runMLD=0            # Max wintertime mixed layer depth in Weddell Sea
 runBSF=0            # Max streamfunction in Weddell gyre and Ross gyre
-runBOT=0            # Bottom salinity in West Weddell and West Ross Seas
-                    # and bottom temperature in Amundsen and East Ross Seas
+runDEEPTS=0         # Deep salinity in West Weddell and West Ross Seas
+                    # and deep temperature in Amundsen and East Ross Seas
 runMOC=0            # Atlantic meridional overturning
 runMHT=0            # Atlantic meridional heat transport
 runSIE=0            # Southern Ocean sea ice extent
@@ -41,7 +41,7 @@ if [[ $RUNALL == 1 || $RUNTEST == 1 ]]; then
    runACC=1 #acc  ts
    runMLD=1 #mld  ts
    runBSF=1 #gyre ts
-   runBOT=1 #bottom TS ts
+   runDEEPTS=1 #deep TS ts
    runMOC=1
    runMHT=1
    runSIE=1
@@ -55,7 +55,7 @@ if [[ $RUNVALSO == 1 ]]; then
    runACC=1 #acc  ts
    runMLD=1 #mld  ts
    runBSF=1 #gyre ts
-   runBOT=1 #bottom TS ts
+   runDEEPTS=1 #deep TS ts
 fi
 if [[ $RUNVALGLO == 1 ]]; then
    runMOC=1
