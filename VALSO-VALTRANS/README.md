@@ -4,9 +4,10 @@
 1. [Introduction](#introduction)
 2. [Installation and running](#installation_and_running)
 3. [Output](#output)
-4. [Authors](#authors)
-5. [Licence](#licence)
-6. [Acknowledgements](#acknowledgement)
+4. [Observations](#observations)
+5. [Authors](#authors)
+6. [Licence](#licence)
+7. [Acknowledgements](#acknowledgement)
 
 <a name="introduction"></a>
 ## Introduction
@@ -153,13 +154,16 @@ and are weighted heavily towards the summer. When the EROSS and WWED metrics are
 DJF means rather than annual means to make the comparison with obs more valid. For the AMU and WROSS regions there is 
 good coverage through out the year for some recent years. For these regions the data is mainly seal data. Weddell seals 
 dive surprisingly deep - up to 700m. 
+
 ![Alt text](FIGURES/profiles_timeseries.jpg?raw=true "Timeseries of numbers of profiles by month and year.")
+
 The second set of plots shows the distribution of all observations within the relevant boxes (although note that for 
 these plots I used a top-of-box depth of 300m whereas in the end I settled on 400m). The number of obs reduces with 
 increasing depth as you might expect but it is encouraging to note that the deepest values appear to converge in all 
 cases. The third set of plots show model bathymetries (from eORCA12) for the four areas and you can see that the depth
 coverage of the observations is good in all cases. The shelves around Antarctica are generally deep - of order 500m - 
 and in the AMU and WROSS regions there are deep trenches to over 1000m.
+
 ![Alt text](FIGURES/profiles_scatter_plot.jpg?raw=true "Scatter plots of profiles for all times.")
 ![Alt text](FIGURES/shelf_bathymetries.jpg?raw=true "Model bathymetry (eORCA12) in shelf boxes.")
 
@@ -169,6 +173,9 @@ profiles and monthly objective analyses with uncertainty estimates", J. Geophys.
 https://doi.org/10.1002/2013JC009067, 2013*
  * *Storkey et al: to be submitted to GMD*
 #### Weddell mixed layer depth
+TBD
+
+### VALTRANS
 TBD
 <a name="authors"></a>
 ## Authors
