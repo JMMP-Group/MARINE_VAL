@@ -12,8 +12,8 @@
 <a name="introduction"></a>
 ## Introduction
 
-A software package for ocean scientists to calculate and plot the following evaluation metrics to compare North Atlantic ocean biases between CMIP models
-  with a NEMO ocean:
+A software package for ocean scientists to calculate and plot the following evaluation metrics to compare Southern 
+Ocean biases and Global biases in transports/exchanges through straits between CMIP models with a NEMO ocean:
 
    * VALSO metrics (Southern Ocean assessment):
      * Drake Passage net eastward transport (ACC)
