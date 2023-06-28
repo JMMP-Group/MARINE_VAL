@@ -23,7 +23,7 @@ slurm_wait() {
 # Now that we have chunking of MASS restores, a lot of processing jobs can be submitted all at once
 # after a chunk of files have been restored and might not all show up in the queue. So put in a short
 # sleep between each job submission as well.  
-sleep 5s
+sleep 0.1s
 let njobs=$(sacct -s pd,r | wc -l)-2
 while (( ${njobs} > 480 ))
 do
