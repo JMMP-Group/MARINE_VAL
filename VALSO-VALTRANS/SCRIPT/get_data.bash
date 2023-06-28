@@ -6,8 +6,8 @@
 CONFIG=$1
 RUNID=$2
 FREQ=$3
-TAG=$4
-GRID=$5
+GRID=$4
+TAGLIST=${@:5}
 
 . param.bash
 . ${SCRPATH}/common.bash
@@ -28,15 +28,19 @@ fi
 # flexibility for old-style filenames:
 GRID=$(echo $GRID | sed 's/-/[-_]/g')
 
-if   [ $FREQ == '5d'  ]; then FILE_LST=`moo ls moose:/crum/$RUNID/${CRUM_FREQ}.nc.file/*_${FREQ}_${GRID}_${TAG}.nc`
-elif [ $FREQ == 'i1m' ]; then FILE_LST=`moo ls moose:/crum/$RUNID/${CRUM_FREQ}.nc.file/*_1m_${TAG}.nc`
-else FILE_LST=`moo ls moose:/crum/$RUNID/${CRUM_FREQ}.nc.file/*_${FREQ}_${TAG}*_${GRID}.nc`;
-fi
+FILE_LST=""
+for TAG in $TAGLIST;do
+   if   [ $FREQ == '5d'  ]; then FILE_LST="$FILE_LST $(moo ls moose:/crum/$RUNID/${CRUM_FREQ}.nc.file/*_${FREQ}_${GRID}_${TAG}.nc)"
+   elif [ $FREQ == 'i1m' ]; then FILE_LST="$FILE_LST $(moo ls moose:/crum/$RUNID/${CRUM_FREQ}.nc.file/*_1m_${TAG}.nc)"
+   else FILE_LST="$FILE_LST $(moo ls moose:/crum/$RUNID/${CRUM_FREQ}.nc.file/*_${FREQ}_${TAG}*_${GRID}.nc)"; 
+   fi
+done
 
-for MFILE in `echo ${FILE_LST}`; do
+MOO_GET_LIST=""
+for MFILE in ${FILE_LST}; do
    FILE=${MFILE#*${CRUM_FREQ}.nc.file/}
    if [ -f $FILE ]; then 
-      TIME=`ncdump -h $FILE | grep UNLIMITED | sed -e 's/(//' | awk '{print $6}'`
+      TIME=$(ncdump -h $FILE | grep UNLIMITED | sed -e 's/(//' | awk '{print $6}')
 #      SIZEMASS=`moo ls -l $MFILE | awk '{ print $5}'`
 #      SIZESYST=`    ls -l $FILE  | awk '{ print $5}'`
 #      if [[ $SIZEMASS -ne $SIZESYST ]]; then echo " $FILE is corrupted "; rm $FILE; fi
@@ -44,6 +48,9 @@ for MFILE in `echo ${FILE_LST}`; do
    fi
    if [ ! -f $FILE ]; then
       echo "downloading file ${FILE}"
-      moo filter $FILTER $MFILE .
+      MOO_GET_LIST="$MOO_GET_LIST $MFILE"
    fi
 done
+
+echo "Executing command : moo filter $FILTER $MOO_GET_LIST ."
+moo filter $FILTER $MOO_GET_LIST .

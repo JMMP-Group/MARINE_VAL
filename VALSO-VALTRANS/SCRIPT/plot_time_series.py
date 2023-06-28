@@ -160,7 +160,7 @@ def add_legend(lg, ax, ncol=3, lvis=True):
     lax = plt.axes([0.0, 0.0, 1, 0.15])
     lline, llabel = lg.get_legend_handles_labels()
     leg=plt.legend(lline, llabel, loc='upper left', ncol = ncol, fontsize=16, frameon=False)
-    for item in leg.legendHandles:
+    for item in leg.legend_handles:
         item.set_visible(lvis)
     lax.set_axis_off() 
 
@@ -169,7 +169,7 @@ def add_text(lg, ax, clabel, ncol=3, lvis=True):
     lax = plt.axes([0.0, 0.0, 1, 0.15])
     lline, llabel = lg.get_legend_handles_labels()
     leg=plt.legend(lline, clabel, loc='upper left', ncol = ncol, fontsize=16, frameon=False)
-    for item in leg.legendHandles:
+    for item in leg.legend_handles:
         item.set_visible(lvis)
     lax.set_axis_off() 
 # ========================== stat plot ============================
