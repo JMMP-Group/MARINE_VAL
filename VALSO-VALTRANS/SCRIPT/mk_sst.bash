@@ -30,7 +30,7 @@ if [ ! -f $FILE ] ; then echo "$FILE is missing; exit"; echo "E R R O R in : ./m
 # make sst
 set -x
 FILEOUT=SO_sst_nemo_${RUN_NAME}o_${FREQ}_${TAG}*_grid-${GRID}.nc
-jlimits=$($CDFPATH/cdffindij -w 0.0 1.0 -60.000  -40.000 -c mesh.nc -p T | tail -2 | head -1 | tr -s ' ' | cut -d' ' -f4-5)
+jlimits=$($CDFPATH/cdffindij -w 0.0 1.0 -75.000  -45.000 -c mesh.nc -p T | tail -2 | head -1 | tr -s ' ' | cut -d' ' -f4-5)
 echo "jlimits : $jlimits"
 $CDFPATH/cdfmean -f $FILE -v '|thetao|thetao_con|votemper|' -surf -w 0 0 ${jlimits} 1 1 -p T -minmax -o tmp_$FILEOUT 
 

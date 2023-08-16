@@ -140,6 +140,6 @@ fi
 
 if [[ "$bottom" == "true" ]];then
    # move output back to main directory
-   mv ${section}* ..
+   mv ${section}* nemoXsec* ..
    cd ..
 fi

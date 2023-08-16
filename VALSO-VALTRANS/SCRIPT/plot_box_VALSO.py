@@ -35,7 +35,7 @@ def add_land_features(ax,cfeature_lst):
         elif cfeat=='bathy_z3000':
             feature = cartopy.feature.NaturalEarthFeature('physical', 'bathymetry_H_3000'          , '10m',facecolor='none',edgecolor='k')
         else:
-            print 'feature unknown : '+cfeat
+            print('feature unknown : '+cfeat)
             sys.exit(42)
         ax.add_feature(feature,linewidth=0.5)
 
@@ -47,20 +47,20 @@ class box(object):
         self.ymax=corner[3]-1
         self.name=name
 
-cfile='/data/cr1/pmathiot/MESH_MASK/bathymetry_eORCA025-GO6.nc'
+cfile='/data/users/frsy/MESH_MASK/bathymetry_eORCA025-GO6.nc'
 ncid   = nc.Dataset(cfile)
 bathy = ncid.variables['Bathymetry'][0:-2,:]
 ncid.close()
-cfile='/data/cr1/pmathiot/MESH_MASK/mesh_mask_eORCA025-GO6.nc'
+cfile='/data/users/frsy/MESH_MASK/mesh_mask_eORCA025-GO6.nc'
 ncid   = nc.Dataset(cfile)
 lon = ncid.variables['nav_lon'][0:-2,:]
 lat = ncid.variables['nav_lat'][0:-2,:]
 delta_lon=np.abs(np.diff(lon))
 j_lst,i_lst=np.nonzero(delta_lon>180)
-print j_lst.shape, i_lst.shape
+print( j_lst.shape, i_lst.shape )
 for idx in range(0,len(j_lst)):
     lon[j_lst[idx], i_lst[idx]+1:] += 360
-print lon.shape, lat.shape, bathy.shape
+print( lon.shape, lat.shape, bathy.shape )
 
 box_lst=[None]*6
 box_lst[0]=box([710,741,202,266],'AMU')
@@ -77,10 +77,10 @@ for box in box_lst:
 proj=ccrs.Stereographic(central_latitude=-90.0, central_longitude=0.0)
 XY_lim=[-180, 180, -90, -45]
 plt.figure(figsize=np.array([210, 210]) / 25.4)
-ax=plt.subplot(1, 1, 1, projection=proj, axisbg='0.75')
+ax=plt.subplot(1, 1, 1, projection=proj, facecolor='0.75')
 #ax=plt.subplot(1, 1, 1)
 add_land_features(ax,['isf','lakes','land'])
-print np.max(bathy), np.min(bathy)
+print(np.max(bathy), np.min(bathy))
 ax.pcolormesh(lon,lat,bathy,cmap='Blues',vmin=0,vmax=7000,transform=ccrs.PlateCarree(),rasterized=True)
 
 ax.contour(lon,lat,mask,levels=[0.99, 2.0],transform=ccrs.PlateCarree(),colors='k',rasterized=True,linewidths=2)
