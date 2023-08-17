@@ -1,3 +1,4 @@
+
 #!/bin/bash
 
 #=============================================================================================================================
@@ -5,7 +6,7 @@
 #=============================================================================================================================
 moo_wait() {
 # Limit the number of MASS retrievals that we submit in parallel. The recommendation is to keep
-# this to around 30 max. Would be better to chunk it to do multiple retrievals in one request.
+# this to around 30 max. 
 let njobs=$(sacct -s pd,r | grep "moo" | wc -l)
 while (( ${njobs} > 25 ))
 do
@@ -24,10 +25,10 @@ slurm_wait() {
 # after a chunk of files have been restored and might not all show up in the queue. So put in a short
 # sleep between each job submission as well.  
 sleep 0.1s
-let njobs=$(sacct -s pd,r | wc -l)-2
-while (( ${njobs} > 480 ))
+let njobs=$(sacct | grep "PENDING" | wc -l)+$(sacct | grep "RUNNING" | wc -l)
+while (( $njobs > 480 ))
 do
-  let njobs=$(sacct -s pd,r | wc -l)-2
+  let njobs=$(sacct | grep "PENDING" | wc -l)+$(sacct | grep "RUNNING" | wc -l)
   echo "Number of slurm jobs : $njobs. Sleeping."
   sleep 1m
 done
@@ -200,9 +201,13 @@ for RUNID in `echo $RUNIDS`; do
 
       echo "TAGDJF_LIST : $TAGDJF_LIST"
       # get data (retrieve_data function are defined in this script)
+      moo_wait
       [[ $runDEEPTS == 1 ]]                                              && mooDJFsid=$(retrieve_data $CONFIG $RUNID 1s grid-T $TAGDJF_LIST)
+      moo_wait
       [[ $runSIE == 1 || $runMLD == 1 ]]                                 && mooT09mid=$(retrieve_data $CONFIG $RUNID 1m grid-T $TAG09_LIST)
+      moo_wait
       [[ $runSIE == 1 ]]                                                 && mooT02mid=$(retrieve_data $CONFIG $RUNID 1m grid-T $TAG02_LIST)
+      moo_wait
       [[ $runSIE == 1 ]]                                                 && mooT03mid=$(retrieve_data $CONFIG $RUNID 1m grid-T $TAG03_LIST)
 
       echo "mooDJFsid : $mooDJFsid"
