@@ -381,12 +381,21 @@ def main():
     else:
        plt.show()
 
-    # build specific legend figure
+    # build specific legend figure 
+    # (for bottom of standard VALSO-type plots)
     plt.figure(figsize=np.array([210*3, 210*3]) / 25.4)
     ax = plt.subplot(1, 1, 1)
     ax.axis('off')
     add_legend(lg,ax,ncol=4)
     plt.savefig('legend.png', format='png', dpi=150)
+
+    # build specific legend figure
+    # (with one dataset per line - useful for publication figures)
+    plt.figure(figsize=np.array([210*3, 210*3]) / 25.4)
+    ax = plt.subplot(1, 1, 1)
+    ax.axis('off')
+    add_legend(lg,ax,ncol=1)
+    plt.savefig('legend_one_dataset_per_line.png', format='png', dpi=150)
 
     # build specific text figure
     plt.figure(figsize=np.array([210*3, 210*3]) / 25.4)
