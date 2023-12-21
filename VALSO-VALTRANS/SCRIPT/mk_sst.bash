@@ -32,7 +32,7 @@ set -x
 FILEOUT=SO_sst_nemo_${RUN_NAME}o_${FREQ}_${TAG}_grid-${GRID}.nc
 jlimits=$($CDFPATH/cdffindij -w 0.0 1.0 -70.000  -45.000 -c mesh.nc -p T | tail -2 | head -1 | tr -s ' ' | cut -d' ' -f4-5)
 echo "jlimits : $jlimits"
-$CDFPATH/cdfmean -f $FILE -v '|thetao|thetao_con|votemper|' -surf -w 0 0 ${jlimits} 1 1 -p T -minmax -o tmp_$FILEOUT 
+$CDFPATH/cdfmean -f $FILE -v '|thetao|thetao_pot|votemper|' -surf -w 0 0 ${jlimits} 1 1 -p T -minmax -o tmp_$FILEOUT 
 
 # mv output file
 if [[ $? -eq 0 ]]; then 
@@ -44,7 +44,7 @@ fi
 FILEOUT=NWC_sst_nemo_${RUN_NAME}o_${FREQ}_${TAG}_grid-${GRID}.nc
 ijbox=$($CDFPATH/cdffindij -w -50.190 -32.873 41.846 54.413 -c mesh.nc -p T | tail -2 | head -1 )
 echo "ijbox : $ijbox"
-$CDFPATH/cdfmean -f $FILE -surf -v '|thetao|thetao_con|votemper|' -w ${ijbox} 1 1 -p T -minmax -o tmp_$FILEOUT 
+$CDFPATH/cdfmean -f $FILE -surf -v '|thetao|thetao_pot|votemper|' -w ${ijbox} 1 1 -p T -minmax -o tmp_$FILEOUT 
 
 #mv output file
 if [[ $? -eq 0 ]]; then 

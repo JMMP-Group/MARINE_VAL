@@ -4,7 +4,8 @@ if [ $# -eq 0 ] ; then echo 'need a [KEYWORD] (will be inserted inside the figur
 
 module load scitools
 
-DATPATH=${SCRATCH}/MARINE_VAL
+#DATPATH=${SCRATCH}/MARINE_VAL
+DATPATH=${HOME}/ACC/JOB_DATA/VALSO
 
 KEY=${1}
 FREQ=${2}
@@ -15,8 +16,14 @@ FREQs="1s"
 # ACC
 # Drake
 echo 'plot ACC time series'
-python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f *ACC_*${FREQ}*1.nc -var vtrp -sf -1 -title "ACC transport (Sv)" -dir ${DATPATH} -o "${KEY}_ACC" -obs OBS/ACC_obs.txt
+python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f *ACC_nemo_*${FREQ}*1.nc -var vtrp -sf -1 -title "ACC transport (Sv)" -dir ${DATPATH} -o "${KEY}_ACC" -obs OBS/ACC_obs.txt
 if [[ $? -ne 0 ]]; then exit 42; fi
+#echo 'plot ACC barotropic time series'
+#python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f *ACC_bottom_nemo*${FREQ}*1.nc -var vtrp -sf -1 -title "ACC barotropic transport (Sv)" -dir ${DATPATH} -o "${KEY}_ACC_bottom" -obs OBS/ACC_bottom_obs.txt
+#if [[ $? -ne 0 ]]; then exit 42; fi
+#echo 'plot ACC shelf break time series'
+#python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f *ACC_*${FREQ}*1.nc -var vtrp -sf -1 -title "ACC transport (Sv)" -dir ${DATPATH} -o "${KEY}_ACC_shelfbreak" -obs OBS/ACC_shelfbreak_obs.txt
+#if [[ $? -ne 0 ]]; then exit 42; fi
 
 # GYRE
 # ROSS GYRE
@@ -31,21 +38,21 @@ if [[ $? -ne 0 ]]; then exit 42; fi
 # HSSW
 # mean S WROSS
 echo 'plot mean bot S (WROSS) time series'
-python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f *WROSS*so*${FREQ}*deepTS.nc -var '(mean_3D_so|mean_3D_so_abs|mean_3D_vosaline)' -title "Mean deep sal. WROSS (PSU)" -dir ${DATPATH} -o ${KEY}_WROSS_mean_deep_so -obs OBS/WROSS_deepS_mean_obs.txt
+python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f *WROSS*so*${FREQ}*deepTS.nc -var '(mean_3D_so|mean_3D_so_pra|mean_3D_vosaline)' -title "Mean deep sal. WROSS (PSU)" -dir ${DATPATH} -o ${KEY}_WROSS_mean_deep_so -obs OBS/WROSS_deepS_mean_obs.txt
 # mean S WWED
 if [[ $? -ne 0 ]]; then exit 42; fi
 echo 'plot mean bot S (WWED) time series'
-python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f *WED*so*${FREQs}*deepTS.nc   -var '(mean_3D_so|mean_3D_so_abs|mean_3D_vosaline)' -title "Mean deep sal. WWED  (PSU)" -dir ${DATPATH} -o ${KEY}_WWED_mean_deep_so  -obs OBS/WWED_deepS_mean_obs.txt
+python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f *WED*so*${FREQs}*deepTS.nc   -var '(mean_3D_so|mean_3D_so_pra|mean_3D_vosaline)' -title "Mean deep sal. WWED  (PSU)" -dir ${DATPATH} -o ${KEY}_WWED_mean_deep_so  -obs OBS/WWED_deepS_mean_obs.txt
 if [[ $? -ne 0 ]]; then exit 42; fi
 
 # CDW
 # mean T AMU
 echo 'plot mean bot T (AMU) time series'
-python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f *AMU*thetao*${FREQ}*deepTS.nc   -var '(mean_3D_thetao|mean_3D_thetao_con|mean_3D_votemper)' -title "Mean deep temp. AMU (C)"   -dir ${DATPATH} -o ${KEY}_AMU_mean_deep_thetao   -obs OBS/AMU_deepT_mean_obs.txt
+python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f *AMU*thetao*${FREQ}*deepTS.nc   -var '(mean_3D_thetao|mean_3D_thetao_pot|mean_3D_votemper)' -title "Mean deep temp. AMU (C)"   -dir ${DATPATH} -o ${KEY}_AMU_mean_deep_thetao   -obs OBS/AMU_deepT_mean_obs.txt
 if [[ $? -ne 0 ]]; then exit 42; fi
 # mean T EROSS
 echo 'plot mean bot T (EROSS) time series'
-python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f *EROSS*thetao*${FREQs}*deepTS.nc -var '(mean_3D_thetao|mean_3D_thetao_con|mean_3D_votemper)' -title "Mean deep temp. EROSS (C)" -dir ${DATPATH} -o ${KEY}_EROSS_mean_deep_thetao -obs OBS/EROSS_deepT_mean_obs.txt
+python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f *EROSS*thetao*${FREQs}*deepTS.nc -var '(mean_3D_thetao|mean_3D_thetao_pot|mean_3D_votemper)' -title "Mean deep temp. EROSS (C)" -dir ${DATPATH} -o ${KEY}_EROSS_mean_deep_thetao -obs OBS/EROSS_deepT_mean_obs.txt
 if [[ $? -ne 0 ]]; then exit 42; fi
 
 # MLD
@@ -56,6 +63,8 @@ if [[ $? -ne 0 ]]; then exit 42; fi
 
 # crop figure (rm legend)
 convert ${KEY}_ACC.png                   -crop 1240x1040+0+0 tmp01.png
+#convert ${KEY}_ACC_bottom.png            -crop 1240x1040+0+0 tmp02.png
+#convert ${KEY}_ACC_shelfbreak.png        -crop 1240x1040+0+0 tmp03.png
 convert ${KEY}_WG.png                    -crop 1240x1040+0+0 tmp02.png
 convert ${KEY}_RG.png                    -crop 1240x1040+0+0 tmp03.png
 convert ${KEY}_WWED_mean_deep_so.png      -crop 1240x1040+0+0 tmp04.png

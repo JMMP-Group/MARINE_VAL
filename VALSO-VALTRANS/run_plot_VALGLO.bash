@@ -37,13 +37,13 @@ convert ${KEY}_fig04.png -crop 1240x1040+0+0 tmp04.png
 
 # SO SST
 echo 'plot SO SST time series'
-python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f SO_sst*.nc -var '(mean_votemper|mean_thetao)' -title "SO sst [K] : ${KEY}" -dir ${DATPATH} -o ${KEY}_fig05 -obs OBS/SO_sst_mean_obs.txt
+python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f SO_sst*.nc -var '(mean_votemper|mean_thetao|mean_theto_pot)' -title "SO sst [K] : ${KEY}" -dir ${DATPATH} -o ${KEY}_fig05 -obs OBS/SO_sst_mean_obs.txt
 if [[ $? -ne 0 ]]; then exit 42; fi
 convert ${KEY}_fig05.png -crop 1240x1040+0+0 tmp05.png
 
 # SO SST
 echo 'plot SO SST time series'
-python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f NWC_sst*.nc -var '(mean_votemper|mean_thetao)' -title "NWC sst [K] : ${KEY}" -dir ${DATPATH} -o ${KEY}_fig06 -obs OBS/NWC_sst_mean_obs.txt
+python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f NWC_sst*.nc -var '(mean_votemper|mean_thetao|mean_theto_pot)' -title "NWC sst [K] : ${KEY}" -dir ${DATPATH} -o ${KEY}_fig06 -obs OBS/NWC_sst_mean_obs.txt
 if [[ $? -ne 0 ]]; then exit 42; fi
 convert ${KEY}_fig06.png -crop 1240x1040+0+0 tmp06.png
 

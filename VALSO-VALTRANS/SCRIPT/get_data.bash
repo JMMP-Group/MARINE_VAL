@@ -1,5 +1,5 @@
 #!/bin/bash -l
-#SBATCH --mem=500
+#SBATCH --mem=30G
 #SBATCH --time=60
 #SBATCH --ntasks=1
 
@@ -37,6 +37,8 @@ for TAG in $TAGLIST;do
 done
 
 MOO_GET_LIST=""
+MOO_RESTORED_LIST=""
+CONVERT_EOS_LIST=""
 for MFILE in ${FILE_LST}; do
    FILE=${MFILE#*${CRUM_FREQ}.nc.file/}
    if [ -f $FILE ]; then 
@@ -45,12 +47,36 @@ for MFILE in ${FILE_LST}; do
 #      SIZESYST=`    ls -l $FILE  | awk '{ print $5}'`
 #      if [[ $SIZEMASS -ne $SIZESYST ]]; then echo " $FILE is corrupted "; rm $FILE; fi
       if [[ $TIME -eq 0 ]]; then echo " $FILE is corrupted "; rm $FILE; fi
+      Tvarname=$(ncdump -h $FILE | grep float | grep thetao[_\ ] | cut -d' ' -f2 | cut -d'(' -f1 )
+      Svarname=$(ncdump -h $FILE | grep float | grep so[_\ ] | cut -d' ' -f2 | cut -d'(' -f1 )
+      if [[ "$Tvarname" == "thetao_con" && "$Svarname" == "so_abs" ]]; then 
+         CONVERT_EOS_LIST="$CONVERT_EOS_LIST $FILE"
+      elif [[ "$Tvarname" == "thetao_con" || "$Svarname" == "so_abs" ]]; then
+         # If file has only one of thetao_con or so_abs, something has gone wrong
+         # delete and restore from MASS again. 
+         echo " $FILE is corrupted "; rm $FILE
+      fi
    fi
    if [ ! -f $FILE ]; then
       echo "downloading file ${FILE}"
       MOO_GET_LIST="$MOO_GET_LIST $MFILE"
+      MOO_RESTORED_LIST="$MOO_RESTORED_LIST $FILE"
    fi
 done
 
 echo "Executing command : moo filter $FILTER $MOO_GET_LIST ."
 moo filter $FILTER $MOO_GET_LIST .
+
+for FILE in $MOO_RESTORED_LIST;do
+   Tvarname=$(ncdump -h $FILE | grep float | grep thetao[_\ ] | cut -d' ' -f2 | cut -d'(' -f1 )
+   Svarname=$(ncdump -h $FILE | grep float | grep so[_\ ] | cut -d' ' -f2 | cut -d'(' -f1 )
+   echo "$FILE : $Tvarname $Svarname"
+   if [[ "$Tvarname" == "thetao_con" && "$Svarname" == "so_abs" ]]; then 
+      echo "hello!"
+      CONVERT_EOS_LIST="$CONVERT_EOS_LIST $FILE"
+   fi
+done
+
+for FILE in $CONVERT_EOS_LIST;do
+   python3 ${EXEPATH}/SCRIPT/convert_nemo_eos80.py $FILE
+done

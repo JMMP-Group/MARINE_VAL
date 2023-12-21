@@ -63,7 +63,7 @@ then
 # Amundsen avg (CDW)
 # k = [38,75] => everything deeper than 390m
 ijbox=$($CDFPATH/cdffindij -c mesh.nc -p T -w -109.640 -102.230  -75.800  -71.660 | tail -2 | head -1)
-$CDFPATH/cdfmean -f $FILE -v '|thetao|thetao_con|votemper|' -p T -var -w ${ijbox} 38 75 -minmax -o AMU_thetao_$FILEOUT 
+$CDFPATH/cdfmean -f $FILE -v '|thetao|thetao_pot|votemper|' -p T -var -w ${ijbox} 38 75 -minmax -o AMU_thetao_$FILEOUT 
 if [ $? -ne 0 ] ; then echo "error when running cdfmean (AMU)"; echo "E R R O R in : ./mk_deepTS.bash $@ (see SLURM/${CONFIG}/${RUNID}/mk_deepTS_${FREQ}_${TAG}.out)" >> ${EXEPATH}/ERROR.txt ; fi
 
 elif [[ "$area" == "WROSS" ]]
@@ -71,7 +71,7 @@ then
 # WRoss avg (bottom water)
 # k = [38,75] => everything deeper than 390m
 ijbox=$($CDFPATH/cdffindij -c mesh.nc -p T -w 157.100  173.333  -78.130  -74.040 | tail -2 | head -1)
-$CDFPATH/cdfmean -f $FILE -v '|so|so_abs|vosaline|'     -p T -var -w ${ijbox} 38 75 -minmax -o WROSS_so_$FILEOUT 
+$CDFPATH/cdfmean -f $FILE -v '|so|so_pra|vosaline|'     -p T -var -w ${ijbox} 38 75 -minmax -o WROSS_so_$FILEOUT 
 if [ $? -ne 0 ] ; then echo "error when running cdfmean (WROSS)"; echo "E R R O R in : ./mk_deepTS.bash $@ (see SLURM/${CONFIG}/${RUNID}/mk_deepTS_${FREQ}_${TAG}.out)" >> ${EXEPATH}/ERROR.txt ; fi
 
 elif [[ "$area" == "EROSS" ]]
@@ -79,7 +79,7 @@ then
 # ERoss avg (CDW)
 # k = [38,75] => everything deeper than 390m
 ijbox=$($CDFPATH/cdffindij -c mesh.nc -p T -w -176.790 -157.820  -78.870  -77.520 | tail -2 | head -1)
-$CDFPATH/cdfmean -f $FILE -v '|thetao|thetao_con|votemper|' -p T -var -w ${ijbox} 38 75 -minmax -o EROSS_thetao_$FILEOUT 
+$CDFPATH/cdfmean -f $FILE -v '|thetao|thetao_pot|votemper|' -p T -var -w ${ijbox} 38 75 -minmax -o EROSS_thetao_$FILEOUT 
 if [ $? -ne 0 ] ; then echo "error when running cdfmean (EROSS)"; echo "E R R O R in : ./mk_deepTS.bash $@ (see SLURM/${CONFIG}/${RUNID}/mk_deepTS_${FREQ}_${TAG}.out)" >> ${EXEPATH}/ERROR.txt ; fi
 
 elif [[ "$area" == "WWED" ]]
@@ -87,7 +87,7 @@ then
 # Weddell Avg (bottom water)
 # k = [38,75] => everything deeper than 390m
 ijbox=$($CDFPATH/cdffindij -c mesh.nc -p T -w -65.130  -53.020  -75.950  -72.340 | tail -2 | head -1)
-$CDFPATH/cdfmean -f $FILE -v '|so|so_abs|vosaline|'     -p T -var -w ${ijbox} 38 75 -minmax -o WED_so_$FILEOUT 
+$CDFPATH/cdfmean -f $FILE -v '|so|so_pra|vosaline|'     -p T -var -w ${ijbox} 38 75 -minmax -o WED_so_$FILEOUT 
 if [ $? -ne 0 ] ; then echo "error when running cdfmean (WWED)"; echo "E R R O R in : ./mk_deepTS.bash $@ (see SLURM/${CONFIG}/${RUNID}/mk_deepTS_${FREQ}_${TAG}.out)" >> ${EXEPATH}/ERROR.txt ; fi
 
 fi
