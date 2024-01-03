@@ -73,5 +73,6 @@ if [[ $RUNVALTRANS == 1 ]]; then
 #   exit 42
 fi
    
-# Load modules required to run CDFTOOLS:
+# Load scitools and modules required to run CDFTOOLS:
+module load scitools
 module load gcc/8.1.0 mpi/mpich/3.2.1/gnu/8.1.0 hdf5/1.8.20/gnu/8.1.0 netcdf/4.6.1/gnu/8.1.0
