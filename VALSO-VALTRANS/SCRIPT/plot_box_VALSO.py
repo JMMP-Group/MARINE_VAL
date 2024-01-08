@@ -40,11 +40,13 @@ def add_land_features(ax,cfeature_lst):
         ax.add_feature(feature,linewidth=0.5)
 
 class box(object):
-    def __init__(self,corner,name):
+    def __init__(self,corner,offset,name):
         self.xmin=corner[0]-1
         self.xmax=corner[1]-1
         self.ymin=corner[2]-1
         self.ymax=corner[3]-1
+        self.lon_offset=offset[0]
+        self.lat_offset=offset[1]
         self.name=name
 
 cfile='/data/users/frsy/MESH_MASK/bathymetry_eORCA025-GO6.nc'
@@ -62,13 +64,13 @@ for idx in range(0,len(j_lst)):
     lon[j_lst[idx], i_lst[idx]+1:] += 360
 print( lon.shape, lat.shape, bathy.shape )
 
-box_lst=[None]*6
-box_lst[0]=box([710,741,202,266],'AMU')
-box_lst[1]=box([891,938,204,258],'WWED')
-box_lst[2]=box([347,404,150,233],'WROSS')
-box_lst[3]=box([448,519,152,180],'EROSS')
-box_lst[4]=box([1025,1300,325,380],'WG')
-box_lst[5]=box([476,607 ,254,370],'RG')
+box_lst=[]
+box_lst.append(box([710,741,202,266],[-1.,-1.],'AMU'))
+box_lst.append(box([891,938,204,258],[0.,-2.],'WWED'))
+box_lst.append(box([347,404,150,233],[0.,-1.],'WROSS'))
+box_lst.append(box([448,519,152,180],[45.,3.],'EROSS'))
+box_lst.append(box([1025,1300,325,380],[30.,10.],'WG'))
+box_lst.append(box([476,607 ,254,370],[15.,5.],'RG'))
 
 mask=np.zeros(shape=bathy.shape)
 for box in box_lst:
@@ -88,15 +90,11 @@ ax.contour(lon,lat,mask,levels=[0.99, 2.0],transform=ccrs.PlateCarree(),colors='
 ax.plot([lon[420,874], lon[332,899]],[lat[420,874], lat[332,899]],transform=ccrs.PlateCarree(),color='k',linewidth=2,rasterized=True)
 ax.text(lon[420,874]-5,lat[420,874]-3,'ACC',transform=ccrs.PlateCarree(),color='k',fontweight='bold',fontsize=16)
 
-box=box_lst[0]; ax.text(lon[box.ymin,box.xmin]-1, lat[box.ymin,box.xmin]-1,box.name,transform=ccrs.PlateCarree(),color='k',fontweight='bold',fontsize=16)
-box=box_lst[1]; ax.text(lon[box.ymin,box.xmin], lat[box.ymin,box.xmin]-2,box.name,transform=ccrs.PlateCarree(),color='k',fontweight='bold',fontsize=16)
-box=box_lst[2]; ax.text(lon[box.ymin,box.xmin], lat[box.ymin,box.xmin]-1,box.name,transform=ccrs.PlateCarree(),color='k',fontweight='bold',fontsize=16)
-box=box_lst[3]; ax.text(lon[box.ymin,box.xmin]+45, lat[box.ymin,box.xmin]+3,box.name,transform=ccrs.PlateCarree(),color='k',fontweight='bold',fontsize=16)
-box=box_lst[4]; ax.text(lon[box.ymin,box.xmin]+30, lat[box.ymin,box.xmin]+10,box.name,transform=ccrs.PlateCarree(),color='k',fontweight='bold',fontsize=16)
-box=box_lst[5]; ax.text(lon[box.ymin,box.xmin]+15, lat[box.ymin,box.xmin]+5,box.name,transform=ccrs.PlateCarree(),color='k',fontweight='bold',fontsize=16)
+for box in box_lst:
+    ax.text(lon[box.ymin,box.xmin]+box.lon_offset, lat[box.ymin,box.xmin]+box.lat_offset,box.name,transform=ccrs.PlateCarree(),color='k',fontweight='bold',fontsize=16)
 
 #pcol=ax.pcolormesh(lon,lat,bathy)
 ax.set_extent(XY_lim, ccrs.PlateCarree())
-plt.savefig('box.png', format='png', dpi=150)
+plt.savefig('box_VALSO.png', format='png', dpi=150)
 plt.show()
 
