@@ -60,7 +60,6 @@ convert ${KEY}_fig08.png -crop 1240x1040+0+0 tmp08.png
 
 # trim figure
 convert FIGURES/box_VALGLO.png -trim -bordercolor White -border 40 tmp09.png
-convert FIGURES/box_VALGLO.png -trim -bordercolor White -border 40 tmp09.png
 convert legend.png             -trim -bordercolor White -border 20 tmp10.png
 convert runidname.png          -trim -bordercolor White -border 20 tmp11.png
 
