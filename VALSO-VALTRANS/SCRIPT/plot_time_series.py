@@ -317,14 +317,11 @@ def main():
         nlabel=5
         ndays=(maxtime-mintime).days
         nyear=ndays/365
-        if nyear < 10:
-            nyt=1
-        elif 10<=nyear<50:
-            nyt=5
-        elif 50<=nyear<100:
-            nyt=10
-        else:
-            nyt=100
+        print('nyear : ',nyear)
+        for nyt in [1,2,5,10,20,50,100,200,500]:
+            if nyear/nyt < 8:
+                break
+        print('nyt : ',nyt)
         nmt=ts_lst[irun].index[0].to_pydatetime().date().month
         ndt=ts_lst[irun].index[0].to_pydatetime().date().day
          
