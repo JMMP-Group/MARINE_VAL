@@ -110,7 +110,13 @@ def find_key(char, fid):
     for cline in fid:
         lmatch = re.findall(char, cline) 
         if (lmatch) :
-            return cline.rstrip().strip('\n').split(' ')[-1]
+            key = cline.rstrip().strip('\n').split(' ')[-1]
+            # convert to float if possible otherwise return string:
+            try:
+                key = float(key)
+            except ValueError:
+                pass
+            return key
     else:
         return None
 #================================================================================
@@ -160,6 +166,8 @@ def add_legend(lg, ax, ncol=3, lvis=True):
     lax = plt.axes([0.0, 0.0, 1, 0.15])
     lline, llabel = lg.get_legend_handles_labels()
     leg=plt.legend(lline, llabel, loc='upper left', ncol = ncol, fontsize=16, frameon=False)
+#    for separate legend
+#    leg=plt.legend(lline, llabel, loc='center left', ncol = ncol, fontsize=32, frameon=False)
     for item in leg.legend_handles:
         item.set_visible(lvis)
     lax.set_axis_off() 
@@ -250,26 +258,23 @@ def main():
         # load obs
         if args.obs:
             obs_mean[ivar], obs_std[ivar], obs_min[ivar], obs_max[ivar] = load_obs(args.obs[ivar])
-            obs_mean[ivar] = float(obs_mean[ivar])
             if obs_std[ivar] is not None:
-                obs_err_lower[ivar] = float(obs_std[ivar])
-                obs_err_upper[ivar] = float(obs_std[ivar])
+                obs_err_lower[ivar] = obs_std[ivar]
+                obs_err_upper[ivar] = obs_std[ivar]
             print('obs_mean[ivar], obs_std[ivar], obs_min[ivar], obs_max[ivar] : ',obs_mean[ivar], obs_std[ivar], obs_min[ivar], obs_max[ivar])
 
             if obs_min[ivar] is not None:
-                obs_err_lower[ivar] = abs( float((obs_mean[ivar])-float(obs_min[ivar])) )
+                obs_err_lower[ivar] = abs( obs_mean[ivar] - obs_min[ivar] )
             elif obs_std[ivar] is not None:
-                obs_min[ivar] = float(obs_mean[ivar]) - float(obs_std[ivar])
+                obs_min[ivar] = obs_mean[ivar] - obs_std[ivar]
             else:
-                obs_min[ivar] = float(obs_mean[ivar])
                 obs_err_lower[ivar] = 0.0
 
             if obs_max[ivar] is not None:
-                obs_err_upper[ivar] = abs( float(obs_mean[ivar])-float(obs_max[ivar]) )
+                obs_err_upper[ivar] = abs( obs_mean[ivar] - obs_max[ivar] )
             elif obs_std[ivar] is not None:
-                obs_max[ivar] = float(obs_mean[ivar]) + float(obs_std[ivar])
+                obs_max[ivar] = obs_mean[ivar] + obs_std[ivar]
             else:
-                obs_max[ivar] = float(obs_mean[ivar])
                 obs_err_upper[ivar] = 0.0
                  
         for irun, runid in enumerate(args.runid):
