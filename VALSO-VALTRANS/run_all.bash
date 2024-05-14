@@ -200,6 +200,7 @@ for RUNID in `echo $RUNIDS`; do
       then
 
       echo "TAGDJF_LIST : $TAGDJF_LIST"
+      echo "TAG09_LIST : $TAG09_LIST"
       # get data (retrieve_data function are defined in this script)
       moo_wait
       [[ $runDEEPTS == 1 ]]                                              && mooDJFsid=$(retrieve_data $CONFIG $RUNID 1s grid-T $TAGDJF_LIST)
@@ -219,14 +220,14 @@ for RUNID in `echo $RUNIDS`; do
          [[ $runDEEPTS == 1 ]]  && run_tool mk_deepTS -A EROSS $CONFIG $TAG $RUNID 1s $mooDJFsid
       done
       for TAG in $TAG09_LIST;do
-         [[ $runMLD == 1 ]] && run_tool mk_mxl  $CONFIG $TAG09 $RUNID 1m    $mooT09mid
-         [[ $runSIE == 1 ]] && run_tool mk_sie  $CONFIG $TAG09 $RUNID 1m    $mooT09mid 
+         [[ $runMLD == 1 ]] && run_tool mk_mxl  $CONFIG $TAG $RUNID 1m    $mooT09mid
+         [[ $runSIE == 1 ]] && run_tool mk_sie  $CONFIG $TAG $RUNID 1m    $mooT09mid 
       done
       for TAG in $TAG02_LIST;do
-         [[ $runSIE == 1 ]] && run_tool mk_sie  $CONFIG $TAG02 $RUNID 1m    $mooT02mid
+         [[ $runSIE == 1 ]] && run_tool mk_sie  $CONFIG $TAG $RUNID 1m    $mooT02mid
       done
       for TAG in $TAG03_LIST;do
-         [[ $runSIE == 1 ]] && run_tool mk_sie  $CONFIG $TAG03 $RUNID 1m    $mooT03mid
+         [[ $runSIE == 1 ]] && run_tool mk_sie  $CONFIG $TAG $RUNID 1m    $mooT03mid
       done
       let tag2count=0
       TAGDJF_LIST=""
