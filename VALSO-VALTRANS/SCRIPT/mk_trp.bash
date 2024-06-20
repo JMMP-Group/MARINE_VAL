@@ -66,7 +66,13 @@ if [[ "$bottom" == "true" ]]; then
   # create separate subdirectory to stop parallel jobs getting confused about the mesh and bathy files. 
   if [[ ! -d bottom_${section} ]];then mkdir bottom_${section};fi
   cd bottom_${section}
-  lonlatbox=$(cat ${EXEPATH}/SECTIONS/clip_LONLAT_${section}.dat)
+  if [ -f ${EXEPATH}/SECTIONS/clip_LONLAT_${section}_${CONFIG}.dat ]; then
+    lonlatbox=$(cat ${EXEPATH}/SECTIONS/clip_LONLAT_${section}_${CONFIG}.dat)
+  elif [ -f ${EXEPATH}/SECTIONS/clip_LONLAT_${section}.dat ]; then
+    lonlatbox=$(cat ${EXEPATH}/SECTIONS/clip_LONLAT_${section}.dat)
+  else
+    echo "Can't find clip file; exit"; echo "E R R O R in : ./mk_trp.bash $@ (see SLURM/${CONFIG}/${RUNID}/trp_${FREQ}_${TAG}.out)" >> ${EXEPATH}/ERROR.txt ; exit 2 
+  fi
   ijbox=($($CDFPATH/cdffindij -c ../mesh.nc -p T -w ${lonlatbox} | tail -2 | head -1))
   FILET_ORIG=$FILET
   FILEU_ORIG=$FILEU
@@ -111,7 +117,15 @@ fi
 if [[ "$xtrac" == "true" ]]; then
   # extract cross section if required
   echo "section is $section"
-  $CDFPATH/cdf_xtrac_brokenline -t $FILET -u $FILEU -v $FILEV -l ${EXEPATH}/SECTIONS/section_XTRAC_${section}.dat -b bathy.nc -vecrot -o nemoXsec_${RUN_NAME}o_${FREQ}_${TAG}_${BTM}
+  if [ -f ${EXEPATH}/SECTIONS/section_XTRAC_${section}_${CONFIG}.dat ];then
+    secdef_file=${EXEPATH}/SECTIONS/section_XTRAC_${section}_${CONFIG}.dat
+  elif [ -f ${EXEPATH}/SECTIONS/section_XTRAC_${section}.dat ];then
+    secdef_file=${EXEPATH}/SECTIONS/section_XTRAC_${section}.dat
+  else
+    echo "Can't find section definition file; exit"; echo "E R R O R in : ./mk_trp.bash $@ (see SLURM/${CONFIG}/${RUNID}/trp_${FREQ}_${TAG}.out)" >> ${EXEPATH}/ERROR.txt ; exit 2 
+  fi  
+  echo "XTRAC section definition file is $secdef_file"
+  $CDFPATH/cdf_xtrac_brokenline -t $FILET -u $FILEU -v $FILEV -l ${secdef_file} -b bathy.nc -vecrot -o nemoXsec_${RUN_NAME}o_${FREQ}_${TAG}_${BTM}
   if [[ $? -ne 0 ]]; then 
      echo "error when running cdf_xtrac_brokenline; exit" ; echo "E R R O R in : ./mk_trp.bash $@ (see SLURM/${CONFIG}/${RUNID}/mk_trp_${section}_${FREQ}_${TAG}.out)" >> ${EXEPATH}/ERROR.txt ; exit 1
   fi
@@ -131,7 +145,15 @@ if [[ -n "$dens_cutoff" ]]; then
 else
 
   # total and positive/negative transports in channel
-  $CDFPATH/cdftransport -u $FILEU -v $FILEV -lonlat -noheat -vvl -pm -sfx ${BTM}nemo_${RUN_NAME}o_${FREQ}_${TAG} < ${EXEPATH}/SECTIONS/section_LONLAT_${section}.dat
+  if [ -f ${EXEPATH}/SECTIONS/section_LONLAT_${section}_${CONFIG}.dat ];then
+    secdef_file=${EXEPATH}/SECTIONS/section_LONLAT_${section}_${CONFIG}.dat
+  elif [ -f ${EXEPATH}/SECTIONS/section_LONLAT_${section}.dat ];then
+    secdef_file=${EXEPATH}/SECTIONS/section_LONLAT_${section}.dat
+  else
+    echo "Can't find section definition file; exit"; echo "E R R O R in : ./mk_trp.bash $@ (see SLURM/${CONFIG}/${RUNID}/trp_${FREQ}_${TAG}.out)" >> ${EXEPATH}/ERROR.txt ; exit 2 
+  fi  
+  echo "LONLAT section definition file is ${secdef_file}"
+  $CDFPATH/cdftransport -u $FILEU -v $FILEV -lonlat -noheat -vvl -pm -sfx ${BTM}nemo_${RUN_NAME}o_${FREQ}_${TAG} < ${secdef_file}
   if [[ $? -ne 0 ]]; then 
     echo "error when running cdftransport; exit" ; echo "E R R O R in : ./mk_trp.bash $@ (see SLURM/${CONFIG}/${RUNID}/mk_trp_${section}_${FREQ}_${TAG}.out)" >> ${EXEPATH}/ERROR.txt ; exit 1
   fi
