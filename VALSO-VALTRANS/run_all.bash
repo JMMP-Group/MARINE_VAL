@@ -170,7 +170,12 @@ for RUNID in `echo $RUNIDS`; do
             [[ $runACC == 1 ]]     && run_tool mk_trp  -s ACC-shelfbreak $CONFIG $TAG $RUNID $FREQ $mooVyid:$mooUyid:$mooTyid
             [[ $runNAtlOverflows == 1 ]] && run_tool mk_trp  -S DenmarkStrait      $CONFIG $TAG $RUNID $FREQ $mooVyid:$mooUyid:$mooTyid
             [[ $runNAtlOverflows == 1 ]] && run_tool mk_trp  -S FaroeBankChannel   $CONFIG $TAG $RUNID $FREQ $mooVyid:$mooUyid:$mooTyid
-            [[ $runMargSea == 1 ]] && run_tool mk_trp  -S Gibraltar      $CONFIG $TAG $RUNID $FREQ $mooVyid:$mooUyid:$mooTyid
+            [[ $runArcTrans == 1 ]]      && run_tool mk_trp  -S FramStrait         $CONFIG $TAG $RUNID $FREQ $mooVyid:$mooUyid:$mooTyid
+            [[ $runArcTrans == 1 ]]      && run_tool mk_trp  -S BeringStrait       $CONFIG $TAG $RUNID $FREQ $mooVyid:$mooUyid:$mooTyid
+            [[ $runArcTrans == 1 ]]      && run_tool mk_trp  -S DavisStrait        $CONFIG $TAG $RUNID $FREQ $mooVyid:$mooUyid:$mooTyid
+            [[ $runArcTrans == 1 ]]      && run_tool mk_trp  -S BarentsSea         $CONFIG $TAG $RUNID $FREQ $mooVyid:$mooUyid:$mooTyid
+            [[ $runArcTrans == 1 ]]      && run_tool mk_trp  -S WSC                $CONFIG $TAG $RUNID $FREQ $mooVyid:$mooUyid:$mooTyid
+            [[ $runMargSea == 1 ]] && run_tool mk_trp  -S GibraltarStrait          $CONFIG $TAG $RUNID $FREQ $mooVyid:$mooUyid:$mooTyid
             [[ $runMargSea == 1 ]] && run_tool mk_trp  -S BabElMandeb    $CONFIG $TAG $RUNID $FREQ $mooVyid:$mooUyid:$mooTyid
             [[ $runMargSea == 1 ]] && run_tool mk_trp  -S StraitOfHormuz $CONFIG $TAG $RUNID $FREQ $mooVyid:$mooUyid:$mooTyid 
             [[ $runITF == 1 ]]     && run_tool mk_trp  -S LombokStrait   $CONFIG $TAG $RUNID $FREQ $mooVyid:$mooUyid:$mooTyid
