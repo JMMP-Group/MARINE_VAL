@@ -51,6 +51,7 @@ if [[ $RUNALL == 1 || $RUNTEST == 1 ]]; then
    runITF=1
    runMargSea=1
    runNAtlOverflows=1
+   runArcTrans=1
 fi
 if [[ $RUNVALSO == 1 ]]; then
    runACC=1 #acc  ts
