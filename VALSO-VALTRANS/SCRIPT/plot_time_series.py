@@ -48,14 +48,16 @@ class run(object):
                 if isinstance(time,(list,np.ndarray)):
                     ntime = time.shape[0]
                 else:
+                    time=[time]
                     ntime = 1
     
                 timeidx=[None]*ntime
                 for itime in range(0, ntime):
-                    if isinstance(time,(list,np.ndarray)):
-                        timeidx[itime] = np.datetime64(time[itime],'us')
-                    else:
-                        timeidx[itime] = np.datetime64(time,'us')
+                    # We want timeidx to be in pandas Timestamp format which we achieve using
+                    # the pd.to_datetime function. The two-stage conversion via np.datetime64 is
+                    # necessary because the times as read in are cftime objects which pd.to_datetime
+                    # doesn't recognise. 
+                    timeidx[itime] = pd.to_datetime(np.datetime64(time[itime],'us'))
         
                 # build series
                 cnam=get_varname(cf,cvar)
@@ -311,7 +313,12 @@ def main():
             lg = ts_lst[irun].plot(ax=ax[ivar], legend=False, style=run_lst[irun].line,color=run_lst[irun].color,label=run_lst[irun].name, x_compat=True, linewidth=2, rot=0)
             #
             # limit of time axis
+            print(">>> time index: ")
+            for ind in ts_lst[irun].index[:]:
+                print(ind)
+            print("min time : ",ts_lst[irun].index[0])
             mintime=min([mintime,ts_lst[irun].index[0].to_pydatetime().date()])
+            print("max time : ",ts_lst[irun].index[-1])
             maxtime=max([maxtime,ts_lst[irun].index[-1].to_pydatetime().date()])
 
         # set title
