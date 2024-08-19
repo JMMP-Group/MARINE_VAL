@@ -313,12 +313,7 @@ def main():
             lg = ts_lst[irun].plot(ax=ax[ivar], legend=False, style=run_lst[irun].line,color=run_lst[irun].color,label=run_lst[irun].name, x_compat=True, linewidth=2, rot=0)
             #
             # limit of time axis
-            print(">>> time index: ")
-            for ind in ts_lst[irun].index[:]:
-                print(ind)
-            print("min time : ",ts_lst[irun].index[0])
             mintime=min([mintime,ts_lst[irun].index[0].to_pydatetime().date()])
-            print("max time : ",ts_lst[irun].index[-1])
             maxtime=max([maxtime,ts_lst[irun].index[-1].to_pydatetime().date()])
 
         # set title
