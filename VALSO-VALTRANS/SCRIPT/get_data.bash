@@ -1,6 +1,6 @@
 #!/bin/bash -l
-#SBATCH --mem=30G
-#SBATCH --time=60
+#SBATCH --mem=100G
+#SBATCH --time=120
 #SBATCH --ntasks=1
 
 CONFIG=$1
@@ -79,4 +79,6 @@ done
 
 for FILE in $CONVERT_EOS_LIST;do
    python3 ${EXEPATH}/SCRIPT/convert_nemo_eos80.py $FILE
+   ncks -x -v thetao_con,so_abs $FILE -o ${FILE%.nc}_noTEOS10var.nc
+   mv -f ${FILE%.nc}_noTEOS10var.nc $FILE
 done
