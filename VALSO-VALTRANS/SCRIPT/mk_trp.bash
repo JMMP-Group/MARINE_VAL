@@ -16,7 +16,7 @@ while getopts BS:s: opt
 done
 shift `expr $OPTIND - 1`
 
-if [[ -z "$section" || $# -ne 4 ]]; then echo 'mk_trp.bash [-B] -s/S [name of section] [CONFIG (eORCA12, eORCA025 ...)] [RUNID (mi-aa000)] [TAG (19991201_20061201_ANN)] [FREQ (1y)]'; exit 1 ; fi
+if [[ -z "$section" || $# -ne 3 ]]; then echo 'mk_trp.bash [-B] -s/S [name of section] [RUNID (mi-aa000)] [TAG (19991201_20061201_ANN)] [FREQ (1y)]'; exit 1 ; fi
 
 if [[ ${section} == "DenmarkStrait" ]]; then 
   xtrac=true ; 
@@ -29,36 +29,44 @@ elif [[ ${section} == "FaroeBankChannel" ]]; then
   dens_cutoff=27.8
 fi
 
-CONFIG=$1
-RUNID=$2
-TAG=$3
-FREQ=$4
+RUNID=$1
+TAG=$2
+FREQ=$3
 
 echo "TAG, section, xtrac, bottom : $TAG $section $xtrac $bottom"
 
-# load path and mask
-. param.bash
-. ${SCRPATH}/common.bash
-
-cd $DATPATH/
-
 # name
 RUN_NAME=${RUNID#*-}
-
-# download data if needed (useless if data already there)
-#${SCRPATH}/get_data.bash $RUNID $FREQ $TAG grid-V
-#${SCRPATH}/get_data.bash $RUNID $FREQ $TAG grid-U
 
 # check presence of input file
 FILEV=`ls [nu]*${RUN_NAME}o_${FREQ}_${TAG}*_grid[-_]V.nc`
 FILEU=`ls [nu]*${RUN_NAME}o_${FREQ}_${TAG}*_grid[-_]U.nc`
 FILET=`ls [nu]*${RUN_NAME}o_${FREQ}_${TAG}*_grid[-_]T.nc`
-if [ ! -f $FILEV ] ; then echo "$FILEV is missing; exit"; echo "E R R O R in : ./mk_trp.bash $@ (see SLURM/${CONFIG}/${RUNID}/trp_${FREQ}_${TAG}.out)" >> ${EXEPATH}/ERROR.txt ; exit 1 ; fi
-if [ ! -f $FILEU ] ; then echo "$FILEU is missing; exit"; echo "E R R O R in : ./mk_trp.bash $@ (see SLURM/${CONFIG}/${RUNID}/trp_${FREQ}_${TAG}.out)" >> ${EXEPATH}/ERROR.txt ; exit 1 ; fi
-if [ ! -f $FILET ] ; then echo "$FILET is missing; exit"; echo "E R R O R in : ./mk_trp2.bash $@ (see SLURM/${CONFIG}/${RUNID}/trp_${FREQ}_${TAG}.out)" >> ${EXEPATH}/ERROR.txt ; exit 1 ; fi
+if [ ! -f $FILEV ] ; then echo "$FILEV is missing; exit"; echo "E R R O R in : ./mk_trp.bash $@ (see SLURM/${RUNID}/trp_${FREQ}_${TAG}.out)" >> ${EXEPATH}/ERROR.txt ; exit 1 ; fi
+if [ ! -f $FILEU ] ; then echo "$FILEU is missing; exit"; echo "E R R O R in : ./mk_trp.bash $@ (see SLURM/${RUNID}/trp_${FREQ}_${TAG}.out)" >> ${EXEPATH}/ERROR.txt ; exit 1 ; fi
+if [ ! -f $FILET ] ; then echo "$FILET is missing; exit"; echo "E R R O R in : ./mk_trp2.bash $@ (see SLURM/${RUNID}/trp_${FREQ}_${TAG}.out)" >> ${EXEPATH}/ERROR.txt ; exit 1 ; fi
+
+# Find which CONFIG (eORCA1, eORCA025 etc) we are using from dimensions of mesh file: 
+xdim=$(ncdump -h mesh.nc | grep "\sx =" | cut -d"=" -f2 | sed "s/;//g")
+echo "xdim is '$(echo $xdim)'"
+case $(echo $xdim) in 
+  360 | 362)
+    CONFIG="eORCA1"
+    ;;
+  1440 | 1442)
+    CONFIG="eORCA025"
+    ;;
+   4320 | 4322)
+    CONFIG="eORCA12"
+    ;;
+  *)
+    echo "Unknown configuration"
+    echo "E R R O R in : ./mk_trp.bash $@ (see SLURM/${RUNID}/trp_${FREQ}_${TAG}.out)" >> ${EXEPATH}/ERROR.txt
+    exit 1 
+    ;;
+esac
 
 BTM=""
-ln -s ${MSKPATH}/bathymetry_${CONFIG}-GO6.nc bathy.nc
 if [[ "$bottom" == "true" ]]; then
   # calculate "barotropic" component of transport as U_bottom * channel width * channel height
   # create 3D masked projection of bottom field with call to bottom_field.py, then call cdftransport as usual
@@ -71,7 +79,7 @@ if [[ "$bottom" == "true" ]]; then
   elif [ -f ${EXEPATH}/SECTIONS/clip_LONLAT_${section}.dat ]; then
     lonlatbox=$(cat ${EXEPATH}/SECTIONS/clip_LONLAT_${section}.dat)
   else
-    echo "Can't find clip file; exit"; echo "E R R O R in : ./mk_trp.bash $@ (see SLURM/${CONFIG}/${RUNID}/trp_${FREQ}_${TAG}.out)" >> ${EXEPATH}/ERROR.txt ; exit 2 
+    echo "Can't find clip file; exit"; echo "E R R O R in : ./mk_trp.bash $@ (see SLURM/${RUNID}/trp_${FREQ}_${TAG}.out)" >> ${EXEPATH}/ERROR.txt ; exit 2 
   fi
   ijbox=($($CDFPATH/cdffindij -c ../mesh.nc -p T -w ${lonlatbox} | tail -2 | head -1))
   FILET_ORIG=$FILET
@@ -122,12 +130,12 @@ if [[ "$xtrac" == "true" ]]; then
   elif [ -f ${EXEPATH}/SECTIONS/section_XTRAC_${section}.dat ];then
     secdef_file=${EXEPATH}/SECTIONS/section_XTRAC_${section}.dat
   else
-    echo "Can't find section definition file; exit"; echo "E R R O R in : ./mk_trp.bash $@ (see SLURM/${CONFIG}/${RUNID}/trp_${FREQ}_${TAG}.out)" >> ${EXEPATH}/ERROR.txt ; exit 2 
+    echo "Can't find section definition file; exit"; echo "E R R O R in : ./mk_trp.bash $@ (see SLURM/${RUNID}/trp_${FREQ}_${TAG}.out)" >> ${EXEPATH}/ERROR.txt ; exit 2 
   fi  
   echo "XTRAC section definition file is $secdef_file"
   $CDFPATH/cdf_xtrac_brokenline -t $FILET -u $FILEU -v $FILEV -l ${secdef_file} -b bathy.nc -vecrot -o nemoXsec_${RUN_NAME}o_${FREQ}_${TAG}_${BTM}
   if [[ $? -ne 0 ]]; then 
-     echo "error when running cdf_xtrac_brokenline; exit" ; echo "E R R O R in : ./mk_trp.bash $@ (see SLURM/${CONFIG}/${RUNID}/mk_trp_${section}_${FREQ}_${TAG}.out)" >> ${EXEPATH}/ERROR.txt ; exit 1
+     echo "error when running cdf_xtrac_brokenline; exit" ; echo "E R R O R in : ./mk_trp.bash $@ (see SLURM/${RUNID}/mk_trp_${section}_${FREQ}_${TAG}.out)" >> ${EXEPATH}/ERROR.txt ; exit 1
   fi
 fi
 
@@ -139,7 +147,7 @@ if [[ -n "$dens_cutoff" ]]; then
   echo "xsec_file = $xsec_file"
   $CDFPATH/cdfsigtrp -brk $xsec_file -smin ${dens_cutoff} -smax 40.0 -nbins 1 -o ${xsec_file%.nc}_
   if [[ $? -ne 0 ]]; then 
-    echo "error when running cdfsigtrp for section file ${xsec}; exit" ; echo "E R R O R in : ./mk_trp.bash $@ (see SLURM/${CONFIG}/${RUNID}/mk_trp_${section}_${FREQ}_${TAG}.out)" >> ${EXEPATH}/ERROR.txt ; exit 1
+    echo "error when running cdfsigtrp for section file ${xsec}; exit" ; echo "E R R O R in : ./mk_trp.bash $@ (see SLURM/${RUNID}/mk_trp_${section}_${FREQ}_${TAG}.out)" >> ${EXEPATH}/ERROR.txt ; exit 1
   fi
 
 else
@@ -150,12 +158,12 @@ else
   elif [ -f ${EXEPATH}/SECTIONS/section_LONLAT_${section}.dat ];then
     secdef_file=${EXEPATH}/SECTIONS/section_LONLAT_${section}.dat
   else
-    echo "Can't find section definition file; exit"; echo "E R R O R in : ./mk_trp.bash $@ (see SLURM/${CONFIG}/${RUNID}/trp_${FREQ}_${TAG}.out)" >> ${EXEPATH}/ERROR.txt ; exit 2 
+    echo "Can't find section definition file; exit"; echo "E R R O R in : ./mk_trp.bash $@ (see SLURM/${RUNID}/trp_${FREQ}_${TAG}.out)" >> ${EXEPATH}/ERROR.txt ; exit 2 
   fi  
   echo "LONLAT section definition file is ${secdef_file}"
   $CDFPATH/cdftransport -u $FILEU -v $FILEV -lonlat -noheat -vvl -pm -sfx ${BTM}nemo_${RUN_NAME}o_${FREQ}_${TAG} < ${secdef_file}
   if [[ $? -ne 0 ]]; then 
-    echo "error when running cdftransport; exit" ; echo "E R R O R in : ./mk_trp.bash $@ (see SLURM/${CONFIG}/${RUNID}/mk_trp_${section}_${FREQ}_${TAG}.out)" >> ${EXEPATH}/ERROR.txt ; exit 1
+    echo "error when running cdftransport; exit" ; echo "E R R O R in : ./mk_trp.bash $@ (see SLURM/${RUNID}/mk_trp_${section}_${FREQ}_${TAG}.out)" >> ${EXEPATH}/ERROR.txt ; exit 1
   fi
 
 fi

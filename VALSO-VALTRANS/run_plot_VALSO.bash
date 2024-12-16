@@ -4,8 +4,8 @@ if [ $# -eq 0 ] ; then echo 'need a [KEYWORD] (will be inserted inside the figur
 
 module load scitools
 
-#DATPATH=${SCRATCH}/MARINE_VAL
-DATPATH=${HOME}/ACC/JOB_DATA/VALSO
+DATPATH=${SCRATCH}/MARINE_VAL
+#DATPATH=${HOME}/ACC/JOB_DATA/VALSO
 
 KEY=${1}
 FREQ=${2}

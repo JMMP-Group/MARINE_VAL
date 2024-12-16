@@ -67,15 +67,19 @@ integrations you want to plot (some examples provided).
 Process the data to generate the timeseries data:   
 
 ```
-./run_all.bash [CONFIG] [YEARB] [YEARE] [FREQ] [RUNID list]
+./run_all.bash -C [chunksize] -B [BATHY] [MESHMASK] [YEARB] [YEARE] [FREQ] [RUNID list]
 ``` 
 for example : 
 ```
-./run_all.bash eORCA025 1976 1977 1y u-ar685 u-bj000 u-bn477 u-az867 u-am916 u-ba470
+./run_all.bash -C 20 -B bathymetry_eORCA025-GO6.nc mesh_mask_eORCA025-GO6.nc 1981 1990 1y u-cl681
 ```
- * `[CONFIG]` options currently eORCA1, eORCA025 or eORCA12.
+ * `[chunksize]` is the number of dates that should be restored from MASS at a time, recommended value 10-20 
+ * `[BATHY]` is the name of the bathymetry file found in $MSKPATH
+ * `[MESHMASK]` is the name of the mesh_mask file found in $MSKPATH.
  * `[FREQ]` options currently 1y for annual means or 1m for monthly means.
 
+Note that the bathymetry file is only required for metrics involving transports through straits. It can be created from 
+the mesh_mask file using `SCRIPT/bathy_from_dommesh.py`.
 
 Output from the processing scripts appears under the SLURM directory. 
 

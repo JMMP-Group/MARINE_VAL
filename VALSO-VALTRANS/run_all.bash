@@ -35,19 +35,19 @@ done
 }
 
 retrieve_data() {
-   # $1 = $CONFIG ; $2 = $RUNID ; $3 = $FREQ ; $4 = $GRID ; $5+ = $TAGLIST
+   # $1 = $RUNID ; $2 = $FREQ ; $3 = $GRID ; $4+ = $TAGLIST
    exit_code=1
    let count=0
    while [[ "$exit_code" != "0" ]];do
       (( count += 1 ))
       slurm_wait
-      sbatch --job-name=moo_${4}_${5} --output=${JOBOUT_PATH}/moo_${3}_${4}_${5}.out ${SCRPATH}/get_data.bash $1 $2 $3 $4 ${@:5} | awk '{print $4}'
+      sbatch --job-name=moo_${3}_${4} --output=${JOBOUT_PATH}/moo_${2}_${3}_${4}.out ${SCRPATH}/get_data.bash $1 $2 $3 ${@:4} | awk '{print $4}'
       exit_code=$?
-      echo "Retrieval attempt $count. Exit code $exit_code." >> ${JOBOUT_PATH}/sbatch_moo_${3}_${4}_${5}.out
+      echo "Retrieval attempt $count. Exit code $exit_code." >> ${JOBOUT_PATH}/sbatch_moo_${2}_${3}_${4}.out
    done
 }
 run_tool() {
-   # $1 = TOOL ; [possible flags]; $2 = $CONFIG ; $3 = $TAG ; $4 = $RUNID ; $5 = $FREQ ; $6+ = ID
+   # $1 = TOOL ; [possible flags]; $2 = $TAG ; $3 = $RUNID ; $4 = $FREQ ; $5+ = retrieval job IDs
    # global var njob
    local OPTARG OPTIND opt
    TOOL=$1;shift
@@ -63,13 +63,13 @@ run_tool() {
      fi     
    done
    shift `expr $OPTIND - 1`  
-   # echo "run_tool running $TOOL $flags $1 $2 $3 $4"
+   # echo "run_tool running $TOOL $flags $1 $2 $3"
    sbatchschopt='--wait ' #--qos=long '  
-   sbatchrunopt="--dependency=afterany:${@:5} --job-name=P$$_${TOOL}_${1}_${2}_${3} --output=${JOBOUT_PATH}/${TOOL}${jobtag}_${4}_${2}.out"
+   sbatchrunopt="--dependency=afterany:${@:4} --job-name=P$$_${TOOL}_${1}_${2} --output=${JOBOUT_PATH}/${TOOL}${jobtag}_${3}_${1}.out"
    exit_code=1
    while [[ "$exit_code" != "0" ]];do
       slurm_wait
-      sbatch ${sbatchschopt} ${sbatchrunopt} ${SCRPATH}/${TOOL}.bash ${flags} $1 $3 $2 $4 > /dev/null 2>&1 &
+      sbatch ${sbatchschopt} ${sbatchrunopt} ${SCRPATH}/${TOOL}.bash ${flags} $2 $1 $3 > /dev/null 2>&1 &
       exit_code=$?
    done
    njob=$((njob+1))
@@ -90,18 +90,21 @@ progress_bar() {
 }
 #=============================================================================================================================
 
-while getopts C: opt ; do
-  chunksize=${OPTARG} 
+while getopts B:C: opt ; do
+  case $opt in
+     B) BATHY=${OPTARG} ;;
+     C) chunksize=${OPTARG} ;;
+  esac   
 done
 shift `expr $OPTIND - 1`  
 
 if [[ -z "$chunksize" ]];then chunksize=1;fi
 echo "chunksize is $chunksize"
-if [[ $chunksize == 5 ]];then echo "chunksize is 5";fi
+echo "BATHY is $BATHY"
 
-if [ $# -le 4 ]; then echo 'run_all.sh [-C chunksize] [CONFIG] [YEARB] [YEARE] [FREQ] [RUNID list]'; exit 42; fi
+if [ $# -le 4 ]; then echo 'run_all.sh [-C chunksize] [-B BATHY] [MESHMASK] [YEARB] [YEARE] [FREQ] [RUNID list]'; exit 42; fi
 
-CONFIG=$1
+MESHMASK=$1
 YEARB=$2
 YEARE=$3
 FREQ=$4
@@ -114,13 +117,37 @@ if [ -f ERROR.txt ]; then rm ERROR.txt ; fi
 
 [[ $runACC == 1 || $runMargSea == 1 || $runITF == 1 || $runNAtlOverflows == 1  ]] && runTRP=1
 
+if [ ! -f ${MSKPATH}/${MESHMASK} ] ; then 
+   echo "E R R O R : mesh_mask file does not exist : ${MSKPATH}/${MESHMASK}"
+   exit 41
+fi
+
+if [ ${MSKPATH}/${MESHMASK} ] && [ ! -f ${MSKPATH}/${BATHY} ] ; then
+   echo "E R R O R : bathymetry file does not exist : ${MSKPATH}/${BATHY}"
+   echo "Bathymetry file can be created from mesh_mask file using SCRIPT/bathy_from_dommesh.py"
+   exit 41
+fi
+
+
 # loop over years
 echo ''
 for RUNID in `echo $RUNIDS`; do
 
    # set up jobout directory file
-   JOBOUT_PATH=${EXEPATH}/SLURM/${CONFIG}/${RUNID}
+   JOBOUT_PATH=${EXEPATH}/SLURM/${RUNID}
    if [ ! -d ${JOBOUT_PATH} ]; then mkdir -p ${JOBOUT_PATH} ; fi
+
+   # create working directory
+   DATPATH=${SCRATCH}/MARINE_VAL/$RUNID/           
+   if [ ! -d $DATPATH ]; then mkdir -p $DATPATH ; fi
+
+   # check mesh mask
+   cd ${DATPATH}
+   if [ ! -L mesh.nc     ] ; then ln -s ${MSKPATH}/${MESHMASK} mesh.nc ; fi
+   if [ ! -L mask.nc     ] ; then ln -s ${MSKPATH}/${MESHMASK} mask.nc ; fi
+   if [ ! -L bathy.nc    ] ; then ln -s ${MSKPATH}/${BATHY} bathy.nc ; fi
+   # subbasins file not currently used by any metrics
+   #if [ ! -L subbasin.nc ] ; then ln -s ${MSKPATH}/subbasins_${CONFIG}-GO6.nc subbasin.nc ; fi
 
    echo "$RUNID ..."
 
@@ -153,11 +180,11 @@ for RUNID in `echo $RUNIDS`; do
          echo "TAG_LIST : $TAG_LIST"
          # get data (retrieve_data function is defined in this script)
          moo_wait
-         [[ $runTRP == 1 || $runBSF == 1 || $runMOC == 1 || $runMHT == 1  ]] && mooVyid=$(retrieve_data $CONFIG $RUNID $FREQ grid-V $TAG_LIST)
+         [[ $runTRP == 1 || $runBSF == 1 || $runMOC == 1 || $runMHT == 1  ]] && mooVyid=$(retrieve_data $RUNID $FREQ grid-V $TAG_LIST)
          moo_wait
-         [[ $runTRP == 1 || $runBSF == 1 || $runMOC == 1 ]] && mooUyid=$(retrieve_data $CONFIG $RUNID $FREQ grid-U $TAG_LIST)
+         [[ $runTRP == 1 || $runBSF == 1 || $runMOC == 1 ]] && mooUyid=$(retrieve_data $RUNID $FREQ grid-U $TAG_LIST)
          moo_wait
-         [[ $runTRP == 1 || $runDEEPTS == 1 || $runQHF == 1 || $runSST == 1 || $runMOC == 1 ]] && mooTyid=$(retrieve_data $CONFIG $RUNID $FREQ grid-T $TAG_LIST)
+         [[ $runTRP == 1 || $runDEEPTS == 1 || $runQHF == 1 || $runSST == 1 || $runMOC == 1 ]] && mooTyid=$(retrieve_data $RUNID $FREQ grid-T $TAG_LIST)
           
          echo "mooTyid : $mooTyid"
          echo "mooUyid : $mooUyid"
@@ -165,29 +192,29 @@ for RUNID in `echo $RUNIDS`; do
 
          for TAG in $TAG_LIST; do
             # run cdftools
-            [[ $runACC == 1 ]]     && run_tool mk_trp  -S ACC            $CONFIG $TAG $RUNID $FREQ $mooVyid:$mooUyid:$mooTyid
-            [[ $runACC == 1 ]]     && run_tool mk_trp  -S ACC -B         $CONFIG $TAG $RUNID $FREQ $mooVyid:$mooUyid:$mooTyid
-            [[ $runACC == 1 ]]     && run_tool mk_trp  -s ACC-shelfbreak $CONFIG $TAG $RUNID $FREQ $mooVyid:$mooUyid:$mooTyid
-            [[ $runNAtlOverflows == 1 ]] && run_tool mk_trp  -S DenmarkStrait      $CONFIG $TAG $RUNID $FREQ $mooVyid:$mooUyid:$mooTyid
-            [[ $runNAtlOverflows == 1 ]] && run_tool mk_trp  -S FaroeBankChannel   $CONFIG $TAG $RUNID $FREQ $mooVyid:$mooUyid:$mooTyid
-            [[ $runArcTrans == 1 ]]      && run_tool mk_trp  -S FramStrait         $CONFIG $TAG $RUNID $FREQ $mooVyid:$mooUyid:$mooTyid
-            [[ $runArcTrans == 1 ]]      && run_tool mk_trp  -S BeringStrait       $CONFIG $TAG $RUNID $FREQ $mooVyid:$mooUyid:$mooTyid
-            [[ $runArcTrans == 1 ]]      && run_tool mk_trp  -S DavisStrait        $CONFIG $TAG $RUNID $FREQ $mooVyid:$mooUyid:$mooTyid
-            [[ $runArcTrans == 1 ]]      && run_tool mk_trp  -S BarentsSea         $CONFIG $TAG $RUNID $FREQ $mooVyid:$mooUyid:$mooTyid
-            [[ $runArcTrans == 1 ]]      && run_tool mk_trp  -S WSC                $CONFIG $TAG $RUNID $FREQ $mooVyid:$mooUyid:$mooTyid
-            [[ $runMargSea == 1 ]] && run_tool mk_trp  -S GibraltarStrait          $CONFIG $TAG $RUNID $FREQ $mooVyid:$mooUyid:$mooTyid
-            [[ $runMargSea == 1 ]] && run_tool mk_trp  -S BabElMandeb    $CONFIG $TAG $RUNID $FREQ $mooVyid:$mooUyid:$mooTyid
-            [[ $runMargSea == 1 ]] && run_tool mk_trp  -S StraitOfHormuz $CONFIG $TAG $RUNID $FREQ $mooVyid:$mooUyid:$mooTyid 
-            [[ $runITF == 1 ]]     && run_tool mk_trp  -S LombokStrait   $CONFIG $TAG $RUNID $FREQ $mooVyid:$mooUyid:$mooTyid
-            [[ $runITF == 1 ]]     && run_tool mk_trp  -S OmbaiStrait    $CONFIG $TAG $RUNID $FREQ $mooVyid:$mooUyid:$mooTyid
-            [[ $runITF == 1 ]]     && run_tool mk_trp  -S TimorPassage   $CONFIG $TAG $RUNID $FREQ $mooVyid:$mooUyid:$mooTyid 
-            [[ $runBSF == 1 ]]     && run_tool mk_psi  $CONFIG $TAG $RUNID $FREQ $mooVyid:$mooUyid
-            [[ $runDEEPTS == 1 ]]  && run_tool mk_deepTS -A AMU $CONFIG $TAG $RUNID $FREQ $mooTyid
-            [[ $runDEEPTS == 1 ]]  && run_tool mk_deepTS -A WROSS $CONFIG $TAG $RUNID $FREQ $mooTyid
-            [[ $runMOC == 1 ]]     && run_tool mk_moc  $CONFIG $TAG $RUNID $FREQ $mooVyid:$mooUyid:$mooTyid
-            [[ $runMHT == 1 ]]     && run_tool mk_mht  $CONFIG $TAG $RUNID $FREQ $mooVyid:$mooVyid
-            [[ $runQHF == 1 ]]     && run_tool mk_hfds $CONFIG $TAG $RUNID $FREQ $mooTyid 
-            [[ $runSST == 1 ]]     && run_tool mk_sst  $CONFIG $TAG $RUNID $FREQ $mooTyid
+            [[ $runACC == 1 ]]     && run_tool mk_trp  -S ACC            $TAG $RUNID $FREQ $mooVyid:$mooUyid:$mooTyid
+            [[ $runACC == 1 ]]     && run_tool mk_trp  -S ACC -B         $TAG $RUNID $FREQ $mooVyid:$mooUyid:$mooTyid
+            [[ $runACC == 1 ]]     && run_tool mk_trp  -s ACC-shelfbreak $TAG $RUNID $FREQ $mooVyid:$mooUyid:$mooTyid
+            [[ $runNAtlOverflows == 1 ]] && run_tool mk_trp  -S DenmarkStrait      $TAG $RUNID $FREQ $mooVyid:$mooUyid:$mooTyid
+            [[ $runNAtlOverflows == 1 ]] && run_tool mk_trp  -S FaroeBankChannel   $TAG $RUNID $FREQ $mooVyid:$mooUyid:$mooTyid
+            [[ $runArcTrans == 1 ]]      && run_tool mk_trp  -S FramStrait         $TAG $RUNID $FREQ $mooVyid:$mooUyid:$mooTyid
+            [[ $runArcTrans == 1 ]]      && run_tool mk_trp  -S BeringStrait       $TAG $RUNID $FREQ $mooVyid:$mooUyid:$mooTyid
+            [[ $runArcTrans == 1 ]]      && run_tool mk_trp  -S DavisStrait        $TAG $RUNID $FREQ $mooVyid:$mooUyid:$mooTyid
+            [[ $runArcTrans == 1 ]]      && run_tool mk_trp  -S BarentsSea         $TAG $RUNID $FREQ $mooVyid:$mooUyid:$mooTyid
+            [[ $runArcTrans == 1 ]]      && run_tool mk_trp  -S WSC                $TAG $RUNID $FREQ $mooVyid:$mooUyid:$mooTyid
+            [[ $runMargSea == 1 ]] && run_tool mk_trp  -S GibraltarStrait          $TAG $RUNID $FREQ $mooVyid:$mooUyid:$mooTyid
+            [[ $runMargSea == 1 ]] && run_tool mk_trp  -S BabElMandeb    $TAG $RUNID $FREQ $mooVyid:$mooUyid:$mooTyid
+            [[ $runMargSea == 1 ]] && run_tool mk_trp  -S StraitOfHormuz $TAG $RUNID $FREQ $mooVyid:$mooUyid:$mooTyid 
+            [[ $runITF == 1 ]]     && run_tool mk_trp  -S LombokStrait   $TAG $RUNID $FREQ $mooVyid:$mooUyid:$mooTyid
+            [[ $runITF == 1 ]]     && run_tool mk_trp  -S OmbaiStrait    $TAG $RUNID $FREQ $mooVyid:$mooUyid:$mooTyid
+            [[ $runITF == 1 ]]     && run_tool mk_trp  -S TimorPassage   $TAG $RUNID $FREQ $mooVyid:$mooUyid:$mooTyid 
+            [[ $runBSF == 1 ]]     && run_tool mk_psi  $TAG $RUNID $FREQ $mooVyid:$mooUyid
+            [[ $runDEEPTS == 1 ]]  && run_tool mk_deepTS -A AMU $TAG $RUNID $FREQ $mooTyid
+            [[ $runDEEPTS == 1 ]]  && run_tool mk_deepTS -A WROSS $TAG $RUNID $FREQ $mooTyid
+            [[ $runMOC == 1 ]]     && run_tool mk_moc  $TAG $RUNID $FREQ $mooVyid:$mooUyid:$mooTyid
+            [[ $runMHT == 1 ]]     && run_tool mk_mht  $TAG $RUNID $FREQ $mooVyid:$mooVyid
+            [[ $runQHF == 1 ]]     && run_tool mk_hfds $TAG $RUNID $FREQ $mooTyid 
+            [[ $runSST == 1 ]]     && run_tool mk_sst  $TAG $RUNID $FREQ $mooTyid
          done
          let tagcount=0
          TAG_LIST=""
@@ -208,31 +235,32 @@ for RUNID in `echo $RUNIDS`; do
       echo "TAG09_LIST : $TAG09_LIST"
       # get data (retrieve_data function are defined in this script)
       moo_wait
-      [[ $runDEEPTS == 1 ]]                                              && mooDJFsid=$(retrieve_data $CONFIG $RUNID 1s grid-T $TAGDJF_LIST)
+      [[ $runDEEPTS == 1 ]]                                              && mooDJFsid=$(retrieve_data $RUNID 1s grid-T $TAGDJF_LIST)
       moo_wait
-      [[ $runSIE == 1 || $runMLD == 1 ]]                                 && mooT09mid=$(retrieve_data $CONFIG $RUNID 1m grid-T $TAG09_LIST)
+      [[ $runSIE == 1 || $runMLD == 1 ]]                                 && mooT09mid=$(retrieve_data $RUNID 1m grid-T $TAG09_LIST)
       moo_wait
-      [[ $runSIE == 1 ]]                                                 && mooT02mid=$(retrieve_data $CONFIG $RUNID 1m grid-T $TAG02_LIST)
+      [[ $runSIE == 1 ]]                                                 && mooT02mid=$(retrieve_data $RUNID 1m grid-T $TAG02_LIST)
       moo_wait
-      [[ $runSIE == 1 ]]                                                 && mooT03mid=$(retrieve_data $CONFIG $RUNID 1m grid-T $TAG03_LIST)
+      [[ $runSIE == 1 ]]                                                 && mooT03mid=$(retrieve_data $RUNID 1m grid-T $TAG03_LIST)
 
       echo "mooDJFsid : $mooDJFsid"
       echo "mooT09mid : $mooT09mid"
 
       # run cdftools
       for TAG in $TAGDJF_LIST;do
-         [[ $runDEEPTS == 1 ]]  && run_tool mk_deepTS -A WWED $CONFIG $TAG $RUNID 1s $mooDJFsid
-         [[ $runDEEPTS == 1 ]]  && run_tool mk_deepTS -A EROSS $CONFIG $TAG $RUNID 1s $mooDJFsid
+         [[ $runDEEPTS == 1 ]]  && run_tool mk_deepTS -A WWED $TAG $RUNID 1s $mooDJFsid
+         [[ $runDEEPTS == 1 ]]  && run_tool mk_deepTS -A EROSS $TAG $RUNID 1s $mooDJFsid
       done
       for TAG in $TAG09_LIST;do
-         [[ $runMLD == 1 ]] && run_tool mk_mxl  $CONFIG $TAG $RUNID 1m    $mooT09mid
-         [[ $runSIE == 1 ]] && run_tool mk_sie  $CONFIG $TAG $RUNID 1m    $mooT09mid 
+         echo "running mk_mxl for $TAG"
+         [[ $runMLD == 1 ]] && run_tool mk_mxl  $TAG $RUNID 1m    $mooT09mid
+         [[ $runSIE == 1 ]] && run_tool mk_sie  $TAG $RUNID 1m    $mooT09mid 
       done
       for TAG in $TAG02_LIST;do
-         [[ $runSIE == 1 ]] && run_tool mk_sie  $CONFIG $TAG $RUNID 1m    $mooT02mid
+         [[ $runSIE == 1 ]] && run_tool mk_sie  $TAG $RUNID 1m    $mooT02mid
       done
       for TAG in $TAG03_LIST;do
-         [[ $runSIE == 1 ]] && run_tool mk_sie  $CONFIG $TAG $RUNID 1m    $mooT03mid
+         [[ $runSIE == 1 ]] && run_tool mk_sie  $TAG $RUNID 1m    $mooT03mid
       done
       let tag2count=0
       TAGDJF_LIST=""

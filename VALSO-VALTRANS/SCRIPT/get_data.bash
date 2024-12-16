@@ -3,16 +3,12 @@
 #SBATCH --time=120
 #SBATCH --ntasks=1
 
-CONFIG=$1
-RUNID=$2
-FREQ=$3
-GRID=$4
-TAGLIST=${@:5}
+sleep 30
 
-. param.bash
-. ${SCRPATH}/common.bash
-
-cd ${DATPATH}
+RUNID=$1
+FREQ=$2
+GRID=$3
+TAGLIST=${@:4}
 
 FILTER=${EXEPATH}/FILTERS/filter_${GRID}
 
@@ -64,8 +60,10 @@ for MFILE in ${FILE_LST}; do
    fi
 done
 
-echo "Executing command : moo filter $FILTER $MOO_GET_LIST ."
-moo filter $FILTER $MOO_GET_LIST .
+if [[ -n "$MOO_GET_LIST" ]];then 
+  echo "Executing command : moo filter $FILTER $MOO_GET_LIST ."
+  moo filter $FILTER $MOO_GET_LIST .
+fi
 
 for FILE in $MOO_RESTORED_LIST;do
    Tvarname=$(ncdump -h $FILE | grep float | grep thetao[_\ ] | cut -d' ' -f2 | cut -d'(' -f1 )

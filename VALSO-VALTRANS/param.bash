@@ -3,22 +3,22 @@
 ulimit -s unlimited
 
 # top level directory
-MARINE_VAL=${HOME}/Git_Repos/MARINE_VAL
+export MARINE_VAL=${HOME}/Git_Repos/MARINE_VAL_issue_8
 
 # where mask are stored (name of mesh mask in SCRIPT/common.bash)
-MSKPATH=/data/users/frsy/MESH_MASK/
+export MSKPATH=/data/users/frsy/MESH_MASK/
 
 # where cdftools are stored
-CDFPATH=${MARINE_VAL}/CDFTOOLS_4.0/bin
+export CDFPATH=${MARINE_VAL}/CDFTOOLS_4.0/bin
 
 # toolbox location
-EXEPATH=${MARINE_VAL}/VALSO-VALTRANS/
+export EXEPATH=${MARINE_VAL}/VALSO-VALTRANS/
 
 # SCRIPT location
-SCRPATH=${MARINE_VAL}/VALSO-VALTRANS/SCRIPT/
+export SCRPATH=${MARINE_VAL}/VALSO-VALTRANS/SCRIPT/
 
 # diagnostics bundle
-RUNVALSO=0     # Southern Ocean metrics
+RUNVALSO=1     # Southern Ocean metrics
 RUNVALGLO=0    # Global metrics (bit flakey)
 RUNVALTRANS=1  # Transports/exchanges
 RUNALL=0       # All of the above
@@ -35,7 +35,7 @@ runDEEPTS=0         # Deep salinity in West Weddell and West Ross Seas
 runMOC=0            # Atlantic meridional overturning
 runMHT=0            # Atlantic meridional heat transport
 runSIE=0            # Southern Ocean sea ice extent
-runSST=0            #
+runSST=1            #
 runQHF=0            #
 #
 if [[ $RUNALL == 1 || $RUNTEST == 1 ]]; then
