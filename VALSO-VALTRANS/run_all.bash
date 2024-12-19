@@ -122,7 +122,7 @@ if [ ! -f ${MSKPATH}/${MESHMASK} ] ; then
    exit 41
 fi
 
-if [ ${MSKPATH}/${MESHMASK} ] && [ ! -f ${MSKPATH}/${BATHY} ] ; then
+if [ $runTRP == 1 ] && [ ! -f ${MSKPATH}/${BATHY} ] ; then
    echo "E R R O R : bathymetry file does not exist : ${MSKPATH}/${BATHY}"
    echo "Bathymetry file can be created from mesh_mask file using SCRIPT/bathy_from_dommesh.py"
    exit 41
