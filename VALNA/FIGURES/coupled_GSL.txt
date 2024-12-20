@@ -1,1 +1,0 @@
- python2.7 SCRIPT/plot_time_series.py -noshow -runid u-ak108 u-ai758 u-aj393 -f *1y*NA_crop_T.nc -var GS_sep_lat -title GS separation latitude @72degW -dir /data/users/smoreton/VALNA/DATA -o coupled_GSL -obs OBS/GS_sep_lat_obs.txt

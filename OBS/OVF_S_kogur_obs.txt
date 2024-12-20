@@ -1,0 +1,4 @@
+ref = Kogur Xsection from nsv standardiser
+mean = 34.88384838
+std = 0.00559513
+# 2011 sept - 2012 july

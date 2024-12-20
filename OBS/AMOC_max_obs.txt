@@ -1,0 +1,4 @@
+ref = RAPID
+mean = 17.1
+std = 1.5
+# 2004-2018 annual av

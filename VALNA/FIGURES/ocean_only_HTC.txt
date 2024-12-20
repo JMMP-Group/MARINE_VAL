@@ -1,1 +1,0 @@
- python2.7 SCRIPT/plot_time_series.py -noshow -runid u-ar435 u-ah494 mi-aq915 -f *HEATC_NA_*1y*heatc.nc -var heatc3d -title Heat content in SPG (*10^23 J) -dir /data/users/smoreton/VALNA/DATA -o ocean_only_HTC -obs OBS/HTC_subp_obs.txt

@@ -1,1 +1,0 @@
- python2.7 SCRIPT/plot_time_series.py -noshow -runid u-ak108 u-ai758 u-aj393 -f *BSF_NA*1y*psi.nc -var min_sobarstf -title SPG max strength (Sv) -dir /data/users/smoreton/VALNA/DATA -o coupled_BSF -sf -0.000001

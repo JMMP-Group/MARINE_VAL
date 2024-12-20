@@ -1,1 +1,0 @@
- python2.7 SCRIPT/plot_time_series.py -noshow -runid u-ar435 u-ah494 mi-aq915 -f *1y*NA_200m_15deg.nc -var NAC_lat -title NAC latitude @45W -dir /data/users/smoreton/VALNA/DATA -o ocean-only_NAC -obs OBS/NAC_lat_obs.txt

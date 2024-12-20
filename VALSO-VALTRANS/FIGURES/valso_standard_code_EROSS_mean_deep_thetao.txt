@@ -1,0 +1,1 @@
+ python2.7 SCRIPT/plot_time_series.py -noshow -runid u-cl681 -f *EROSS*thetao*1s*deepTS.nc -var (mean_3D_thetao|mean_3D_thetao_pot|mean_3D_votemper) -title Mean deep temp. EROSS (C) -dir /scratch/frsy/MARINE_VAL -o valso_standard_code_EROSS_mean_deep_thetao -obs OBS/EROSS_deepT_mean_obs.txt

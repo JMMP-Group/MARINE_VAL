@@ -1,0 +1,1 @@
+ python2.7 SCRIPT/plot_time_series.py -noshow -runid u-cl681 -f *RG*1y*psi.nc -var max_sobarstf -title Ross Gyre (Sv) -dir /scratch/frsy/MARINE_VAL -o valso_standard_code_RG -sf 0.000001 -obs OBS/RG_obs.txt

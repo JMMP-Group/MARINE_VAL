@@ -1,1 +1,0 @@
- python2.7 SCRIPT/plot_time_series.py -noshow -runid u-ar435 u-ah494 mi-aq915 -f *1y*ovide_Xsection.nc -var S_av_27_8_rho -title Mean S>27.8 kg/m3 (Icel b, ovide) -dir /data/users/smoreton/VALNA/DATA -o ovf_ocean_only_OVI_S -obs OBS/OVF_S_ovide_icel_obs.txt

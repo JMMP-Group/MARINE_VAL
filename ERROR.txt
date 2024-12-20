@@ -1,0 +1,1 @@
+E R R O R in : ./mk_trp.bash u-cl518 19841201 1y (see SLURM/u-cl518/mk_trp_ACC_1y_19841201.out)

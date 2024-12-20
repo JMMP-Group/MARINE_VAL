@@ -1,0 +1,34 @@
+ runid     |     name            |   line   |   color       |
+ u-ak108   | GC3.1 N216-eORCA1   | -    | blue           |
+ u-ap466   | GC3.1 N216-eORCA1   | -    | blue           |
+ u-ai758   | GC3.1 N216-eORCA025 | -    | chocolate      |
+ u-aj368   | GC3.1 N216-eORCA025 | -    | chocolate      |
+ u-aj209   | GC3.1 N96-eORCA025  | --   | chocolate      |
+ u-aj393   | GC3.1 N216-eORCA12  | -    | darkorchid     |
+ u-ar685   | GC3.1N96025       | --       | royalblue     |
+ u-bj000   | GC4.0N96025       | --       | chocolate     |
+ u-bu697   | GC5 NEMO 4.0.1    | --       | lightcoral    |
+ u-bv120   | GC5 NEMO 4.0.1 OI drag x2 | --  |  dodgerblue  |
+ u-bs129   | GC5P N96O025 CNTRL| -        | sienna        |
+ u-bt100   | GC5P Wk GM 150    | -        | firebrick     |    
+ u-bt235   | GC5P Smag 2.0     | -        | purple        |  
+ u-bu016   | GC5P loc par slp  | -        | sandybrown    |
+ u-bt771   | GC5P Wk GM 300    | -        | navy          |
+ u-bw658   | GC5P WKgm 4ad lps | -        | green         |
+ u-cb088   | GC5P long timestep         | -.       | gray          |              
+ u-cn045   | GC5P + SO package          | -.       | goldenrod     | 
+ u-cb189   | GC5P rough bathymetry      | -.       | mediumorchid  |              
+ u-cj671   | GC5P GEBCO2021 bathy       | -.       | tomato        | 
+ u-cj672   | GC5P GEBCO2021 bathy S21TT | -.       | deepskyblue   | 
+ u-cl518   | GC5 GO8p7 new bathy        | -        | fuchsia        |
+ u-cl519   | GC5 GO8p7 new bathy no partial slip | - | chartreuse   |
+ u-cl520   | GC5 GO8p7 new bathy no SO package   | - | deepskyblue  |
+ u-cl681   | GC5 GO8p7                  | -        | goldenrod      |
+ u-cl937   | GC5 GO8p8                  | --       | goldenrod      |
+ u-cl910   | GC5 GO8p7 no SO package    | -        | gray           |
+ u-cm019   | GC5 present day forcing    | -        | dodgerblue     |
+ u-cm163   | GC5 4xCO2                  | -        | tomato         |
+ u-cn200   | GC5 GO8p7 bathy edits 20220404 NoBfrInc NoParSlp | -   | red |
+ u-cn202   | GC5 GO8p8 bathy edits 20220404 NoBfrInc NoParSlp | --  | red |
+ u-cn315   | GC5 #577.10.1 N96-eORCA025  | -         | gold |  
+ u-cn049   | GC5 #577.10.1 N216-eORCA025 | --        | gold | 

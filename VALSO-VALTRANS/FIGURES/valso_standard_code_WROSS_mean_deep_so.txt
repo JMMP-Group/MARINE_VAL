@@ -1,0 +1,1 @@
+ python2.7 SCRIPT/plot_time_series.py -noshow -runid u-cl681 -f *WROSS*so*1y*deepTS.nc -var (mean_3D_so|mean_3D_so_pra|mean_3D_vosaline) -title Mean deep sal. WROSS (PSU) -dir /scratch/frsy/MARINE_VAL -o valso_standard_code_WROSS_mean_deep_so -obs OBS/WROSS_deepS_mean_obs.txt

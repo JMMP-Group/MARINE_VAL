@@ -1,0 +1,4 @@
+ref = ifremer dataset 0.03 kg/m3 threshold
+mean = -974
+std = 0
+#1941 - 2002

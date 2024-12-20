@@ -1,0 +1,4 @@
+ref = Latrabjarg from nsv standardiser
+mean = 0.69057989
+std = 0
+# no time series

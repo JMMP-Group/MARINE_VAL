@@ -1,0 +1,4 @@
+ref = Sprintall et al, JGR(Oceans) 114 (2009)
+mean = 2.6
+min = 1.8
+max = 3.2

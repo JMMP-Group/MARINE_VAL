@@ -1,0 +1,4 @@
+ref = OSNAP from nsv standardiser
+mean = 2.90767408
+std = 0.0308461
+# 2014-2016, Irminger basin only

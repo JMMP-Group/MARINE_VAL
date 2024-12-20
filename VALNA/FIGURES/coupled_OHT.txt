@@ -1,1 +1,0 @@
- python2.7 SCRIPT/plot_time_series.py -noshow -runid u-ak108 u-ai758 u-aj393 -f *OHT*1y*mht_26_5N.nc -var zomht_glo -title MHT @26.5N (PW) -dir /data/users/smoreton/VALNA/DATA -o coupled_OHT -obs OBS/AMHT_obs.txt
