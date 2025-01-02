@@ -16,7 +16,6 @@ echo '  '
 
 # NA subpolar gyre max strength
 echo 'plot NA subpolar gyre strength time series'
-# note python2.7 is deliberately stated otherwise fails to plot
 python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f *BSF_NA*${FREQ}*psi_NA.nc -var min_sobarstf -title "SPG max strength (Sv)" -dir ${DATPATH} -o ${KEY}_BSF -sf -0.000001 #-obs OBS/SUBP_PSI_obs.txt
 #-sf is scale factor i.e. m3/s to Sv
 #using min and negative scale factor because streamf is negative in subpolar gyre
@@ -40,7 +39,6 @@ if [[ $? -ne 0 ]]; then exit 42; fi
 
 # mean MXL depth in Lab Sea in March (averaged in small region)
 echo 'plot mean MXL depth in Lab Sea time series'
-# note python2.7 is deliberately stated rather than just python otherwise error: attributes of masked are not writeable
 python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f *LAB_MXL*1m*0301*T*003*.nc -var mean_somxl030 -title "Mean MXL in Lab Sea in March (m)" -dir ${DATPATH} -o ${KEY}_MXL_LAB_MEAN -sf -1 -obs OBS/MXL_lab_mean_obs.txt
 if [[ $? -ne 0 ]]; then exit 42; fi
 

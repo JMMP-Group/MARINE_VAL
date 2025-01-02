@@ -52,7 +52,8 @@ fi
 ijbox=$($CDFPATH/cdffindij -c mesh.nc -w -60.000 -50.000  55.000  62.000 | tail -2 | head -1)
 echo ijbox
 $CDFPATH/cdfmean -f $FILEOUT -v 'somxl030' -p T -w ${ijbox} 0 0 -minmax -o tmp_LAB_MXL_$FILEOUT
-#-minmax computes & outputs the min and max in .nc file
+# this step needed because cdfmean sets a strange value for valid_max and that messes up the plotting routines.
+ncatted -a valid_max,mean_somxl030,d,, tmp_LAB_MXL_$FILEOUT
 
 # mv output file
 if [[ $? -eq 0 ]]; then

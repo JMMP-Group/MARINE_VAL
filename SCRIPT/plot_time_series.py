@@ -310,11 +310,13 @@ def main():
 
             run_lst[irun].load_time_series(cfile, cvar)
             ts_lst[irun] = run_lst[irun].ts
+            print("run_lst[irun] min/max : ",run_lst[irun].min,run_lst[irun].max)
             lg = ts_lst[irun].plot(ax=ax[ivar], legend=False, style=run_lst[irun].line,color=run_lst[irun].color,label=run_lst[irun].name, x_compat=True, linewidth=2, rot=0)
             #
             # limit of time axis
             mintime=min([mintime,ts_lst[irun].index[0].to_pydatetime().date()])
             maxtime=max([maxtime,ts_lst[irun].index[-1].to_pydatetime().date()])
+            print("mintime, maxtime : ",mintime,maxtime)
 
         # set title
         if (args.title):

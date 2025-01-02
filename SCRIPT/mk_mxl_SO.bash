@@ -26,6 +26,8 @@ if [ ! -f $FILE ] ; then echo "$FILE is missing; exit"; echo "E R R O R in : ./m
 FILEOUT=WMXL_nemo_${RUN_NAME}o_${FREQ}_${TAG}_grid-${GRID}.nc
 ijbox=$($CDFPATH/cdffindij -c mesh.nc -p T -w -31.250   37.500  -66.500  -60.400 | tail -2 | head -1)
 $CDFPATH/cdfmean -f $FILE -v '|somxzint1|sokaraml|' -p T -w ${ijbox} 0 0 -minmax -o tmp_$FILEOUT
+# this step needed because cdfmean sets a strange value for valid_max and that messes up the plotting routines.
+ncatted -a valid_max,max_somxzint1,d,, tmp_$FILEOUT
 
 # mv output file
 if [[ $? -eq 0 ]]; then 
@@ -34,7 +36,3 @@ else
    echo "error when running cdfmxl; exit"; echo "E R R O R in : ./mk_mxl.bash $@ (see SLURM/${RUNID}/mxl_${FREQ}_${TAG}.out)" >> ${EXEPATH}/ERROR.txt ; exit 1
 fi
 
-# this step needed because cdfmean sets a strange value for valid_max and that messes up the plotting routines.
-ncatted -a valid_max,max_somxzint1,d,, $FILEOUT
-
-#
