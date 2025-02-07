@@ -67,10 +67,10 @@ make
 ```
 ### Data processing
 
-Edit environment variables in `param.bash` to fit your setup/need.
-   * mesh mask location with mesh mask name
-   * location of the CDFTOOLS toolbox
-   * where to store the data output (or link to existing data location) 
+Edit environment variables in `param.bash` to fit your setup/need, including:
+   * $MSKPATH: directory where model mesh_mask (and bathymetry) files are stored.
+   * $CDFPATH: location of the CDFTOOLS toolbox
+   * $DATPATH: where to store the data output (or link to existing data location) 
 
 Edit `param.bash` to define which metrics you want to calculate, 
 normally a package like VALSO, VALNA or VALTRANS, but you can pick and choose
@@ -85,7 +85,7 @@ for example :
 ```
 ./run_all.bash -C 20 -B bathymetry_eORCA025-GO6.nc mesh_mask_eORCA025-GO6.nc 1981 1990 1y u-cl681
 ```
- * `[chunksize]` is the number of dates that should be restored from MASS at a time, recommended value 10-20 
+ * `[chunksize]` is the number of dates that should be restored from MASS at a time, recommended value at least 10 or 20 to avoid clogging MASS with lots of small retrievals.
  * `[BATHY]` is the name of the bathymetry file found in $MSKPATH
  * `[MESHMASK]` is the name of the mesh_mask file found in $MSKPATH.
  * `[FREQ]` options currently 1y for annual means or 1m for monthly means.
@@ -115,7 +115,7 @@ The individual timeseries plots will appear in the FIGURES directory and the com
 directory.
 
 <a name="output"></a>
-## Output
+## Example Output
 
 VALSO output:
 
