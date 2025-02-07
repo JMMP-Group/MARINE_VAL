@@ -12,10 +12,11 @@
 <a name="introduction"></a>
 ## Introduction
 
-A software package for ocean scientists to calculate and plot the following evaluation metrics to compare Southern 
-Ocean biases and Global biases in transports/exchanges through straits between CMIP models with a NEMO ocean:
+A software package for ocean scientists to calculate and plot scalar evaluation metrics for CMIP models with a 
+NEMO ocean. The data processing is currently mostly based on the CDFTools package. The evaluation metrics are
+grouped into three packages although any combination of metrics can be calculated and plotted:
 
-   * VALSO metrics (Southern Ocean assessment):
+   * **VALSO** metrics (Southern Ocean assessment):
      * Drake Passage net eastward transport (ACC)
      * Weddell gyre strength
      * Ross gyre strength
@@ -23,7 +24,7 @@ Ocean biases and Global biases in transports/exchanges through straits between C
      * Intrusion of Circumpolar Deep Water (CDW) in Amundsen sea
      * Intrusion of CDW on East Ross shelf
 
-   * VALNA metrics (North Atlantic assessment):
+   * **VALNA** metrics (North Atlantic assessment):
      * Subpolar gyre strength (Sv)
      * Subpolar gyre heat content (J)
      * AMOC at 26.5N at max. depth (Sv)
@@ -35,7 +36,7 @@ Ocean biases and Global biases in transports/exchanges through straits between C
      * GS separation latitude (degN)
      * NA current latitude (degN)
 
-   * VALTRANS metrics (Straits transports and exchanges):
+   * **VALTRANS** metrics (Straits transports and exchanges):
      * North Atlantic deep overflows: Denmark Strait and Faroe Bank Channel.
      * Marginal Seas exchanges: Gibraltar, Bab el Mandeb, Strait of Hormuz.
      * Indonesian Throughflow: Lombok Strait, Ombai Strait, Timor Passage.
@@ -99,7 +100,8 @@ Output from the processing scripts appears under the SLURM directory.
 Edit `style.db` to define labels, colours and line styles for the 
 integrations you want to plot (some examples provided). 
 
-Build the plot for the Southern Ocean:
+Plotting scripts are provided to produce sets of timeseries plots for each of the three packages, VALSO, VALNA and 
+VALTRANS. For example, to generate a standard set of VALSO plots, type:
 ```
 ./run_plot_VALSO.bash [KEY] [FREQ] [RUNID list]
 ``` 
@@ -108,6 +110,9 @@ for example :
 ./run_plot_VALSO.bash cpl_and_forced 1y u-am916 u-az867 u-ba470 u-ar685 u-bj000 u-bn477
 ```
  * `[KEY]` is an arbitrary label that will be used to name the output PNG file.
+
+The individual timeseries plots will appear in the FIGURES directory and the combined figure in the main MARINE_VAL 
+directory.
 
 <a name="output"></a>
 ## Output
