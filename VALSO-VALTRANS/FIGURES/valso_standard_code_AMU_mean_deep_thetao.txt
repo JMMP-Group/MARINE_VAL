@@ -1,1 +1,0 @@
- python2.7 SCRIPT/plot_time_series.py -noshow -runid u-cl681 -f *AMU*thetao*1y*deepTS.nc -var (mean_3D_thetao|mean_3D_thetao_pot|mean_3D_votemper) -title Mean deep temp. AMU (C) -dir /scratch/frsy/MARINE_VAL -o valso_standard_code_AMU_mean_deep_thetao -obs OBS/AMU_deepT_mean_obs.txt

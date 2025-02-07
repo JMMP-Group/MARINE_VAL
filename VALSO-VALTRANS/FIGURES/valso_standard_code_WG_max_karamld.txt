@@ -1,1 +1,0 @@
- python2.7 SCRIPT/plot_time_series.py -noshow -runid u-cl681 -f *WMXL*1m*0901*T.nc -var (max_sokaraml|max_somxzint1) -title Max Kara mld WG (m) -dir /scratch/frsy/MARINE_VAL -o valso_standard_code_WG_max_karamld -obs OBS/WG_karamld_max_obs.txt

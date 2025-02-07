@@ -1,3 +1,0 @@
-ref = Meijers et al, JGR(Oceans) (2016)
-mean = 1.5
-std = 1.5

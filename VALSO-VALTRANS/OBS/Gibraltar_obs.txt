@@ -1,3 +1,0 @@
-ref = Soto-Navarro et al, JGR(Oceans) 115 (2010)
-mean = 0.78
-std = 0.05

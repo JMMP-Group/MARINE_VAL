@@ -1,3 +1,0 @@
-ref = Donohue et al, GRL (2016)
-mean = 45.6
-std = 8.9

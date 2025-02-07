@@ -1,3 +1,0 @@
-ref = P. Mathiot 
-mean = 6.3
-std = 1

@@ -1,3 +1,0 @@
-ref = L. Jackson
-mean = 1.2
-std = 0.2

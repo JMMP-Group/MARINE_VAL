@@ -1,4 +1,4 @@
-# VALSO-VALTRANS
+# MARINE_VAL
 
 ## Table of Contents
 1. [Introduction](#introduction)
@@ -23,6 +23,18 @@ Ocean biases and Global biases in transports/exchanges through straits between C
      * Intrusion of Circumpolar Deep Water (CDW) in Amundsen sea
      * Intrusion of CDW on East Ross shelf
 
+   * VALNA metrics (North Atlantic assessment):
+     * Subpolar gyre strength (Sv)
+     * Subpolar gyre heat content (J)
+     * AMOC at 26.5N at max. depth (Sv)
+     * OHT at 26.5N (PW)
+     * Mixed layer depth in Labrador Sea in March (m)
+     * Mean SSS anomaly in Labrador Sea (PSU)
+     * Mean SST anomaly off Newfoundland (degC)
+     * Mean overflow bottom temperature (degC) and salinity (PSU) below the 27.8 isopycnal at various locations. Currently, VALNA isolates and averages the Irminger and Icelandic basins at the osnap observational cross-section.
+     * GS separation latitude (degN)
+     * NA current latitude (degN)
+
    * VALTRANS metrics (Straits transports and exchanges):
      * North Atlantic deep overflows: Denmark Strait and Faroe Bank Channel.
      * Marginal Seas exchanges: Gibraltar, Bab el Mandeb, Strait of Hormuz.
@@ -30,10 +42,10 @@ Ocean biases and Global biases in transports/exchanges through straits between C
 
 Note that there is also a set of metrics called VALGLO but this needs debugging.
 
-Currently works for output from eORCA1, eORCA025 and eORCA12 models. 
-
 <a name="installation_and_running"></a>
 ## Installation and running
+
+### Installation
 
 Clone the MARINE_VAL repository:
 
@@ -52,17 +64,16 @@ cd MARINE_VAL/CDFTOOLS-4.0/src
 ln -s ../Macrolib/macro.gfortran_metoffice make.macro
 make
 ```
+### Data processing
+
 Edit environment variables in `param.bash` to fit your setup/need.
    * mesh mask location with mesh mask name
    * location of the CDFTOOLS toolbox
    * where to store the data output (or link to existing data location) 
 
 Edit `param.bash` to define which metrics you want to calculate, 
-normally a package like VALSO or VALTRANS, but you can pick and choose
+normally a package like VALSO, VALNA or VALTRANS, but you can pick and choose
 individual metrics.
-
-Edit `style.db` to define labels, colours and line styles for the 
-integrations you want to plot (some examples provided). 
 
 Process the data to generate the timeseries data:   
 
@@ -83,6 +94,11 @@ the mesh_mask file using `SCRIPT/bathy_from_dommesh.py`.
 
 Output from the processing scripts appears under the SLURM directory. 
 
+### Plotting timeseries
+
+Edit `style.db` to define labels, colours and line styles for the 
+integrations you want to plot (some examples provided). 
+
 Build the plot for the Southern Ocean:
 ```
 ./run_plot_VALSO.bash [KEY] [FREQ] [RUNID list]
@@ -99,6 +115,10 @@ for example :
 VALSO output:
 
 ![Alt text](FIGURES/example_VALSO.png?raw=true "Example of the VALSO output")
+
+VALNA output:
+
+![Alt text](FIGURES/example_VALNA.png?raw=true "Example of the VALSO output")
 
 VALTRANS output:
 
@@ -179,11 +199,15 @@ https://doi.org/10.1002/2013JC009067, 2013*
 #### Weddell mixed layer depth
 TBD
 
+### VALNA
+TBD
+
 ### VALTRANS
 TBD
 <a name="authors"></a>
 ## Authors
 * [pmathiot](https://github.com/pmathiot)
+* [sophmm](https://github.com/sophmm)
 * [DaveStorkey](https://github.com/DaveStorkey)
 
 <a name="licence"></a>

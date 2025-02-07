@@ -1,3 +1,0 @@
-ref = Hansen et al, Prog Oceanography 75 (2007)
-mean = 1.9
-std = 0.3

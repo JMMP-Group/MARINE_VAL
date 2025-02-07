@@ -1,3 +1,0 @@
-ref = EN4.2.2.g10 profile data, Good et al (2013), Storkey et al (to be submitted to GMD)
-mean = 34.83
-std = 0.22

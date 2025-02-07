@@ -1,3 +1,0 @@
-ref = Xie et al, JGR(Oceans) 124 (2018)
-mean = 0.35
-std = 0.02

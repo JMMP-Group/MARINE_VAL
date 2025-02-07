@@ -1,3 +1,0 @@
-ref = Macrander et al GRL, 32 (2005); Aagaard and Malmberg ICES, CM 1978/C:47 (1978); Dickson and Brown, JGR 99 (1994),
-mean = 3.2
-std = 0.5

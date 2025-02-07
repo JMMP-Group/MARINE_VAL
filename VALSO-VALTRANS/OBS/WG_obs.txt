@@ -1,3 +1,0 @@
-ref = Klatt et al, Deep-Sea Research II (2005)
-mean = 56
-std = 8

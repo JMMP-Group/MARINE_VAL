@@ -1,3 +1,0 @@
-ref = Dotto et al, GRL (2018)
-mean = 23
-std = 8

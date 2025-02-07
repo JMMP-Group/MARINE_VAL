@@ -1,1 +1,0 @@
- python2.7 SCRIPT/plot_time_series.py -noshow -runid u-cl681 -f *ACC_nemo_*1y*1.nc -var vtrp -sf -1 -title ACC transport (Sv) -dir /scratch/frsy/MARINE_VAL -o valso_standard_code_ACC -obs OBS/ACC_obs.txt

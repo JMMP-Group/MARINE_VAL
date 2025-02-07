@@ -1,3 +1,0 @@
-ref = Vasou et al, Ocean Dynamics (2020)
-mean = 0.22
-std = 0.01
