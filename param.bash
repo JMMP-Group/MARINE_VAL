@@ -5,14 +5,17 @@ ulimit -s unlimited
 ##### USER CHOICES START ######
 
 # top level directory
-export MARINE_VAL=${HOME}/Git_Repos/MARINE_VAL
+export MARINE_VAL=/YOUR/LOCAL/PATH/MARINE_VAL_DIR
 
-# where mesh_mask bathy and are stored 
+# Path of the folder where mesh_mask bathy and are locally stored 
 # (names of mesh mask and bathy are arguments to this script)
-export MSKPATH=${DATADIR}/MESH_MASK/
+export MSKPATH=/YOUR/LOCAL/PATH/MESH_MASK_DIR
 
-# where cdftools are stored
-export CDFPATH=${MARINE_VAL}/CDFTOOLS_4.0/bin
+# Path where cdftools executables are locally stored
+export CDFPATH=/YOUR/LOCAL/PATH/CDFTOOLS_DIR/bin
+
+# Local path of the nam_cdf_names namelist
+export NMLPATH=/YOUR/LOCAL/PATH/nam_cdf_names
 
 # toolbox location
 export EXEPATH=${MARINE_VAL}/
@@ -106,4 +109,9 @@ fi
    
 # Load scitools and modules required to run CDFTOOLS:
 module load scitools
-module load gcc/8.1.0 mpi/mpich/3.2.1/gnu/8.1.0 hdf5/1.8.20/gnu/8.1.0 netcdf/4.6.1/gnu/8.1.0
+check_vdi="${HOSTNAME:0:3}"
+if [ $check_vdi == "vld" ]; then
+   module load gcc/8.1.0 mpi/mpich/3.2.1/gnu/8.1.0 hdf5/1.8.20/gnu/8.1.0 netcdf/4.6.1/gnu/8.1.0
+elif [ $check_vdi == "caz" ]; then
+   module load netcdf-fortran/4.6.1-gcc-12.2.0-43finqs gcc/13.2.0-gcc-12.2.0-lx4jx7u
+fi
