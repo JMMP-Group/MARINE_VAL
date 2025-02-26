@@ -119,6 +119,17 @@ if [[ -f ERROR.txt ]]; then rm ERROR.txt ; fi
 [[ $runBSF_SO == 1 || $runBSF_NA == 1 ]] && runBSF=1
 [[ $runDEEPTS == 1 || $runSSS_LabSea == 1 || $runSST_SO == 1 || $runSST_NWCorner == 1 ]] && runTS=1
 
+# Check that everything is in place
+if [[ ! -d ${CDFPATH} || ! -n "$(ls -A "$CDFPATH")" ]] ; then  
+   echo "E R R O R : CDFTOOLS/bin directory does not exist or is empty: ${CDFPATH}"
+   exit 41
+fi
+
+if [[ ! -f ${NMLPATH} ]] ; then 
+   echo "E R R O R : nam_cdf_names namelist file does not exist : ${NMLPATH}"
+   exit 41
+fi
+
 if [[ ! -f ${MSKPATH}/${MESHMASK} ]] ; then 
    echo "E R R O R : mesh_mask file does not exist : ${MSKPATH}/${MESHMASK}"
    exit 41
@@ -130,7 +141,6 @@ if [[ $runTRP == 1 && ! -f ${MSKPATH}/${BATHY} ]] ; then
    exit 41
 fi
 
-
 # loop over years
 echo ''
 for RUNID in `echo $RUNIDS`; do
@@ -141,9 +151,12 @@ for RUNID in `echo $RUNIDS`; do
 
    # create working directory
    if [ ! -d ${DATPATH}/${RUNID} ]; then mkdir -p ${DATPATH}/${RUNID} ; fi
+   cd ${DATPATH}/${RUNID}
+
+   # check nam_cdf_names namelist
+   if [[ ! -L nam_cdf_names ]] ; then ln -s ${NMLPATH} nam_cdf_names ; fi
 
    # check mesh mask
-   cd ${DATPATH}/${RUNID}
    if [[ ! -L mesh.nc     ]] ; then ln -s ${MSKPATH}/${MESHMASK} mesh.nc ; fi
    if [[ ! -L mask.nc     ]] ; then ln -s ${MSKPATH}/${MESHMASK} mask.nc ; fi
    if [[ $runTRP == 1 && ! -L bathy.nc    ]] ; then ln -s ${MSKPATH}/${BATHY} bathy.nc ; fi
