@@ -140,25 +140,23 @@ if [[ "$xtrac" == "true" ]]; then
 fi
 
 if [[ -n "$dens_cutoff" ]]; then
-
   # overflow transport defined by a cutoff density
   xsec_file=$(ls nemoXsec_${RUN_NAME}o_${FREQ}_${TAG}_${section}.nc)
-  #xsec_file="$(echo $xsec | rev | cut -d"_" -f2- | rev).nc"
   echo "xsec_file = $xsec_file"
-  $CDFPATH/cdfsigtrp -brk $xsec_file -smin ${dens_cutoff} -smax 40.0 -nbins 1 -o ${xsec_file%.nc}_
+  $CDFPATH/cdfsigtrp -brk $xsec_file -smin ${dens_cutoff} -smax 40.0 -nbins 1
   if [[ $? -ne 0 ]]; then 
     echo "error when running cdfsigtrp for section file ${xsec}; exit" ; echo "E R R O R in : ./mk_trp.bash $@ (see SLURM/${RUNID}/mk_trp_${section}_${FREQ}_${TAG}.out)" >> ${EXEPATH}/ERROR.txt ; exit 1
   fi
+  mv ${section}_trpsig.nc ${xsec_file}
 
 else
-
   # total and positive/negative transports in channel
   if [ -f ${EXEPATH}/SECTIONS/section_LONLAT_${section}_${CONFIG}.dat ];then
-    secdef_file=${EXEPATH}/SECTIONS/section_LONLAT_${section}_${CONFIG}.dat
+     secdef_file=${EXEPATH}/SECTIONS/section_LONLAT_${section}_${CONFIG}.dat
   elif [ -f ${EXEPATH}/SECTIONS/section_LONLAT_${section}.dat ];then
-    secdef_file=${EXEPATH}/SECTIONS/section_LONLAT_${section}.dat
+     secdef_file=${EXEPATH}/SECTIONS/section_LONLAT_${section}.dat
   else
-    echo "Can't find section definition file; exit"; echo "E R R O R in : ./mk_trp.bash $@ (see SLURM/${RUNID}/trp_${FREQ}_${TAG}.out)" >> ${EXEPATH}/ERROR.txt ; exit 2 
+     echo "Can't find section definition file; exit"; echo "E R R O R in : ./mk_trp.bash $@ (see SLURM/${RUNID}/trp_${FREQ}_${TAG}.out)" >> ${EXEPATH}/ERROR.txt ; exit 2 
   fi  
   echo "LONLAT section definition file is ${secdef_file}"
   $CDFPATH/cdftransport -u $FILEU -v $FILEV -lonlat -noheat -vvl -pm -sfx ${BTM}nemo_${RUN_NAME}o_${FREQ}_${TAG} < ${secdef_file}
