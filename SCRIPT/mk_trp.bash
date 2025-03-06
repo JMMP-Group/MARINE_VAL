@@ -147,7 +147,7 @@ if [[ -n "$dens_cutoff" ]]; then
   if [[ $? -ne 0 ]]; then 
     echo "error when running cdfsigtrp for section file ${xsec}; exit" ; echo "E R R O R in : ./mk_trp.bash $@ (see SLURM/${RUNID}/mk_trp_${section}_${FREQ}_${TAG}.out)" >> ${EXEPATH}/ERROR.txt ; exit 1
   fi
-  mv ${section}_trpsig.nc ${xsec_file}
+  mv ${section}_trpsig.nc nemoXsec_${RUN_NAME}o_${FREQ}_${TAG}_${section}_trpsig.nc
 
 else
   # total and positive/negative transports in channel

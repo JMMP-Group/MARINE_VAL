@@ -16,12 +16,12 @@ RUNIDS=${@:3}
 
 ## Denmark Strait overflow (southward flow sigma0 > 27.8 kg/m3)
 echo 'plot Denmark Strait overflow time series'
-python ${SCRPATH}/plot_time_series.py -noshow -runid $RUNIDS -f nemoXsec*${FREQ}*DenmarkStrait_trpsig.nc -var sigtrppos_DenmarkStrait -title "Denmark Strait overflow (Sv)" -dir ${DATPATH} -o "${KEY}_DenmarkStrait" -obs OBS/DenmarkStrait_obs.txt -force_zero_origin
+python ${SCRPATH}/plot_time_series.py -noshow -runid $RUNIDS -f nemoXsec*${FREQ}*DenmarkStrait_trpsig.nc -var sigtrp_DenmarkStrait -title "Denmark Strait overflow (Sv)" -dir ${DATPATH} -o "${KEY}_DenmarkStrait" -obs OBS/DenmarkStrait_obs.txt -force_zero_origin
 if [[ $? -ne 0 ]]; then exit 42; fi
 
 ## Faroe Bank Channel overflow (southward flow sigma0 > 27.8 kg/m3)
 echo 'plot Faroe Bank Channel overflow time series'
-python ${SCRPATH}/plot_time_series.py -noshow -runid $RUNIDS -f nemoXsec*${FREQ}*FaroeBankChannel_trpsig.nc -var sigtrpneg_FaroeBankChannel -sf -1 -title "Faroe Bank Channel overflow (Sv)" -dir ${DATPATH} -o "${KEY}_FaroeBankChannel" -obs OBS/FaroeBankChannel_obs.txt  -force_zero_origin
+python ${SCRPATH}/plot_time_series.py -noshow -runid $RUNIDS -f nemoXsec*${FREQ}*FaroeBankChannel_trpsig.nc -var sigtrp_FaroeBankChannel -sf -1 -title "Faroe Bank Channel overflow (Sv)" -dir ${DATPATH} -o "${KEY}_FaroeBankChannel" -obs OBS/FaroeBankChannel_obs.txt  -force_zero_origin
 if [[ $? -ne 0 ]]; then exit 42; fi
 
 ## Gibraltar exchange
@@ -53,7 +53,6 @@ if [[ $? -ne 0 ]]; then exit 42; fi
 echo 'plot Timor Passage time series'
 python ${SCRPATH}/plot_time_series.py -noshow -runid $RUNIDS -f *TimorPassage*${FREQ}*1.nc -var mtrp -sf -1 -title "Timor Passage inflow (Sv)" -dir ${DATPATH} -o "${KEY}_TimorPassage" -obs OBS/TimorPassage_obs.txt -force_zero_origin
 if [[ $? -ne 0 ]]; then exit 42; fi
-
 
 # crop figure (rm legend)
 #convert ${KEY}_ACC.png                   -crop 1240x1040+0+0 tmp01.png
