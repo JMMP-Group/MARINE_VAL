@@ -54,17 +54,6 @@ echo 'plot Timor Passage time series'
 python ${SCRPATH}/plot_time_series.py -noshow -runid $RUNIDS -f *TimorPassage*${FREQ}*1.nc -var mtrp -sf -1 -title "Timor Passage inflow (Sv)" -dir ${DATPATH} -o "${KEY}_TimorPassage" -obs OBS/TimorPassage_obs.txt -force_zero_origin
 if [[ $? -ne 0 ]]; then exit 42; fi
 
-# ## Bering Strait
-# echo 'plot Bering Strait time series'
-# python ${SCRPATH}/plot_time_series.py -noshow -runid $RUNIDS -f *BeringStrait*${FREQ}*1.nc -var ptrp  -title "Lombok Strait inflow (Sv)" -dir ${DATPATH} -o "${KEY}_LombokStrait" -obs OBS/LombokStrait_obs.txt -force_zero_origin
-# if [[ $? -ne 0 ]]; then exit 42; fi
-
-# ## Fram Strait
-# echo 'plot Fram Strait time series'
-# python ${SCRPATH}/plot_time_series.py -noshow -runid $RUNIDS -f *FramStrait*${FREQ}*1.nc -var ptrp  -title "Lombok Strait inflow (Sv)" -dir ${DATPATH} -o "${KEY}_LombokStrait" -obs OBS/LombokStrait_obs.txt -force_zero_origin
-# if [[ $? -ne 0 ]]; then exit 42; fi
-
-
 # crop figure (rm legend)
 #convert ${KEY}_ACC.png                   -crop 1240x1040+0+0 tmp01.png
 convert ${KEY}_DenmarkStrait.png          -crop 1240x1040+0+0 tmp01.png
