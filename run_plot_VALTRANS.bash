@@ -54,6 +54,16 @@ echo 'plot Timor Passage time series'
 python ${SCRPATH}/plot_time_series.py -noshow -runid $RUNIDS -f *TimorPassage*${FREQ}*1.nc -var mtrp -sf -1 -title "Timor Passage inflow (Sv)" -dir ${DATPATH} -o "${KEY}_TimorPassage" -obs OBS/TimorPassage_obs.txt -force_zero_origin
 if [[ $? -ne 0 ]]; then exit 42; fi
 
+## Bering Strait - mtrp, ptrp, or something else?
+echo 'plot Bering Strait time series'
+python ${SCRPATH}/plot_time_series.py -noshow -runid $RUNIDS -f *BeringStrait*${FREQ}*1.nc -var ptrp  -title "Bering Strait inflow (Sv)" -dir ${DATPATH} -o "${KEY}_BeringStrait" -obs OBS/BeringStrait_obs.txt -force_zero_origin
+if [[ $? -ne 0 ]]; then exit 42; fi
+
+## Fram Strait - mtrp, ptrp, or something else?
+echo 'plot Fram Strait time series'
+python ${SCRPATH}/plot_time_series.py -noshow -runid $RUNIDS -f *FramStrait*${FREQ}*1.nc -var ptrp  -title "Fram Strait inflow (Sv)" -dir ${DATPATH} -o "${KEY}_FramStrait" -obs OBS/FramStrait_obs.txt -force_zero_origin
+if [[ $? -ne 0 ]]; then exit 42; fi
+
 # crop figure (rm legend)
 #convert ${KEY}_ACC.png                   -crop 1240x1040+0+0 tmp01.png
 convert ${KEY}_DenmarkStrait.png          -crop 1240x1040+0+0 tmp01.png
@@ -64,26 +74,28 @@ convert ${KEY}_StraitOfHormuz.png         -crop 1240x1040+0+0 tmp06.png
 convert ${KEY}_LombokStrait.png           -crop 1240x1040+0+0 tmp07.png
 convert ${KEY}_OmbaiStrait.png            -crop 1240x1040+0+0 tmp08.png
 convert ${KEY}_TimorPassage.png           -crop 1240x1040+0+0 tmp09.png
-
+convert ${KEY}_BeringStrait.png           -crop 1240x1040+0+0 tmp10.png
+convert ${KEY}_FramStrait.png             -crop 1240x1040+0+0 tmp11.png
 # trim figure (remove white area)
 #convert FIGURES/box.png -trim -bordercolor White -border 40 tmp09.png
-convert legend.png      -trim -bordercolor White -border 20 tmp10.png
-convert runidname.png   -trim -bordercolor White -border 20 tmp11.png
+convert legend.png      -trim -bordercolor White -border 20 tmp12.png
+convert runidname.png   -trim -bordercolor White -border 20 tmp13.png
 
 # compose the image
 convert \( tmp01.png tmp02.png +append \) \
         \( tmp04.png tmp05.png tmp06.png +append \) \
         \( tmp07.png tmp08.png tmp09.png +append \) \
-           tmp10.png tmp11.png -append -trim -bordercolor White -border 40 $KEY.png
+        \( tmp10.png tmp11.png +append \) \
+           tmp12.png tmp13.png -append -trim -bordercolor White -border 40 $KEY.png
 
 # save figure
 mv ${KEY}_*.png FIGURES/.
 mv ${KEY}_*.txt FIGURES/.
-mv tmp10.png FIGURES/${KEY}_legend.png
-mv tmp11.png FIGURES/${KEY}_runidname.png
+mv tmp12.png FIGURES/${KEY}_legend.png
+mv tmp13.png FIGURES/${KEY}_runidname.png
 
 # clean
 rm tmp??.png
 
-#display
+# display
 display -resize 30% $KEY.png

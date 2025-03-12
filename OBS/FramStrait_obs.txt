@@ -1,0 +1,4 @@
+ref = Dummy value, obs reference still to be found
+mean = 7.5
+min = 5
+max = 11
