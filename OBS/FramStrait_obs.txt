@@ -1,4 +1,4 @@
-ref = Sprintall et al, JGR(Oceans) 114 (2009)
+ref = Dummy value, obs reference still to be found
 mean = 7.5
 min = 5
 max = 11
