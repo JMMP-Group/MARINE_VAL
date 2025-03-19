@@ -59,7 +59,7 @@ echo 'plot Bering Strait time series'
 python ${SCRPATH}/plot_time_series.py -noshow -runid $RUNIDS -f *BeringStrait*${FREQ}*1.nc -var ptrp  -title "Bering Strait inflow (Sv)" -dir ${DATPATH} -o "${KEY}_BeringStrait" -obs OBS/BeringStrait_obs.txt -force_zero_origin
 if [[ $? -ne 0 ]]; then exit 42; fi
 
-## Fram Strait - mtrp, ptrp, or something else?
+## Fram Strait - northward transport = ptrp
 echo 'plot Fram Strait time series'
 python ${SCRPATH}/plot_time_series.py -noshow -runid $RUNIDS -f *FramStrait*${FREQ}*1.nc -var ptrp  -title "Fram Strait inflow (Sv)" -dir ${DATPATH} -o "${KEY}_FramStrait" -obs OBS/FramStrait_obs.txt -force_zero_origin
 if [[ $? -ne 0 ]]; then exit 42; fi
