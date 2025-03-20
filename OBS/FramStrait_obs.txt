@@ -1,4 +1,4 @@
-ref = Dummy value, obs reference still to be found
-mean = 7.5
-min = 5
-max = 11
+ref = Fahrbach et al, Polar Research (2001)
+mean = 9.5
+min = 8.1
+max = 10.9

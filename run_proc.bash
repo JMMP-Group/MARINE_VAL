@@ -115,7 +115,7 @@ RUNIDS=${@:5}
 # clean ERROR.txt file
 if [[ -f ERROR.txt ]]; then rm ERROR.txt ; fi
 
-[[ $runACC == 1 || $runMargSea == 1 || $runITF == 1 || $runNAtlOverflows == 1  ]] && runTRP=1
+[[ $runACC == 1 || $runMargSea == 1 || $runITF == 1 || $runNAtlOverflows == 1  || $runArcTrans == 1 ]] && runTRP=1
 [[ $runBSF_SO == 1 || $runBSF_NA == 1 ]] && runBSF=1
 [[ $runDEEPTS == 1 || $runSSS_LabSea == 1 || $runSST_SO == 1 || $runSST_NWCorner == 1 ]] && runTS=1
 
