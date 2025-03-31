@@ -23,25 +23,7 @@ if [ ! -f $FILE ] ; then echo "$FILE is missing; exit"; echo "E R R O R in : ./m
 # make sst
 set -x
 FILEOUT=SO_sst_nemo_${RUN_NAME}o_${FREQ}_${TAG}_grid-${GRID}.nc
-jlimits=$($CDFPATH/cdffindij -w 0.0 1.0 -70.000  -45.000 -c mesh.nc -p T | tail -2 | head -1 | tr -s ' ' | cut -d' ' -f4-5)
-echo "jlimits : $jlimits"
-$CDFPATH/cdfmean -f $FILE -v '|thetao|thetao_pot|votemper|' -surf -w 0 0 ${jlimits} 1 1 -p T -minmax -o tmp_$FILEOUT 
+$SCRPATH/reduce_fields.py -i $FILE -v thetao_pot -c longitude latitude -A mean -G measures -g cell_area \
+	                          -S-75.800 -N-71.660 -B1.5 -o $FILEOUT 
 
-# mv output file
-if [[ $? -eq 0 ]]; then 
-   mv tmp_$FILEOUT $FILEOUT
-else 
-   echo "error when running cdfmean; exit"; echo "E R R O R in : ./mk_sst.bash $@ (see SLURM/${RUNID}/mk_sst_${FREQ}_${TAG}.out)" >> ${EXEPATH}/ERROR.txt ; exit 1
-fi
 
-FILEOUT=NWC_sst_nemo_${RUN_NAME}o_${FREQ}_${TAG}_grid-${GRID}.nc
-ijbox=$($CDFPATH/cdffindij -w -50.190 -32.873 41.846 54.413 -c mesh.nc -p T | tail -2 | head -1 )
-echo "ijbox : $ijbox"
-$CDFPATH/cdfmean -f $FILE -surf -v '|thetao|thetao_pot|votemper|' -w ${ijbox} 1 1 -p T -minmax -o tmp_$FILEOUT 
-
-#mv output file
-if [[ $? -eq 0 ]]; then 
-   mv tmp_$FILEOUT $FILEOUT
-else 
-   echo "error when running cdfmean; exit"; echo "E R R O R in : ./mk_sst.bash $@ (see SLURM/${RUNID}/mk_sst_${FREQ}_${TAG}.out)" >> ${EXEPATH}/ERROR.txt ; exit 1
-fi

@@ -29,16 +29,12 @@ else
    echo "error when running cdfpsi; exit"; echo "E R R O R in : ./mk_psi.bash $@ (see SLURM/${RUNID}/mk_psi_${FREQ}_${TAG}.out)" >> ${EXEPATH}/ERROR.txt ; exit 1
 fi
 
+# Update the meta data in the psi file so that Iris can read it:
+ncatted -a coordinates,sobarstf,c,c,"time_centered nav_lat nav_lon" $FILEOUT
+
 # WG max
-ijbox=$($CDFPATH/cdffindij -c mesh.nc -p T -w -31.250 37.500 -66.500 -60.400 | tail -2 | head -1)
-$CDFPATH/cdfmean -f $FILEOUT -v sobarstf -p T -w ${ijbox} 0 0 -minmax -o WG_$FILEOUT
-if [ $? -ne 0 ] ; then echo "error when running cdfmean (WG)"; echo "E R R O R in : ./mk_psi.bash $@ (see SLURM/${RUNID}/mk_psi_${FREQ}_${TAG}.out)" >> ${EXEPATH}/ERROR.txt ; fi
-# this step needed because cdfmean sets a strange value for valid max and that messes up the plotting routines.
-ncatted -a valid_min,max_sobarstf,d,, -a valid_max,max_sobarstf,d,, WG_$FILEOUT
+$SCRPATH/reduce_fields.py -i $FILEOUT -v sobarstf -c longitude latitude -A max -W-31.250 -E37.500 -S-66.500 -N-60.400 -o WG_$FILEOUT 
 
 # RG max
-ijbox=$($CDFPATH/cdffindij -c mesh.nc -p T -w -168.500 -135.750 -72.650 -61.600 | tail -2 | head -1)
-$CDFPATH/cdfmean -f $FILEOUT -v sobarstf -p T -w ${ijbox} 0 0 -minmax -o RG_$FILEOUT
-if [ $? -ne 0 ] ; then echo "error when running cdfmean (RG)"; echo "E R R O R in : ./mk_psi.bash $@ (see SLURM/${RUNID}/mk_psi_${FREQ}_${TAG}.out)" >> ${EXEPATH}/ERROR.txt ; fi
-# this step needed because cdfmean sets a strange value for valid max and that messes up the plotting routines.
-ncatted -a valid_min,max_sobarstf,d,, -a valid_max,max_sobarstf,d,, RG_$FILEOUT
+$SCRPATH/reduce_fields.py -i $FILEOUT -v sobarstf -c longitude latitude -A max -W-168.500 -E-135.750 -S-72.650 -N-61.600 -o RG_$FILEOUT 
+
