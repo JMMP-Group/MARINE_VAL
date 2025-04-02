@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --mem=1G
+#SBATCH --mem=20G
 #SBATCH --time=10
 #SBATCH --ntasks=1
 

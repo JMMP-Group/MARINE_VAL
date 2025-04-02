@@ -46,21 +46,6 @@ else
 fi
 
 # NA subpolar min
-
-ijbox=$($CDFPATH/cdffindij -c mesh.nc -p T -w -60.000 -20.000 48.000 72.000 | tail -2 | head -1)
-#Return the model limit (i,j space) of the geographical window
-#        given on the input line.
-#
-#-c - coordinate file (mesh.nc)
-#-p - specify the point on a C-grid (T,U,V,F)
-# min/max lat/lon --> changed to -60.000 -20.000 48.000 72.000
-#xmin xmax ymin ymax or  (longmin longmax latmin latmax)
-
-
-$CDFPATH/cdfmean -f $FILEOUT -v sobarstf -p T -w ${ijbox} 0 0 -minmax -o BSF_NA_$FILEOUT
-# Computes the mean value of the field (3D, weighted). For 3D fields,
-#         a horizontal mean for each level is also given. If a 2D spatial window
-#         is specified, the mean value is computed only in this window.
-if [ $? -ne 0 ] ; then echo "error when running cdfmean (WG)"; echo "E R R O R in : ./mk_psi.bash $@ (see ${JOBOUT_PATH}/mk_psi_${FREQ}_${TAG}.out)" >> ${EXEPATH}/ERROR.txt ; fi
-# this step needed because cdfmean sets a strange value for valid max and that messes up the plotting routines.
-ncatted -a valid_min,min_sobarstf,d,, -a valid_max,min_sobarstf,d,, BSF_NA_$FILEOUT
+# Update the meta data in the psi file so that Iris can read it:
+ncatted -a coordinates,sobarstf,c,c,"time_centered nav_lat nav_lon" $FILEOUT
+$SCRPATH/reduce_fields.py -i $FILEOUT -v sobarstf -c longitude latitude -A min -W-60.000 -E-20.000 -S48.000 -N72.000 -o BSF_NA_$FILEOUT 
