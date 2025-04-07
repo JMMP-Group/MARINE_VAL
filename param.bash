@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -l
 
 ulimit -s unlimited
 
@@ -107,11 +107,10 @@ if [[ $RUNVALGLO == 1 || $RUNALL == 1 ]]; then
    runSST_SO=1
 fi
    
-# Load scitools and modules required to run CDFTOOLS:
-module load scitools
-check_vdi="${HOSTNAME:0:3}"
-if [ $check_vdi == "vld" ]; then
-   module load gcc/8.1.0 mpi/mpich/3.2.1/gnu/8.1.0 hdf5/1.8.20/gnu/8.1.0 netcdf/4.6.1/gnu/8.1.0
-elif [ $check_vdi == "caz" ]; then
-   module load netcdf-fortran/4.6.1-gcc-12.2.0-43finqs gcc/13.2.0-gcc-12.2.0-lx4jx7u
+if [[ -z "$(conda env list | grep ^marval)" ]]
+then
+    echo "ERROR: marval conda environment not found."
+    echo "You need to create it using 'conda env create -f marval.yml'"
+    exit 11
 fi
+conda activate marval
