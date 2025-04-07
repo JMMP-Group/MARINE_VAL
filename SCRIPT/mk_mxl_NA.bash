@@ -49,17 +49,16 @@ else
 fi
 
 # averaging MXL depth in Lab Sea: 60° W–50° W, 55° N–62° N
-ijbox=$($CDFPATH/cdffindij -c mesh.nc -w -60.000 -50.000  55.000  62.000 | tail -2 | head -1)
-echo ijbox
-$CDFPATH/cdfmean -f $FILEOUT -v 'somxl030' -p T -w ${ijbox} 0 0 -minmax -o tmp_LAB_MXL_$FILEOUT
-# this step needed because cdfmean sets a strange value for valid_max and that messes up the plotting routines.
-ncatted -a valid_max,mean_somxl030,d,, tmp_LAB_MXL_$FILEOUT
+ncks -v area $FILE -A $FILEOUT
+ncatted -a cell_measures,somxl030,c,c,"area: area" -a coordinates,somxl030,c,c,"time_centered nav_lat nav_lon" $FILEOUT
+$SCRPATH/reduce_fields.py -i $FILEOUT -v somxl030 -c longitude latitude -A mean -G measures -g cell_area \
+			  -W-60.000 -E-50.000 -S55.000 -N62.000  -o tmp_LAB_MXL_$FILEOUT 
 
 # mv output file
 if [[ $? -eq 0 ]]; then
    mv tmp_LAB_MXL_$FILEOUT LAB_MXL_$FILEOUT
 else
-   echo "error when running cdfmean; exit"; echo "E R R O R in : ./mk_mxl.bash $@ (see ${JOBOUT_PATH}/mxl_${FREQ}_${TAG}.out)" >> ${EXEPATH}/ERROR.txt ; exit 1
+   echo "error when running reduce_fields; exit"; echo "E R R O R in : ./mk_mxl.bash $@ (see ${JOBOUT_PATH}/mxl_${FREQ}_${TAG}.out)" >> ${EXEPATH}/ERROR.txt ; exit 1
 fi
 
 
