@@ -88,7 +88,8 @@ for example :
  * `[chunksize]` is the number of dates that should be restored from MASS at a time, recommended value at least 10 or 20 to avoid clogging MASS with lots of small retrievals.
  * `[BATHY]` is the name of the bathymetry file found in $MSKPATH
  * `[MESHMASK]` is the name of the mesh_mask file found in $MSKPATH.
- * `[FREQ]` options currently 1y for annual means or 1m for monthly means.
+ * `[FREQ]` options currently Ny for annual means where N is a positive integer or 1m for monthly means. For annual means
+    if N > 1 then every Nth annual mean file will be restored and processed. This option is useful for very long integrations.
 
 Note that the bathymetry file is only required for metrics involving transports through straits. It can be created from 
 the mesh_mask file using `SCRIPT/bathy_from_dommesh.py`.
