@@ -165,9 +165,19 @@ for RUNID in `echo $RUNIDS`; do
    echo "$RUNID ..."
 
    njob=0
-   LSTY=$(eval echo {${YEARB}..${YEARE}})
+   # Allow for a stride > 1 if counting in years.
+   # Doesn't work for months at the moment.
+   if [[ $FREQ =~ .*y$ ]];
+   then
+       stride=$(( $(echo $FREQ | cut -d"y" -f1) ))
+       # reset FREQ here because the rest of the code expects FREQ=1y...
+       FREQ="1y"
+   else
+       stride=1
+   fi
+   LSTY=$(eval echo {${YEARB}..${YEARE}..${stride}})
    if   [[ $FREQ == 1m ]]; then MONTHB=1  ; MONTHE=12 ; LSTM=$(eval echo {$MONTHB..$MONTHE}) ;
-   elif [[ $FREQ == 1y ]]; then MONTHB=12 ; MONTHE=12 ; LSTM=$(eval echo {$MONTHB..$MONTHE}) ;
+   elif [[ $FREQ =~ .*y$ ]]; then MONTHB=12 ; MONTHE=12 ; LSTM=$(eval echo {$MONTHB..$MONTHE}) ;
    else 
         echo "E R R O R : $FREQ not supported; exit 42"
         exit 42
@@ -197,7 +207,7 @@ for RUNID in `echo $RUNIDS`; do
          moo_wait
          [[ $runTRP == 1 || $runBSF == 1 || $runAMOC == 1 ]] && mooUyid=$(retrieve_data $RUNID $FREQ grid-U $TAG_LIST)
          moo_wait
-         [[ $runTRP == 1 || $runQHF == 1 || $runTS == 1 || $runAMOC == 1 || $runHTC == 1 || $runGSL_NAC || $runMHT == 1 ]] && mooTyid=$(retrieve_data $RUNID $FREQ grid-T $TAG_LIST)
+         [[ $runTRP == 1 || $runQHF == 1 || $runTprof == 1 || $runTS == 1 || $runAMOC == 1 || $runHTC == 1 || $runGSL_NAC || $runMHT == 1 ]] && mooTyid=$(retrieve_data $RUNID $FREQ grid-T $TAG_LIST)
           
          echo "mooTyid : $mooTyid"
          echo "mooUyid : $mooUyid"
@@ -234,6 +244,7 @@ for RUNID in `echo $RUNIDS`; do
             [[ $runOVF == 1 ]]           && run_tool mk_ovf      $TAG $RUNID $FREQ $mooTyid
             [[ $runMHT == 1 ]]     && run_tool mk_mht  $TAG $RUNID $FREQ $mooVyid:$mooVyid
             [[ $runQHF == 1 ]]     && run_tool mk_hfds $TAG $RUNID $FREQ $mooTyid 
+            [[ $runTprof == 1 ]]   && run_tool mk_Tprof $TAG $RUNID $FREQ $mooTyid 
          done
          let tagcount=0
          TAG_LIST=""

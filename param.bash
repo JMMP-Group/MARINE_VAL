@@ -67,7 +67,8 @@ runArcTrans=0       # Arctic transports: Fram Strait, Bering Strait, Davis Strai
 # The VALGLO package also includes a number of metrics in other packages above.
 runMHT=0            # Atlantic(?) meridional heat transport
 runSIE=0            # Arctic sea ice extent
-runQHF=0            #
+runQHF=0            # global mean surface heat flux
+runTprof=0          # spatially meaned temperature profiles
 
 ##### USER CHOICES END ######
 
