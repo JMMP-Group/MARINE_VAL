@@ -1,5 +1,4 @@
-
-#!/bin/bash
+#!/bin/bash -l
 
 #=============================================================================================================================
 #                         FUNCTIONS 
@@ -67,10 +66,21 @@ run_tool() {
    sbatchschopt='--wait ' #--qos=long '  
    sbatchrunopt="--dependency=afterany:${@:4} --job-name=P$$_${TOOL}_${1}_${2} --output=${JOBOUT_PATH}/${TOOL}${jobtag}_${3}_${1}.out"
    exit_code=1
+   
    while [[ "$exit_code" != "0" ]];do
-      slurm_wait
-      sbatch ${sbatchschopt} ${sbatchrunopt} ${SCRPATH}/${TOOL}.bash ${flags} $2 $1 $3 > /dev/null 2>&1 &
-      exit_code=$?
+      if [[ $TOOL == "mk_htc" && -z "$FIRST_MK_HTC_JOB_ID" ]]; then
+         declare -g FIRST_MK_HTC_JOB_ID
+         # echo Running first mk_htc job
+         FIRST_MK_HTC_JOB_ID=$(sbatch ${sbatchschopt} ${sbatchrunopt} ${SCRPATH}/${TOOL}.bash ${flags} $2 $1 $3 | awk '{print $4}')
+         while squeue -j $FIRST_MK_HTC_JOB_ID > /dev/null 2>&1; do
+            sleep 2
+         done
+      else
+         # echo Running other $TOOL jobs
+         slurm_wait
+         sbatch ${sbatchschopt} ${sbatchrunopt} ${SCRPATH}/${TOOL}.bash ${flags} $2 $1 $3 > /dev/null 2>&1 &
+         exit_code=$?
+      fi
    done
    njob=$((njob+1))
 }
