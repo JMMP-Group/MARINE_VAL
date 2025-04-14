@@ -1,0 +1,26 @@
+name: marval
+channels:
+  - conda-forge
+  - conda-mo-internal
+dependencies:
+  - python=3.10.6
+  - iris=3.11.0
+  - pip
+  - bottleneck
+  - cf_xarray
+  - dask
+  - gsw
+  - netCDF4
+  - pandas
+  - pooch
+  - scipy
+  - xarray=2022.6.0
+  - numpy
+  - matplotlib
+  - ipython
+  - cartopy
+  - geopy
+  - xoak
+  - scikit-learn
+  - pys2index
+  - cartopy

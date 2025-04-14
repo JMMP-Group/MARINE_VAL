@@ -73,6 +73,12 @@ for FILE in $MOO_RESTORED_LIST;do
       echo "hello!"
       CONVERT_EOS_LIST="$CONVERT_EOS_LIST $FILE"
    fi
+   # Set standard_name for depth coordinate so Iris will recognise it:
+   [[ "$FILE" =~ *grid-T\.nc ]] && depvar="deptht"
+   [[ "$FILE" =~ *grid-U\.nc ]] && depvar="depthu"
+   [[ "$FILE" =~ *grid-V\.nc ]] && depvar="depthv"
+   ncatted -a standard_name,${depvar},c,c,"depth" $FILE
+   #
 done
 
 for FILE in $CONVERT_EOS_LIST;do

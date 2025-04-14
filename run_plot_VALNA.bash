@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -l
 #
 # This script currently only plots the minimal set of VALNA metrics, excluding:
 #     1. Meridional heat transport (MHT) which metric only works if relevant diagnostic in model output. 
@@ -16,7 +16,7 @@ echo '  '
 
 # NA subpolar gyre max strength
 echo 'plot NA subpolar gyre strength time series'
-python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f *BSF_NA*${FREQ}*psi_NA.nc -var min_sobarstf -title "SPG max strength (Sv)" -dir ${DATPATH} -o ${KEY}_BSF -sf -0.000001 #-obs OBS/SUBP_PSI_obs.txt
+python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f *BSF_NA*${FREQ}*psi_NA.nc -var '(min_sobarstf|sobarstf)' -title "SPG max strength (Sv)" -dir ${DATPATH} -o ${KEY}_BSF -sf -0.000001 #-obs OBS/SUBP_PSI_obs.txt
 #-sf is scale factor i.e. m3/s to Sv
 #using min and negative scale factor because streamf is negative in subpolar gyre
 if [[ $? -ne 0 ]]; then exit 42; fi
@@ -39,17 +39,17 @@ if [[ $? -ne 0 ]]; then exit 42; fi
 
 # mean MXL depth in Lab Sea in March (averaged in small region)
 echo 'plot mean MXL depth in Lab Sea time series'
-python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f *LAB_MXL*1m*0301*T*003*.nc -var mean_somxl030 -title "Mean MXL in Lab Sea in March (m)" -dir ${DATPATH} -o ${KEY}_MXL_LAB_MEAN -sf -1 -obs OBS/MXL_lab_mean_obs.txt
+python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f *LAB_MXL*1m*0301*T*003*.nc -var '(mean_somxl030|somxl030)' -title "Mean MXL in Lab Sea in March (m)" -dir ${DATPATH} -o ${KEY}_MXL_LAB_MEAN -sf -1 -obs OBS/MXL_lab_mean_obs.txt
 if [[ $? -ne 0 ]]; then exit 42; fi
 
 # mean SSS in Labrador Sea
 echo 'plot mean SSS in Labrador Sea time series'
-python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f SSSav_LabSea_*${FREQ}*T.nc -var '(mean_so|mean_so_pra|mean_vosaline)' -title "Mean SSS in Labrador Sea (PSU)" -dir ${DATPATH} -o ${KEY}_SSS_LabSea -obs OBS/SSS_LabSea_obs.txt
+python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f SSSav_LabSea_*${FREQ}*T.nc -var '(mean_so_pra|so_pra)' -title "Mean SSS in Labrador Sea (PSU)" -dir ${DATPATH} -o ${KEY}_SSS_LabSea -obs OBS/SSS_LabSea_obs.txt
 if [[ $? -ne 0 ]]; then exit 42; fi
 
 # mean SST off Newfoundland
 echo 'plot mean SST off Newfoundland time series'
-python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f SSTav_Newfound_*${FREQ}*T.nc -var '(mean_thetao|mean_thetao_pot|mean_thetao_con|mean_votemper)' -title "Mean SST off Newfoundland (degC)" -dir ${DATPATH} -o ${KEY}_SST_newf -obs OBS/SST_newf_obs.txt
+python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f SSTav_Newfound_*${FREQ}*T.nc -var '(mean_thetao_pot|thetao_pot)' -title "Mean SST off Newfoundland (degC)" -dir ${DATPATH} -o ${KEY}_SST_newf -obs OBS/SST_newf_obs.txt
 if [[ $? -ne 0 ]]; then exit 42; fi
 
 ## OVF METRICS TEMPORARILY COMMENTED OUT

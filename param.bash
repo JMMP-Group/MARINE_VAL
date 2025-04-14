@@ -114,7 +114,7 @@ then
     echo "You need to create it using 'conda env create -f marval.yml'"
     exit 11
 fi
+
 # After testing, I found that I need to activate the conda env before launching run_proc.bash, because the 2 lines below were not working.
 # conda init
 # conda activate marval
-
