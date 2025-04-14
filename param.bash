@@ -90,6 +90,7 @@ if [[ $RUNVALNA == 1 || $RUNALL == 1 ]]; then
 #   OVF metrics not yet working in merged version of Marine_Val
 #   runOVF=1
    runGSL_NAC=1
+   export DEPTH=100 # depth for mk_htc 
 fi
 if [[ $RUNVALTRANS == 1 || $RUNALL == 1 ]]; then
    runITF=1
@@ -113,4 +114,7 @@ then
     echo "You need to create it using 'conda env create -f marval.yml'"
     exit 11
 fi
-conda activate marval
+
+# After testing, I found that I need to activate the conda env before launching run_proc.bash, because the 2 lines below were not working.
+# conda init
+# conda activate marval
