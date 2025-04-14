@@ -8,7 +8,6 @@ if [[ $# -ne 3 ]]; then echo 'mk_htc.bash [RUNID (mi-aa000)] [TAG (19991201_2006
 RUNID=$1
 TAG=$2
 FREQ=$3
-DEPTH=100 
 
 # name
 RUN_NAME=${RUNID#*-}
