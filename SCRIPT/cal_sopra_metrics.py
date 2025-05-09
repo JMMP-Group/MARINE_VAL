@@ -34,7 +34,6 @@ def calc_metrics(data, mesh, args):
     salinity = data[args.salvar[0]].mean(dim=args.timevar[0]).expand_dims(dim={args.timevar[0]:[0]}).fillna(-1) # ASSUMPTION: Time = 1 for model data, time > 1 for obs data. Ensure 4D shape with first dimension = 1, averaging for obs.
     depth_mask = mesh['gdept_0'][0].values # nk x nj x ni array, depth levels 
   
-    # Filtering domain
     salinity = filter_lat_lon(salinity, mesh, [args.lonmin[0], args.lonmax[0], args.latmin[0], args.latmax[0]], new_val=-1) # nt x nk x nj x ni array, 0 for all values outside the domain    
     salinity = salinity.where((depth_mask >= args.mindepth[0]) & (depth_mask <= args.maxdepth[0]), np.nan).dropna(dim=args.depthvar[0], how='all')
     max_salinity = salinity.max(dim=args.depthvar[0]) # nt x nj x ni array, maximum salinity value for each grid point    
@@ -64,7 +63,6 @@ def calc_metrics(data, mesh, args):
 def plot_sal(max_salinity, max_depth, data, args): 
 
     time_counter = 0
-    # outf = '_'.join(['obs'] + args.freq + args.outf[0].split('_')[4:]) if args.obs else args.outf[0]
     data_list = [max_salinity.isel({args.timevar[0]: time_counter}), max_depth.isel({args.timevar[0]: time_counter})]
     titles = ["Max salinity", "Depth of max salinity"]
     lat, lon = ('y', 'x') if 'y' in max_salinity.dims else ('lat', 'lon')
