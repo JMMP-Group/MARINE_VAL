@@ -9,7 +9,7 @@ def load_argument():
     parser = argparse.ArgumentParser()
     parser.add_argument("-w", metavar='coordinates list', help="LON_MIN, LON_MAX, LAT_MIN, LAT_MAX values", type=float, nargs='+', required=True )
     parser.add_argument("-c", metavar='mesh file', help="the mesh file to work from", type=str, nargs=1 , required=False, default=['mesh.nc'])
-    parser.add_argument("-depth", metavar='depth constraint', help="value to qualify the mesh mask", type=float, nargs=1, required=True)
+    parser.add_argument("-mindepth", metavar='depth constraint', help="value to qualify the mesh mask", type=float, nargs=1, required=True)
     parser.add_argument("-runid", metavar='runid' , help="used to look information in runid.db", type=str, nargs=1 , required=True)
     parser.add_argument("-dir", metavar='directory of input file', help="directory of input file", type=str, nargs=1, required=False, default=['./'])
     return parser.parse_args()
@@ -52,7 +52,7 @@ def filter_depth(array, mesh_data, args):
     Returns:
     xr.array: Masked array.
     """
-    DEPTH = args.depth[0]
+    DEPTH = args.mindepth[0]
     assert 0 <= DEPTH <= 6003, "Depth value must be between 0 and 6003" 
     bathymetry = mesh_data['bathy_metry'][0] # 1206 x 1440 array, depth of the ocean floor in meters
     depth_mask = (bathymetry >= DEPTH) # 1206 x 1440 array, boolean mask for a given depth 

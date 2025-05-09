@@ -8,6 +8,7 @@ if [[ $# -ne 3 ]]; then echo 'mk_htc.bash [RUNID (mi-aa000)] [TAG (19991201_2006
 RUNID=$1
 TAG=$2
 FREQ=$3
+MIN_DEPTH=100
 
 # name
 RUN_NAME=${RUNID#*-}
@@ -23,7 +24,7 @@ echo "ijbox : $ijbox"
 
 # calculate volume of NA subpolar gyre in m3
 if [ ! -f ${DATPATH}/${RUNID}/masked_tmask_NA_gyre.nc ] ; then
-   python ${SCRPATH}/tmask_zoom.py -w -60.000 -20.000 48.000 72.000 -depth ${DEPTH} -dir ${DATPATH} -runid ${RUNID} -c mesh.nc 
+   python ${SCRPATH}/tmask_zoom.py -w -60.000 -20.000 48.000 72.000 -mindepth ${MIN_DEPTH} -dir ${DATPATH} -runid ${RUNID} -c mesh.nc 
    if [[ $? -ne 0 ]]; then exit 42; fi 
 fi
 
