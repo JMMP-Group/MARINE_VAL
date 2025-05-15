@@ -44,12 +44,12 @@ def calc_metrics(data, mesh, args):
 
     if args.obs:
         with open(f"{args.marvaldir[0]}/OBS/{args.outf[0]}_salinity.txt", "w") as f:
-            f.write(f"ref = Max salinity\n")
+            f.write(f"ref = Max salinity NOAA_WOA13v2: 1955-2012\n")
             f.write(f"mean = {max_salinity.mean(dim=[lat, lon]).values[0]}\n")
             f.write(f"std = {max_salinity.std(dim=[lat, lon]).values[0]}\n")
 
         with open(f"{args.marvaldir[0]}/OBS/{args.outf[0]}_depth.txt", "w") as f:
-            f.write(f"ref = Max depth\n")
+            f.write(f"ref = Max depth NOAA_WOA13v2: 1955-2012\n")
             f.write(f"mean = {max_depth.mean(dim=[lat, lon]).values[0]}\n")
             f.write(f"std = {max_depth.std(dim=[lat, lon]).values[0]}\n")
     else:
