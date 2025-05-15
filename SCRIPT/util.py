@@ -33,6 +33,43 @@ def get_ij_from_lon_lat(LON, LAT, lon, lat):
 
     return j_indx[0], i_indx[0]
 
+def hvrsn_dst(lon1, lat1, lon2, lat2):
+    '''
+    This function calculates the great-circle distance in meters between 
+    point1 (lon1,lat1) and point2 (lon2,lat2) using the Haversine formula 
+    on a spherical earth of radius 6372.8 km. 
+
+    The great-circle distance is the shortest distance over the earth's surface.
+    ( see http://www.movable-type.co.uk/scripts/latlong.html)
+
+    If lon2 and lat2 are 2D matrixes, then dist will be a 2D matrix of distances 
+    between all the points in the 2D field and point(lon1,lat1).
+
+    If lon1, lat1, lon2 and lat2 are vectors of size N dist wil be a vector of
+    size N of distances between each pair of points (lon1(i),lat1(i)) and 
+    (lon2(i),lat2(i)), with 0 => i > N .
+    '''
+    deg2rad = np.pi / 180.
+    ER = 6372.8 * 1000. # Earth Radius in meters
+
+    dlon = np.multiply(deg2rad, (lon2 - lon1))
+    dlat = np.multiply(deg2rad, (lat2 - lat1))
+
+    lat1 = np.multiply(deg2rad, lat1)
+    lat2 = np.multiply(deg2rad, lat2)
+
+    # Computing the square of half the chord length between the points:
+    a = np.power(np.sin(np.divide(dlat, 2.)),2) + \
+        np.multiply(np.multiply(np.cos(lat1),np.cos(lat2)),np.power(np.sin(np.divide(dlon, 2.)),2))
+
+    # Computing the angular distance in radians between the points
+    angle = np.multiply(2., np.arctan2(np.sqrt(a), np.sqrt(1. -a)))
+
+    # Computing the distance 
+    dist = np.multiply(ER, angle)
+
+    return dist
+
 #=======================================================================================
 def floodfill(field,j,i,checkValue,newValue):
     '''
@@ -263,4 +300,54 @@ def bresenham_line(x0, x1, y0, y1):
         c += 1
 
     return pj, pi
+
+# =====================================================================================================
+
+def filter_lat_lon(array, mesh, coords, new_val=0):
+    """
+    Filters the latitude and longitude values from the arguments.
+
+    Parameters:
+    array (xr.array): Input 4D array with depth values.
+    input_data (xr.Dataset): Mesh data from the mesh file.
+    coords (list): List of coordinates [LON_MIN, LON_MAX, LAT_MIN, LAT_MAX].
+
+    Returns:
+    xr.array: Masked array.
+    """
+    LON_MIN, LON_MAX, LAT_MIN, LAT_MAX = coords
+
+    assert LON_MIN < LON_MAX, "LON_MIN must be less than LON_MAX"
+    assert LAT_MIN < LAT_MAX, "LAT_MIN must be less than LAT_MAX"
+    assert -90 <= LAT_MIN <= 90 and -90 <= LAT_MAX <= 90, "Latitude values must be between -90 and 90"
+    assert -180 <= LON_MIN <= 180 and -180 <= LON_MAX <= 180, "Longitude values must be between -180 and 180"
+    
+    lat, lon = ('nav_lat', 'nav_lon') if 'nav_lat' in list(mesh.variables.keys()) else ('gphit', 'glamt')
+    lat_grid = mesh[lat].values  # nj x ni array, latitudes of each grid point
+    lon_grid = mesh[lon].values  # nj x ni array, longitudes of each grid point
+        
+    domain_mask = (lat_grid >= LAT_MIN) & (lat_grid <= LAT_MAX) & (lon_grid >= LON_MIN) & (lon_grid <= LON_MAX) # nj x ni array, boolean mask for a given domain
+    
+    return array.where(domain_mask, new_val)
+
+def filter_depth(array, bathymetry, MAX_DEPTH, MIN_DEPTH=0, new_val=0):
+    """
+    Filters the depth values from the arguments.
+
+    Parameters:
+    array (xr.array): Input 4D array with depth values.
+    input_data (xr.Dataset): Input data from the input file.
+    depths (list): List of depth values to filter.
+
+    Returns:
+    xr.array: Masked array.
+    """
+    
+    assert 0 <= MIN_DEPTH <= 6003, "Minimum depth value must be between 0 and 6003" 
+    assert 0 <= MAX_DEPTH <= 6003, "Maximum depth value must be between 0 and 6003"
+    assert MIN_DEPTH < MAX_DEPTH, "Minimum depth must be less than maximum depth"
+
+    depth_mask = (bathymetry >= MIN_DEPTH) & (bathymetry <= MAX_DEPTH) # nj x ni array, boolean mask for a given depth range
+
+    return array.where(depth_mask, new_val) 
 

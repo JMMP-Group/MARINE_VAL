@@ -45,6 +45,7 @@ retrieve_data() {
       echo "Retrieval attempt $count. Exit code $exit_code." >> ${JOBOUT_PATH}/sbatch_moo_${2}_${3}_${4}.out
    done
 }
+
 run_tool() {
    # $1 = TOOL ; [possible flags]; $2 = $TAG ; $3 = $RUNID ; $4 = $FREQ ; $5+ = retrieval job IDs
    # global var njob
@@ -68,20 +69,21 @@ run_tool() {
    exit_code=1
    
    while [[ "$exit_code" != "0" ]];do
-      if [[ $TOOL == "mk_htc" && -z "$FIRST_MK_HTC_JOB_ID" ]]; then
-         declare -g FIRST_MK_HTC_JOB_ID
-         FIRST_MK_HTC_JOB_ID=$(sbatch ${sbatchschopt} ${sbatchrunopt} ${SCRPATH}/${TOOL}.bash ${flags} $2 $1 $3 | awk '{print $4}')
-         while squeue -j $FIRST_MK_HTC_JOB_ID > /dev/null 2>&1; do
-            sleep 2
-         done
+      first_tool_id="first_${TOOL}_ID"
+      if ! declare -p "$first_tool_id" &>/dev/null; then
+         declare -g "$first_tool_id"
+         sbatch_output=$(sbatch ${sbatchschopt} ${sbatchrunopt} ${SCRPATH}/${TOOL}.bash ${flags} $2 $1 $3 | awk '{print $4}')
+         eval "$first_tool_id=$sbatch_output"
       else
          slurm_wait
+         sbatchrunopt=$(echo "$sbatchrunopt" | sed "s/--dependency=afterany:/--dependency=afterany:${!first_tool_id}:/")
          sbatch ${sbatchschopt} ${sbatchrunopt} ${SCRPATH}/${TOOL}.bash ${flags} $2 $1 $3 > /dev/null 2>&1 &
          exit_code=$?
       fi
    done
    njob=$((njob+1))
 }
+
 progress_bar() {
    sleep 4
    echo''
@@ -243,6 +245,7 @@ for RUNID in `echo $RUNIDS`; do
             [[ $runOVF == 1 ]]           && run_tool mk_ovf      $TAG $RUNID $FREQ $mooTyid
             [[ $runMHT == 1 ]]     && run_tool mk_mht  $TAG $RUNID $FREQ $mooVyid:$mooVyid
             [[ $runQHF == 1 ]]     && run_tool mk_hfds $TAG $RUNID $FREQ $mooTyid 
+            [[ $runMed_OVF == 1 ]]   && run_tool mk_medovf $TAG $RUNID $FREQ $mooTyid
          done
          let tagcount=0
          TAG_LIST=""

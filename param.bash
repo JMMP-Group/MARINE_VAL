@@ -56,6 +56,7 @@ runOVF=0            # Mean overflow bottom temperature and salinity (below 27.8 
                     # at various locations. Currently, VALNA isolates and averages the 
                     # Irminger and Icelandic basins at the osnap observational cross-section.
 runGSL_NAC=0        # GS separation latitude and NA current latitude
+runMed_OVF=1        # Mediterranean overflow water max salinity and corresponding depth
 
 # VALTRANS (Transports and exchanges in straits)
 runMargSea=0        # Marginal Seas exchanges: Gibraltar, Bab el Mandeb, Strait of Hormuz
@@ -90,7 +91,7 @@ if [[ $RUNVALNA == 1 || $RUNALL == 1 ]]; then
 #   OVF metrics not yet working in merged version of Marine_Val
 #   runOVF=1
    runGSL_NAC=1
-   export DEPTH=100 # depth for mk_htc 
+   runMed_OVF=1
 fi
 if [[ $RUNVALTRANS == 1 || $RUNALL == 1 ]]; then
    runITF=1
