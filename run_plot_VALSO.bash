@@ -60,13 +60,13 @@ python ${SCRPATH}/plot_time_series.py -noshow -runid $RUNIDS -f *WMXL*1m*0901*T.
 if [[ $? -ne 0 ]]; then exit 42; fi
 
 # AABW
-# volume of water with sigma4 > 45.8 in Weddell sea
+# volume of water with sigma4 > threshold in Weddell sea
 echo 'plot Weddell Sea time series'
 python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f nemo*_${FREQ}_*_aabw_weddell_density_volume.nc \
     -var 'sigma4Vol' \-title "Water volume with sigma4 > $DENSITY_THRESHOLD (km3)" -dir ${DATPATH} -o ${KEY}_aabw_${FREQ}_weddell
 if [[ $? -ne 0 ]]; then exit 42; fi
 
-# volume of water with sigma4 > 45.8 in Southern ocean
+# volume of water with sigma4 > threshold in Southern ocean
 echo 'plot Southern Ocean time series'
 python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f nemo*_${FREQ}_*_aabw_so_density_volume.nc \
     -var 'sigma4Vol' \-title "Water volume with sigma4 > $DENSITY_THRESHOLD (km3)" -dir ${DATPATH} -o ${KEY}_aabw_${FREQ}_so

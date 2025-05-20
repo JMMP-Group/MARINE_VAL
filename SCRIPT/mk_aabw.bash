@@ -5,27 +5,26 @@
 
 if [[ $# -ne 3 ]]; then echo 'mk_aabw.bash [RUNID (mi-aa000)] [TAG (19991201_20061201_ANN)] [FREQ (1y)]'; exit 1 ; fi 
 
-# . ./param.bash # dev mode
 
 RUNID=$1
 TAG=$2
 FREQ=$3
+
 MIN_DEPTH=500
 MAX_DEPTH=1500
 DENSITY_THRESHOLD=45.8 
 
 RUN_NAME=${RUNID#*-}
 FILEOUT=nemo_${RUN_NAME}o_${FREQ}_${TAG}_aabw
-# FILET=$DATPATH/u-dl879/nemo_dl879o_1y_19911201-19921201_grid-T.nc # dev mode
 FILET=`ls [nu]*${RUN_NAME}o_${FREQ}_${TAG}*_grid[-_]T.nc`
-if [ ! -f $FILET ] ; then echo "$FILET is missing; exit"; echo "E R R O R in : ./mk_medovf.bash $@ (see SLURM/${CONFIG}/${RUNID}/mk_sal_${FREQ}_${TAG}.out)" >> ${EXEPATH}/ERROR.txt ; exit 1 ; fi
+if [ ! -f $FILET ] ; then echo "$FILET is missing; exit"; echo "E R R O R in : ./mk_aabw.bash $@ (see SLURM/${CONFIG}/${RUNID}/mk_aabw_${FREQ}_${TAG}.out)" >> ${EXEPATH}/ERROR.txt ; exit 1 ; fi
 MESHF="${DATPATH}/${RUNID}/mesh.nc"
 TIME_VAR='time_counter'
 SALVAR='so_pra'
 TEMPVAR='thetao_pot'
 VARTYPE='density'
 DEPTH_VAR='deptht'
-echo 'mk_aabw.bash: Plot Model Antarctic bottom Water metrics.'
+echo 'mk_aabw.bash: Calculate Model Antarctic bottom Water metrics.'
 
 ### Weddell sea ###
 LONMIN=-65.500

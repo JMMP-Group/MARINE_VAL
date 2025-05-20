@@ -54,8 +54,8 @@ def load_argument():
 
 def calc_metrics(data, mesh, args):
 
-    time_counter = data[args.timevar[0]]  # Extract 'time_counter' based on the provided argument
-    time_centered = data['time_centered']  # Assuming 'time_centred' exists in the input dataset
+    time_counter = data[args.timevar[0]]
+    time_centered = data['time_centered']
 
     if args.vartype[0].lower() == 'density':
         salinity = data[args.salvar[0]] # practical salinity 
@@ -70,28 +70,15 @@ def calc_metrics(data, mesh, args):
         density_mask = ((sigma4 > args.densthresh[0]) & (latitude > args.latmin[0]) & (latitude < args.latmax[0]) & (longitude > args.lonmin[0]) & (longitude < args.lonmax[0])).values
         cell_volume = mesh['e3t_0'] * mesh['e1t'] * mesh['e2t']
         total_volume = (cell_volume.where(density_mask).sum())
-        print(f"Total volume type: {type(total_volume)}")
-
-        print(f"Total volume of water with sigma4 > {args.densthresh[0]}: {total_volume.values/(1000**3)} km^3.")
-        print(f"Total volume of ocean: {cell_volume.sum().values/(1000**3)} km^3.")
-        print(f"Total fraction of ocean with sigma4 > {args.densthresh[0]}: {total_volume.values/cell_volume.sum().values}.")
-
-        # total_volume = xr.DataArray(total_volume, dims=[], name="sigma4Vol")        
-        # total_volume = total_volume.to_dataset(name="sigma4Vol")
-        # total_volume['time_centered'] = time_centered
-        # total_volume['time_counter'] = time_counter
-        total_volume = xr.Dataset({"sigma4Vol": ([], total_volume.data)}, coords={"time_centered": time_centered,"time_counter": time_counter})
+        total_volume = xr.Dataset({"sigma4Vol": ([], total_volume.data)}, coords={"time_centered": time_centered, args.timevar[0]: time_counter})
         total_volume.to_netcdf(f"{args.datadir[0]}/{args.outf[0]}_density_volume.nc")
-
         outputs = [sigma4.where(density_mask).max(dim=args.depthvar[0])]
-
         return outputs
 
     else:
         argmap = {args.vartype[0]: args.salvar[0]} if args.vartype[0].lower() == 'salinity' else {args.vartype[0]: args.tempvar[0]}
-        diag = data[argmap[args.vartype[0]]].mean(dim=args.timevar[0]).expand_dims(dim={args.timevar[0]:[0]}).fillna(-1) # ASSUMPTION: Time = 1 for model data, time > 1 for obs data. Ensure 4D shape with first dimension = 1, averaging for obs.
+        diag = data[argmap[args.vartype[0]]].mean(dim=args.timevar[0]).expand_dims(dim={args.timevar[0]:[0]}).fillna(-1) # ASSUMPTION: Time = 1 for model data, Time > 1 for obs data. Ensure 4D shape with first dimension = 1, averaging for obs.
         depth_mask = mesh['gdept_0'][0].values # nk x nj x ni array, depth levels 
-    
         diag = filter_lat_lon(diag, mesh, [args.lonmin[0], args.lonmax[0], args.latmin[0], args.latmax[0]], new_val=-1) # nt x nk x nj x ni array, 0 for all values outside the domain    
         diag = diag.where((depth_mask >= args.mindepth[0]) & (depth_mask <= args.maxdepth[0]), np.nan).dropna(dim=args.depthvar[0], how='all')
         max_diag = diag.max(dim=args.depthvar[0]) # nt x nj x ni array, maximum salinity value for each grid point    
@@ -128,49 +115,42 @@ def plot_map(output, data, args, i):
     
     time_counter = 0
     pad = 5
-    title = f"{args.vartype[0].title()}" # Density anomaly (sigma4)
     lat, lon = ('y', 'x') if 'y' in output.dims else ('lat', 'lon')
     metrics_text = f"Mean: {output.mean(dim=[lat, lon])[time_counter].values}, \
                      Std: {output.std(dim=[lat, lon])[time_counter].values}"
     lat, lon = ('nav_lat', 'nav_lon') if 'nav_lat' in list(data.variables.keys()) else ('lat', 'lon')
     cmaps = ["cividis","plasma"]
+
     if args.latmax[0] <= 60 and args.latmin[0] <= -60:
         projection = ccrs.SouthPolarStereo()
     elif args.latmax[0] >= 60 and args.latmin[0] >= -60:
         projection = ccrs.NorthPolarStereo()
     else:
         projection = ccrs.PlateCarree()
+
+    if args.vartype[0].lower() == 'density':
+        title = f"Density anomaly for sigma4 density > {args.densthresh[0]} at {data[args.timevar[0]][time_counter].values}"
+    else:
+        title = f"{args.vartype[0].title()} anomaly for depths between {args.mindepth[0]}m - {args.maxdepth[0]}m at {data[args.timevar[0]][time_counter].values}"
+    
     fig, ax = plt.subplots(figsize=(10, 10), subplot_kw={'projection': projection})
-    fig.suptitle(f"{args.vartype[0].title()} anomaly for depths between {args.mindepth[0]}m - {args.maxdepth[0]}m at {data[args.timevar[0]][time_counter].values}", fontsize=16, fontweight='bold')
+    fig.suptitle(title, fontsize=16, fontweight='bold')
     ax.set_extent([args.lonmin[0] - pad, args.lonmax[0] + pad, args.latmin[0] - pad, args.latmax[0] + pad], crs=ccrs.PlateCarree())
-    # ax.set_extent([-180, 180, -90, 90], crs=ccrs.PlateCarree())
-    ax.set_title(title)
     ax.coastlines()
     ax.add_feature(cfeature.LAND, edgecolor='black', facecolor='tan') 
     ax.add_feature(cfeature.BORDERS, linestyle=':')
     ax.add_feature(cfeature.OCEAN, facecolor='lightblue')
     ax.text(0.5, -0.1, metrics_text, transform=ax.transAxes, ha='center', va='top', fontsize=10)
     plot = ax.pcolormesh(data[lon], data[lat], output.isel({args.timevar[0]: time_counter}), transform=ccrs.PlateCarree(), cmap=cmaps[i], shading='auto')
-    # fig.colorbar(plot, ax=ax, orientation='horizontal', label=title)
     fig.colorbar(plot, ax=ax, orientation='horizontal', label=title)
-
-    # plt.show()
     plt.tight_layout()
-    plt.savefig(f"{args.marvaldir[0]}/{args.outf[0]}_{args.vartype[0]}_{i}.png", dpi=300)
-
+    plt.savefig(f"{args.marvaldir[0]}/FIGURES/{args.outf[0]}_{args.vartype[0]}_{i}.png", dpi=300)
 
 def main():
 
     args = load_argument()
     data = xr.open_dataset(args.datf[0], decode_times=False) if args.obs else xr.open_dataset(args.datf[0])
     mesh = xr.open_dataset(args.meshf[0])
-
-    # print(f"Data variables: {list(data.variables.keys())}")
-    # print(f"Mesh variables: {list(mesh.variables.keys())}")
-
-    # print(f"Data time_counter: {data[args.timevar[0]].values}")
-    # print(f"Data time_centered: {data['time_centered'].values}")
-
     outputs = calc_metrics(data, mesh, args)
     for i, df in enumerate(outputs):
         plot_map(df, data, args, i)
