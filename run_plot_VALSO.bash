@@ -63,13 +63,13 @@ if [[ $? -ne 0 ]]; then exit 42; fi
 # volume of water with sigma4 > threshold in Weddell sea
 echo 'plot Weddell Sea time series'
 python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f nemo*_${FREQ}_*_aabw_weddell_density_volume.nc \
-    -var 'sigma4Vol' \-title "Water volume with sigma4 > $DENSITY_THRESHOLD (km3)" -dir ${DATPATH} -o ${KEY}_aabw_${FREQ}_weddell
+    -var 'sigma4Vol' \-title "Weddell Sea volume with sigma4 > $DENSITY_THRESHOLD (km3)" -dir ${DATPATH} -o ${KEY}_aabw_${FREQ}_weddell
 if [[ $? -ne 0 ]]; then exit 42; fi
 
 # volume of water with sigma4 > threshold in Southern ocean
 echo 'plot Southern Ocean time series'
 python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f nemo*_${FREQ}_*_aabw_so_density_volume.nc \
-    -var 'sigma4Vol' \-title "Water volume with sigma4 > $DENSITY_THRESHOLD (km3)" -dir ${DATPATH} -o ${KEY}_aabw_${FREQ}_so
+    -var 'sigma4Vol' \-title "Southern Ocean volume with sigma4 > $DENSITY_THRESHOLD (km3)" -dir ${DATPATH} -o ${KEY}_aabw_${FREQ}_so
 if [[ $? -ne 0 ]]; then exit 42; fi
 
 # crop figure (rm legend)
@@ -81,11 +81,10 @@ convert ${KEY}_RG.png                    -crop 1240x1040+0+0 tmp03.png
 convert ${KEY}_WWED_mean_deep_so.png      -crop 1240x1040+0+0 tmp04.png
 convert ${KEY}_WROSS_mean_deep_so.png     -crop 1240x1040+0+0 tmp05.png
 convert ${KEY}_AMU_mean_deep_thetao.png   -crop 1240x1040+0+0 tmp06.png
+# convert ${KEY}_aabw_${FREQ}_weddell.png -crop 1240x1040+0+0 tmp05.png
+# convert ${KEY}_aabw_${FREQ}_so.png      -crop 1240x1040+0+0 tmp06.png
 convert ${KEY}_EROSS_mean_deep_thetao.png  -crop 1240x1040+0+0 tmp07.png
 convert ${KEY}_WG_max_karamld.png        -crop 1240x1040+0+0 tmp08.png
-
-convert ${KEY}_aabw_${FREQ}_weddell.png -crop 1240x1040+0+0 tmp07.png
-convert ${KEY}_aabw_${FREQ}_so .png      -crop 1240x1040+0+0 tmp08.png
 
 # trim figure (remove white area)
 convert FIGURES/box_VALSO.png -trim -bordercolor White -border 40 tmp09.png
