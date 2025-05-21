@@ -344,7 +344,7 @@ def main():
         for lt in ax[ivar].get_xticklabels():
             lt.set_ha('center')
  
-        rmin[ivar],rmax[ivar]=get_ybnd(run_lst,obs_min[ivar],obs_max[ivar])
+        rmin[ivar],rmax[ivar]=get_ybnd(run_lst,obs_min[ivar],obs_max[ivar]) if args.obs else get_ybnd(run_lst,min([v.min for v in run_lst]),max([v.max for v in run_lst]))
         if args.force_zero_origin:
             rmin[ivar]=0.0
         ax[ivar].set_ylim([rmin[ivar],rmax[ivar]])

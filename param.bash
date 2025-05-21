@@ -44,6 +44,7 @@ runBSF_SO=0         # Max streamfunction in Weddell gyre and Ross gyre
 runDEEPTS=0         # Deep salinity in West Weddell and West Ross Seas
                     # and deep temperature in Amundsen and East Ross Seas
 runSST_SO=0         # Mean Southern Ocean SST between ?? and ??
+runAABW=0           # Volume of water for a given sigma4 threshold
 
 # VALNA (North Atlantic)
 runBSF_NA=0         # North Atlantic subpolar gyre strength
@@ -56,7 +57,7 @@ runOVF=0            # Mean overflow bottom temperature and salinity (below 27.8 
                     # at various locations. Currently, VALNA isolates and averages the 
                     # Irminger and Icelandic basins at the osnap observational cross-section.
 runGSL_NAC=0        # GS separation latitude and NA current latitude
-runMed_OVF=1        # Mediterranean overflow water max salinity and corresponding depth
+runMedOVF=0        # Mediterranean overflow water max salinity and corresponding depth
 
 # VALTRANS (Transports and exchanges in straits)
 runMargSea=0        # Marginal Seas exchanges: Gibraltar, Bab el Mandeb, Strait of Hormuz
@@ -78,6 +79,7 @@ if [[ $RUNVALSO == 1 || $RUNALL == 1 ]]; then
    runBSF_SO=1 
    runDEEPTS=1 
    runSST_SO=1
+   runAABW=1
 fi
 if [[ $RUNVALNA == 1 || $RUNALL == 1 ]]; then
    runBSF_NA=1
@@ -91,7 +93,7 @@ if [[ $RUNVALNA == 1 || $RUNALL == 1 ]]; then
 #   OVF metrics not yet working in merged version of Marine_Val
 #   runOVF=1
    runGSL_NAC=1
-   runMed_OVF=1
+   runMedOVF=1
 fi
 if [[ $RUNVALTRANS == 1 || $RUNALL == 1 ]]; then
    runITF=1

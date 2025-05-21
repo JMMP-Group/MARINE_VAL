@@ -9,6 +9,7 @@ FREQ=${2}
 RUNIDS=${@:3}
 
 FREQs="1s"
+DENSITY_THRESHOLD=45.8 
 
 # ACC
 # Drake
@@ -58,6 +59,19 @@ echo 'plot max mld in Weddell Gyre time series'
 python ${SCRPATH}/plot_time_series.py -noshow -runid $RUNIDS -f *WMXL*1m*0901*T.nc -var '(max_somxzint1|somxzint1)' -title "Max Kara mld WG (m)" -dir ${DATPATH} -o ${KEY}_WG_max_karamld -obs OBS/WG_karamld_max_obs.txt
 if [[ $? -ne 0 ]]; then exit 42; fi
 
+# AABW
+# volume of water with sigma4 > threshold in Weddell sea
+echo 'plot Weddell Sea time series'
+python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f nemo*_${FREQ}_*_aabw_weddell_density_volume.nc \
+    -var 'sigma4Vol' \-title "Weddell Sea volume with sigma4 > $DENSITY_THRESHOLD (m3)" -dir ${DATPATH} -o ${KEY}_aabw_${FREQ}_weddell
+if [[ $? -ne 0 ]]; then exit 42; fi
+
+# volume of water with sigma4 > threshold in Southern ocean
+echo 'plot Southern Ocean time series'
+python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f nemo*_${FREQ}_*_aabw_so_density_volume.nc \
+    -var 'sigma4Vol' \-title "Southern Ocean volume with sigma4 > $DENSITY_THRESHOLD (m3)" -dir ${DATPATH} -o ${KEY}_aabw_${FREQ}_so
+if [[ $? -ne 0 ]]; then exit 42; fi
+
 # crop figure (rm legend)
 convert ${KEY}_ACC.png                   -crop 1240x1040+0+0 tmp01.png
 #convert ${KEY}_ACC_bottom.png            -crop 1240x1040+0+0 tmp02.png
@@ -67,6 +81,8 @@ convert ${KEY}_RG.png                    -crop 1240x1040+0+0 tmp03.png
 convert ${KEY}_WWED_mean_deep_so.png      -crop 1240x1040+0+0 tmp04.png
 convert ${KEY}_WROSS_mean_deep_so.png     -crop 1240x1040+0+0 tmp05.png
 convert ${KEY}_AMU_mean_deep_thetao.png   -crop 1240x1040+0+0 tmp06.png
+# convert ${KEY}_aabw_${FREQ}_weddell.png -crop 1240x1040+0+0 tmp05.png
+# convert ${KEY}_aabw_${FREQ}_so.png      -crop 1240x1040+0+0 tmp06.png
 convert ${KEY}_EROSS_mean_deep_thetao.png  -crop 1240x1040+0+0 tmp07.png
 convert ${KEY}_WG_max_karamld.png        -crop 1240x1040+0+0 tmp08.png
 
