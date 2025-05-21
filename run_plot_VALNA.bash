@@ -76,6 +76,14 @@ echo 'plot NAC latitude time series'
 python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f *${FREQ}*NA_crop_T.nc -var NAC_lat -title "NAC latitude @41degW" -dir ${DATPATH} -o ${KEY}_NAC -obs OBS/NAC_lat_obs.txt
 if [[ $? -ne 0 ]]; then exit 42; fi
 
+# max practical salinity in med overflow
+python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f nemo_dl879o_${FREQ}*_medovf_mean.nc -var so_pra -title "Med Outflow Max Salinity" -dir ${DATPATH} -o ${KEY}_medovf_salinity -obs OBS/medovf_salinity.txt
+if [[ $? -ne 0 ]]; then exit 42; fi
+
+# depth of max practical salinity in med overflow
+python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f nemo_dl879o_${FREQ}*_medovf_mean_depth.nc -var deptht -title "Med Outflow Depth of Max Salinity (m)" -dir ${DATPATH} -o ${KEY}_medovf_depth -obs OBS/medovf_salinity_depth.txt
+if [[ $? -ne 0 ]]; then exit 42; fi
+
 # crop figure (rm legend)
 convert ${KEY}_BSF.png                     -crop 1240x1040+0+0 tmp01.png
 convert ${KEY}_HTC.png                     -crop 1240x1040+0+0 tmp02.png
@@ -91,6 +99,9 @@ convert FIGURES/box_NA.png  -trim -bordercolor White -border 2 tmp08.png
 ## convert ${KEY}_OVF_T.png                   -crop 1240x1040+0+0 tmp10.png
 convert ${KEY}_GSL.png                     -crop 1240x1040+0+0 tmp11.png
 convert ${KEY}_NAC.png                     -crop 1240x1040+0+0 tmp12.png
+
+convert ${KEY}_medovf_salinity.png        -crop 1240x1040+0+0 tmp11.png
+convert ${KEY}_medovf_depth.png            -crop 1240x1040+0+0 tmp12.png
 
 # trim figure (remove white area)
 convert legend.png      -trim    -bordercolor White -border 20 tmp13.png
