@@ -63,13 +63,13 @@ if [[ $? -ne 0 ]]; then exit 42; fi
 # volume of water with sigma4 > threshold in Weddell sea
 echo 'plot Weddell Sea time series'
 python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f nemo*_${FREQ}_*_aabw_weddell_density_volume.nc \
-    -var 'sigma4Vol' \-title "Weddell Sea volume with sigma4 > $DENSITY_THRESHOLD (km3)" -dir ${DATPATH} -o ${KEY}_aabw_${FREQ}_weddell
+    -var 'sigma4Vol' \-title "Weddell Sea volume with sigma4 > $DENSITY_THRESHOLD (m3)" -dir ${DATPATH} -o ${KEY}_aabw_${FREQ}_weddell
 if [[ $? -ne 0 ]]; then exit 42; fi
 
 # volume of water with sigma4 > threshold in Southern ocean
 echo 'plot Southern Ocean time series'
 python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f nemo*_${FREQ}_*_aabw_so_density_volume.nc \
-    -var 'sigma4Vol' \-title "Southern Ocean volume with sigma4 > $DENSITY_THRESHOLD (km3)" -dir ${DATPATH} -o ${KEY}_aabw_${FREQ}_so
+    -var 'sigma4Vol' \-title "Southern Ocean volume with sigma4 > $DENSITY_THRESHOLD (m3)" -dir ${DATPATH} -o ${KEY}_aabw_${FREQ}_so
 if [[ $? -ne 0 ]]; then exit 42; fi
 
 # crop figure (rm legend)
