@@ -24,7 +24,6 @@ def load_argument():
     parser.add_argument("-salvar", metavar='salinity variable', help="salinity variable in the dataset", type=str, nargs=1, required=False)
     parser.add_argument("-tempvar", metavar='temperature variable', help="temperature variable in the dataset", type=str, nargs=1, required=False)
     parser.add_argument("-timevar", metavar='time variable', help="time variable in the dataset", type=str, nargs=1, required=True)
-    parser.add_argument("-depthvar", metavar='depth variable', help="depth variable in the dataset", type=str, nargs=1, required=True)
     parser.add_argument("-freq", metavar='frequency', help="frequency of the data", type=str, nargs=1, required=True)
     parser.add_argument("-datf", metavar='data file', help="the input file (full path) to work from", type=str, nargs=1 , required=True)
     parser.add_argument("-meshf", metavar='mesh file', help="the mesh file (full path) to work from", type=str, nargs=1 , required=True)
@@ -52,28 +51,42 @@ def load_argument():
 
     return args
 
+def crop_grid(latitude, longitude, args):
+    y_indices = np.where(~np.isnan(latitude.where((latitude >= args.latmin[0]) & (latitude <= args.latmax[0]), np.nan)))
+    y_min, y_max = (y_indices[0].min(), y_indices[0].max() + 1) if y_indices[0].max() < latitude.shape[0] - 1 else (y_indices[0].min(), None)
+    x_indices = np.where(~np.isnan(longitude.where((longitude >= args.lonmin[0]) & (longitude <= args.lonmax[0]), np.nan)))
+    x_min, x_max = (x_indices[1].min(), x_indices[1].max() + 1) if x_indices[1].max() < longitude.shape[1] - 1 else (x_indices[1].min(), None)
+    
+    return  {'y': slice(y_min, y_max), 'x': slice(x_min, x_max)}, [y_min, y_max], [x_min, x_max]
+
 def calc_metrics(data, mesh, args):
 
-    time_counter = data[args.timevar[0]]
-    time_centered = data['time_centered']
+    if args.obs:
+        time_counter = data[args.timevar[0]].mean(dim=args.timevar[0]).expand_dims(dim={args.timevar[0]:[0]}).fillna(-1)
+    else:
+        time_counter = data[args.timevar[0]]
+        time_centered = data['time_centered']
 
     if args.vartype[0].lower() == 'density':
-        salinity = data[args.salvar[0]] # practical salinity 
-        temperature = data[args.tempvar[0]] # potential temperature 
-        depth = data[args.depthvar[0]] # 1D array
-        latitude, longitude = 'nav_lat', 'nav_lon'
-        latitude, longitude = data[latitude], data[longitude]
+        latitude, longitude = data['nav_lat'], data['nav_lon']
+        crop_map, y_range, x_range = crop_grid(latitude, longitude, args)
+        latitude, longitude = latitude.isel(crop_map), longitude.isel(crop_map)
+        salinity = data[args.salvar[0]].isel(crop_map) # practical salinity 
+        temperature = data[args.tempvar[0]].isel(crop_map) # potential temperature
+        depth = mesh['gdept_0'].isel({'time_counter':0}).isel(crop_map) # nk x nj x ni array, depth levels 
         pressure = gsw.p_from_z(-depth, latitude)
         salinity = gsw.SA_from_SP(salinity, pressure, longitude, latitude) # absolute salinity
         temperature = gsw.CT_from_pt(salinity, temperature) # conservative temperature
         sigma4 = gsw.density.sigma4(salinity, temperature) # potential density referenced to 4000 dbar
         density_mask = ((sigma4 > args.densthresh[0]) & (latitude > args.latmin[0]) & (latitude < args.latmax[0]) & (longitude > args.lonmin[0]) & (longitude < args.lonmax[0])).values
         cell_volume = mesh['e3t_0'] * mesh['e1t'] * mesh['e2t']
+        cell_volume = cell_volume.isel(crop_map)
         total_volume = (cell_volume.where(density_mask).sum())
         total_volume = xr.Dataset({"sigma4Vol": ([], total_volume.data)}, coords={"time_centered": time_centered, args.timevar[0]: time_counter})
         total_volume.to_netcdf(f"{args.datadir[0]}/{args.outf[0]}_density_volume.nc")
-        outputs = [sigma4.where(density_mask).max(dim=args.depthvar[0])]
-        return outputs
+
+        # outputs = [sigma4.where(density_mask).max(dim='nav_lev')] # commented out until plot_map is generalised
+        outputs = []
 
     else:
         argmap = {args.vartype[0]: args.salvar[0]} if args.vartype[0].lower() == 'salinity' else {args.vartype[0]: args.tempvar[0]}
@@ -97,15 +110,17 @@ def calc_metrics(data, mesh, args):
                 f.write(f"ref = Max depth NOAA_WOA13v2: 1955-2012\n")
                 f.write(f"mean = {max_depth.mean(dim=[lat, lon]).values[0]}\n")
                 f.write(f"std = {max_depth.std(dim=[lat, lon]).values[0]}\n")
+        
         else:
             max_diag['time_centered'] = time_centered
-            max_diag['time_counter'] = time_counter
-            max_diag.mean(dim=[lat, lon]).to_netcdf(f"{args.datadir[0]}/{args.outf[0]}_mean.nc") # nt array, mean for each time period
-            max_diag.std(dim=[lat, lon]) .to_netcdf(f"{args.datadir[0]}/{args.outf[0]}_std.nc") # nt array, stdev for each time period
             max_depth['time_centered'] = time_centered
-            max_depth['time_counter'] = time_counter
-            max_depth.mean(dim=[lat, lon]).to_netcdf(f"{args.datadir[0]}/{args.outf[0]}_mean_depth.nc") # nt array, mean depth for each time period
-            max_depth.std(dim=[lat, lon]).to_netcdf(f"{args.datadir[0]}/{args.outf[0]}_std_depth.nc") # nt array, stdev depth for each time period
+
+        max_diag[args.timevar[0]] = time_counter
+        max_diag.mean(dim=[lat, lon]).to_netcdf(f"{args.datadir[0]}/{args.outf[0]}_mean.nc") # nt array, mean for each time period
+        max_diag.std(dim=[lat, lon]) .to_netcdf(f"{args.datadir[0]}/{args.outf[0]}_std.nc") # nt array, stdev for each time period
+        max_depth[args.timevar[0]] = time_counter
+        max_depth.mean(dim=[lat, lon]).to_netcdf(f"{args.datadir[0]}/{args.outf[0]}_mean_depth.nc") # nt array, mean depth for each time period
+        max_depth.std(dim=[lat, lon]).to_netcdf(f"{args.datadir[0]}/{args.outf[0]}_std_depth.nc") # nt array, stdev depth for each time period
 
         outputs = [max_diag, max_depth]
     
@@ -149,9 +164,18 @@ def plot_map(output, data, args, i):
 def main():
 
     args = load_argument()
-    data = xr.open_dataset(args.datf[0], decode_times=False) if args.obs else xr.open_dataset(args.datf[0])
+    args.depthvar = ["depth"] if args.obs else ["deptht"]
+    args.decode_times = False if args.obs else True
+    
+    if args.vartype[0].lower() == 'density':
+        data = xr.open_dataset(args.datf[0], drop_variables=(args.depthvar[0]), decode_times=args.decode_times).rename_dims({args.depthvar[0]:'nav_lev'})
+        args.depthvar = ['nav_lev']
+    else:
+        data = xr.open_dataset(args.datf[0], decode_times=args.decode_times)
+
     mesh = xr.open_dataset(args.meshf[0])
     outputs = calc_metrics(data, mesh, args)
+
     for i, df in enumerate(outputs):
         plot_map(df, data, args, i)
 

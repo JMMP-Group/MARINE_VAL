@@ -26,12 +26,11 @@ MESHF="/data/users/nemo/obs_data/NOAA_WOA13v2/1955-2012/025/mesh_mask_woa13v2.nc
 TIME_VAR='time'
 SALVAR='so_abs'
 VARTYPE='salinity'
-DEPTH_VAR='depth'
 echo 'mk_medovf.bash: Calculate Obs Med Overflow salinity metrics.'
-python ${SCRPATH}/cal_density_metrics.py -obs -lonmin $LONMIN -lonmax $LONMAX -latmin $LATMIN -latmax $LATMAX \
+python ${SCRPATH}/cal_deep_tracers_metrics.py -obs -lonmin $LONMIN -lonmax $LONMAX -latmin $LATMIN -latmax $LATMAX \
     -mindepth $MIN_DEPTH -maxdepth $MAX_DEPTH -datadir $DATPATH/$RUNID -datf $FILET -meshf $MESHF \
     -outf $FILEOUT -marvaldir $MARINE_VAL -timevar $TIME_VAR -salvar $SALVAR -vartype $VARTYPE \
-    -depthvar $DEPTH_VAR -freq $FREQ
+    -freq $FREQ
 if [[ $? -ne 0 ]]; then exit 42; fi 
 fi
 
@@ -43,11 +42,10 @@ MESHF="${DATPATH}/${RUNID}/mesh.nc"
 TIME_VAR='time_counter'
 SALVAR='so_pra'
 VARTYPE='salinity'
-DEPTH_VAR='deptht'
 echo 'mk_medovf.bash: Calculate Model Med Overflow salinity metrics.'
-python ${SCRPATH}/cal_density_metrics.py -lonmin $LONMIN -lonmax $LONMAX -latmin $LATMIN -latmax $LATMAX \
+python ${SCRPATH}/cal_deep_tracers_metrics.py -lonmin $LONMIN -lonmax $LONMAX -latmin $LATMIN -latmax $LATMAX \
     -mindepth $MIN_DEPTH -maxdepth $MAX_DEPTH -datadir $DATPATH/$RUNID -datf $FILET -meshf $MESHF \
     -outf $FILEOUT -marvaldir $MARINE_VAL -timevar $TIME_VAR -salvar $SALVAR -vartype $VARTYPE \
-    -depthvar $DEPTH_VAR -freq $FREQ
+    -freq $FREQ
 if [[ $? -ne 0 ]]; then exit 42; fi 
 
