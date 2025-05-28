@@ -245,7 +245,8 @@ for RUNID in `echo $RUNIDS`; do
             [[ $runOVF == 1 ]]           && run_tool mk_ovf      $TAG $RUNID $FREQ $mooTyid
             [[ $runMHT == 1 ]]     && run_tool mk_mht  $TAG $RUNID $FREQ $mooVyid:$mooVyid
             [[ $runQHF == 1 ]]     && run_tool mk_hfds $TAG $RUNID $FREQ $mooTyid 
-            [[ $runMed_OVF == 1 ]]   && run_tool mk_medovf $TAG $RUNID $FREQ $mooTyid
+            [[ $runMedOVF == 1 ]]   && run_tool mk_medovf $TAG $RUNID $FREQ $mooTyid
+            [[ $runAABW == 1 ]] && run_tool mk_aabw $TAG $RUNID $FREQ $mooTyid
          done
          let tagcount=0
          TAG_LIST=""
