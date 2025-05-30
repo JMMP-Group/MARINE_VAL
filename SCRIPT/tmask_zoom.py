@@ -7,11 +7,15 @@ from util import get_ij_from_lon_lat
 
 def load_argument():
     parser = argparse.ArgumentParser()
-    parser.add_argument("-w", metavar='coordinates list', help="LON_MIN, LON_MAX, LAT_MIN, LAT_MAX values", type=float, nargs='+', required=True )
-    parser.add_argument("-c", metavar='mesh file', help="the mesh file to work from", type=str, nargs=1 , required=False, default=['mesh.nc'])
-    parser.add_argument("-mindepth", metavar='depth constraint', help="value to qualify the mesh mask", type=float, nargs=1, required=True)
-    parser.add_argument("-runid", metavar='runid' , help="used to look information in runid.db", type=str, nargs=1 , required=True)
-    parser.add_argument("-dir", metavar='directory of input file', help="directory of input file", type=str, nargs=1, required=False, default=['./'])
+    parser.add_argument("-W", "--west", dest="west", metavar="western limit", help="western limit of the domain", type=float, nargs=1, required=True)
+    parser.add_argument("-E", "--east", dest="east", metavar="eastern limit", help="eastern limit of the domain", type=float, nargs=1, required=True)
+    parser.add_argument("-S", "--south", dest="south", metavar="southern limit", help="southern limit of the domain", type=float, nargs=1, required=True)
+    parser.add_argument("-N", "--north", dest="north", metavar="northern limit", help="northern limit of the domain", type=float, nargs=1, required=True)
+    parser.add_argument("-m", "--mesh", dest="mesh", metavar="mesh file", help="the mesh file to work from", type=str, nargs=1 , required=False, default=['mesh.nc'])
+    parser.add_argument("-mindepth", metavar="depth constraint", help="min depth limit of the domain", type=float, nargs=1, required=True)
+    parser.add_argument("-maxdepth", metavar="depth constraint", help="max depth limit of the domain", type=float, nargs=1, required=False)
+    parser.add_argument("-runid", metavar="runid" , help="used to look information in runid.db", type=str, nargs=1 , required=True)
+    parser.add_argument("-dir", metavar="directory of input file", help="directory of input file", type=str, nargs=1, required=False, default=['./'])
     return parser.parse_args()
 
 def filter_lat_lon(array, mesh_data, args):
@@ -26,17 +30,16 @@ def filter_lat_lon(array, mesh_data, args):
     Returns:
     xr.array: Masked array.
     """
-    LON_MIN, LON_MAX, LAT_MIN, LAT_MAX = args.w
 
-    assert LON_MIN < LON_MAX, "LON_MIN must be less than LON_MAX"
-    assert LAT_MIN < LAT_MAX, "LAT_MIN must be less than LAT_MAX"
-    assert -90 <= LAT_MIN <= 90 and -90 <= LAT_MAX <= 90, "Latitude values must be between -90 and 90"
-    assert -180 <= LON_MIN <= 180 and -180 <= LON_MAX <= 180, "Longitude values must be between -180 and 180"
+    assert args.west[0] < args.east[0], "W (western limit) must be less than E (eastern limit)"
+    assert args.south[0] < args.north[0], "S (southern limit) must be less than N (northern limit)"
+    assert -90 <= args.south[0] <= 90 and -90 <= args.north[0] <= 90, "Latitude values must be between -90 and 90"
+    assert -180 <= args.west[0] <= 180 and -180 <= args.east[0] <= 180, "Longitude values must be between -180 and 180"
 
     lat_grid = mesh_data['nav_lat'].values # 1206 x 1440 array, latitudes of each grid point
     lon_grid = mesh_data['nav_lon'].values # 1206 x 1440 array, longitudes of each grid point
     
-    domain_mask = (lat_grid >= LAT_MIN) & (lat_grid <= LAT_MAX) & (lon_grid >= LON_MIN) & (lon_grid <= LON_MAX) # 1206 x 1440 array, boolean mask for a given domain
+    domain_mask = (lat_grid >= args.south[0]) & (lat_grid <= args.north[0]) & (lon_grid >= args.west[0]) & (lon_grid <= args.east[0]) # 1206 x 1440 array, boolean mask for a given domain
     
     return array.where(domain_mask, 0)
 
@@ -52,10 +55,15 @@ def filter_depth(array, mesh_data, args):
     Returns:
     xr.array: Masked array.
     """
-    DEPTH = args.mindepth[0]
-    assert 0 <= DEPTH <= 6003, "Depth value must be between 0 and 6003" 
     bathymetry = mesh_data['bathy_metry'][0] # 1206 x 1440 array, depth of the ocean floor in meters
-    depth_mask = (bathymetry >= DEPTH) # 1206 x 1440 array, boolean mask for a given depth 
+
+    assert 0 <= args.mindepth[0] <= 6003, "Minimum depth value must be between 0 and 6003" 
+    depth_mask = (bathymetry >= args.mindepth[0]) # 1206 x 1440 array, boolean mask for a given depth 
+
+    if args.maxdepth:
+        assert 0 <= args.maxdepth[0] <= 6003, "Maximum depth value must be between 0 and 6003"
+        assert args.maxdepth[0] > args.mindepth[0], "Maximum depth value must be greater than minimum depth value"
+        depth_mask &= (bathymetry <= args.maxdepth[0])
 
     return array.where(depth_mask, 0) 
 
@@ -94,7 +102,7 @@ def main():
 
     args = load_argument()
     DATADIR = f"{args.dir[0]}/{args.runid[0]}"
-    mesh_data = xr.open_dataset(f"{DATADIR}/{args.c[0]}")
+    mesh_data = xr.open_dataset(f"{DATADIR}/{args.mesh[0]}")
     tmask = mesh_data['tmask'] # 1 x 75 x 1206 x 1440 array, 1 for ocean, 0 for land
     lon = mesh_data['nav_lon'].values # 1206 x 1440 array, longitudes of each grid point
     lat = mesh_data['nav_lat'].values # 1206 x 1440 array, latitudes of each grid point

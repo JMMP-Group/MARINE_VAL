@@ -24,7 +24,7 @@ echo "ijbox : $ijbox"
 
 # calculate volume of NA subpolar gyre in m3
 if [ ! -f ${DATPATH}/${RUNID}/masked_tmask_NA_gyre.nc ] ; then
-   python ${SCRPATH}/tmask_zoom.py -w -60.000 -20.000 48.000 72.000 -mindepth ${MIN_DEPTH} -dir ${DATPATH} -runid ${RUNID} -c mesh.nc 
+   python ${SCRPATH}/tmask_zoom.py -W -60.000 -E -20.000 -S 48.000 -N 72.000 -mindepth ${MIN_DEPTH} -dir ${DATPATH} -runid ${RUNID} -c mesh.nc 
    if [[ $? -ne 0 ]]; then exit 42; fi 
 fi
 
