@@ -73,6 +73,7 @@ run_tool() {
       if ! declare -p "$first_tool_id" &>/dev/null; then
          declare -g "$first_tool_id"
          sbatch_output=$(sbatch ${sbatchschopt} ${sbatchrunopt} ${SCRPATH}/${TOOL}.bash ${flags} $2 $1 $3 | awk '{print $4}')
+         exit_code=$?
          eval "$first_tool_id=$sbatch_output"
       else
          slurm_wait
