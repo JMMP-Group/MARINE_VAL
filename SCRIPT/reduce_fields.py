@@ -87,6 +87,7 @@ def reduce_fields(infile,tmask,invars=None,coords=None,wgtsfiles=None,wgtsnames=
     # Filter for subdomain
     tmask_cube = iris.load_cube(tmask[0])
     nav_lev_index = tmask_cube.coord_dims('nav_lev')[0]
+    nav_lev_index = tuple([0 if i == nav_lev_index else slice(None) for i in range(tmask_cube.data.ndim)])
 
     for cube in cubes:
         has_depth = any(
