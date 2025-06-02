@@ -47,7 +47,7 @@ fi
 
 # calculate volume of NA subpolar gyre in m3
 if [ ! -f ${DATPATH}/${RUNID}/masked_tmask_NA_gyre.nc ] ; then
-   MIN_DEPTH=100
+   MIN_DEPTH=1000
    python ${SCRPATH}/tmask_zoom.py -W -60.000 -E -20.000 -S 48.000 -N 72.000 -mindepth ${MIN_DEPTH} -dir ${DATPATH} -runid ${RUNID} -m mesh.nc 
    if [[ $? -ne 0 ]]; then exit 42; fi
 fi
