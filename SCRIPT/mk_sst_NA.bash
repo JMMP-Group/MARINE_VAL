@@ -26,7 +26,7 @@ if [ ! -f $FILE ] ; then echo "$FILE is missing; exit"; echo "E R R O R in : ./m
 ## calculate sst
 FILEOUT=SSTav_Newfound_${RUN_NAME}o_${FREQ}_${TAG}_grid-${GRID}.nc
 $SCRPATH/reduce_fields.py -i $FILE -v thetao_pot -c longitude latitude -A mean -G measures -g cell_area \
-	                          -W-43.0 -E-37.0 -S-45.0 -N50.0 -B1.5 -o $FILEOUT 
+	                          -W-43.0 -E-37.0 -S-45.0 -N50.0 -B1.5 -o tmp_$FILEOUT 
 
 #mv output file
 if [[ $? -eq 0 ]]; then 

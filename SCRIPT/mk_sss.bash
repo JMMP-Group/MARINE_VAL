@@ -28,7 +28,7 @@ if [ ! -f $FILE ] ; then echo "$FILE is missing; exit"; echo "E R R O R in : ./m
 ## calculate sss in Labrador Sea (same region as MXL)
 FILEOUT=SSSav_LabSea_${RUN_NAME}o_${FREQ}_${TAG}_grid-${GRID}.nc
 $SCRPATH/reduce_fields.py -i $FILE -v so_pra -c longitude latitude -A mean -G measures -g cell_area \
-	                          -W-60.000 -E-50.000 -S55.000 -N62.000 -B1.5 -o $FILEOUT 
+	                          -W-60.000 -E-50.000 -S55.000 -N62.000 -B1.5 -o tmp_$FILEOUT 
 
 #mv output file
 if [[ $? -eq 0 ]]; then
