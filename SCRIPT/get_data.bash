@@ -44,7 +44,7 @@ for MFILE in ${FILE_LST}; do
 #      if [[ $SIZEMASS -ne $SIZESYST ]]; then echo " $FILE is corrupted "; rm $FILE; fi
       if [[ $TIME -eq 0 ]]; then echo " $FILE is corrupted "; rm $FILE; fi
       Tvarname=$(ncdump -h $FILE | grep float | grep thetao[_\ ] | cut -d' ' -f2 | cut -d'(' -f1 )
-      Svarname=$(ncdump -h $FILE | grep float | grep so[_\ ] | cut -d' ' -f2 | cut -d'(' -f1 )
+      Svarname=$(ncdump -h $FILE | grep float | grep so[_\ ]a | cut -d' ' -f2 | cut -d'(' -f1 )
       if [[ "$Tvarname" == "thetao_con" && "$Svarname" == "so_abs" ]]; then 
          CONVERT_EOS_LIST="$CONVERT_EOS_LIST $FILE"
       elif [[ "$Tvarname" == "thetao_con" || "$Svarname" == "so_abs" ]]; then
@@ -67,7 +67,7 @@ fi
 
 for FILE in $MOO_RESTORED_LIST;do
    Tvarname=$(ncdump -h $FILE | grep float | grep thetao[_\ ] | cut -d' ' -f2 | cut -d'(' -f1 )
-   Svarname=$(ncdump -h $FILE | grep float | grep so[_\ ] | cut -d' ' -f2 | cut -d'(' -f1 )
+   Svarname=$(ncdump -h $FILE | grep float | grep so[_\ ]a | cut -d' ' -f2 | cut -d'(' -f1 )
    echo "$FILE : $Tvarname $Svarname"
    if [[ "$Tvarname" == "thetao_con" && "$Svarname" == "so_abs" ]]; then 
       echo "hello!"
