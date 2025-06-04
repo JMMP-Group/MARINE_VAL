@@ -128,6 +128,8 @@ if [[ -f ERROR.txt ]]; then rm ERROR.txt ; fi
 [[ $runACC == 1 || $runMargSea == 1 || $runITF == 1 || $runNAtlOverflows == 1  || $runArcTrans == 1 ]] && runTRP=1
 [[ $runBSF_SO == 1 || $runBSF_NA == 1 ]] && runBSF=1
 [[ $runDEEPTS == 1 || $runSSS_LabSea == 1 || $runSST_SO == 1 || $runSST_NWCorner == 1 ]] && runTS=1
+[[ $runAMOC == 1 || $runOSNAP == 1 ]] && runMOC=1
+[[ $runTRP == 1 || $runOSNAP == 1 ]] && needBATHY=1
 
 # Check that everything is in place
 if [[ ! -d ${CDFPATH} || ! -n "$(ls -A "$CDFPATH")" ]] ; then  
@@ -145,7 +147,7 @@ if [[ ! -f ${MSKPATH}/${MESHMASK} ]] ; then
    exit 41
 fi
 
-if [[ $runTRP == 1 && ! -f ${MSKPATH}/${BATHY} ]] ; then
+if [[ $needBATHY == 1 && ! -f ${MSKPATH}/${BATHY} ]] ; then
    echo "E R R O R : bathymetry file does not exist : ${MSKPATH}/${BATHY}"
    echo "Bathymetry file can be created from mesh_mask file using SCRIPT/bathy_from_dommesh.py"
    exit 41
@@ -169,7 +171,7 @@ for RUNID in `echo $RUNIDS`; do
    # check mesh mask
    if [[ ! -L mesh.nc     ]] ; then ln -s ${MSKPATH}/${MESHMASK} mesh.nc ; fi
    if [[ ! -L mask.nc     ]] ; then ln -s ${MSKPATH}/${MESHMASK} mask.nc ; fi
-   if [[ $runTRP == 1 && ! -L bathy.nc    ]] ; then ln -s ${MSKPATH}/${BATHY} bathy.nc ; fi
+   if [[ $needBATHY == 1 && ! -L bathy.nc    ]] ; then ln -s ${MSKPATH}/${BATHY} bathy.nc ; fi
    # subbasins file not currently used by any metrics
    #if [ ! -L subbasin.nc ] ; then ln -s ${MSKPATH}/subbasins_${CONFIG}-GO6.nc subbasin.nc ; fi
 
@@ -204,11 +206,11 @@ for RUNID in `echo $RUNIDS`; do
          echo "TAG_LIST : $TAG_LIST"
          # get data (retrieve_data function is defined in this script)
          moo_wait
-         [[ $runTRP == 1 || $runBSF == 1 || $runAMOC == 1 || $runMHT == 1  ]] && mooVyid=$(retrieve_data $RUNID $FREQ grid-V $TAG_LIST)
+         [[ $runTRP == 1 || $runBSF == 1 || $runMOC == 1 || $runMHT == 1  ]] && mooVyid=$(retrieve_data $RUNID $FREQ grid-V $TAG_LIST)
          moo_wait
-         [[ $runTRP == 1 || $runBSF == 1 || $runAMOC == 1 ]] && mooUyid=$(retrieve_data $RUNID $FREQ grid-U $TAG_LIST)
+         [[ $runTRP == 1 || $runBSF == 1 || $runMOC == 1 ]] && mooUyid=$(retrieve_data $RUNID $FREQ grid-U $TAG_LIST)
          moo_wait
-         [[ $runTRP == 1 || $runQHF == 1 || $runTS == 1 || $runAMOC == 1 || $runHTC == 1 || $runGSL_NAC || $runMHT == 1 ]] && mooTyid=$(retrieve_data $RUNID $FREQ grid-T $TAG_LIST)
+         [[ $runTRP == 1 || $runQHF == 1 || $runTS == 1 || $runMOC == 1 || $runHTC == 1 || $runGSL_NAC || $runMHT == 1 ]] && mooTyid=$(retrieve_data $RUNID $FREQ grid-T $TAG_LIST)
           
          echo "mooTyid : $mooTyid"
          echo "mooUyid : $mooUyid"
@@ -236,13 +238,14 @@ for RUNID in `echo $RUNIDS`; do
             [[ $runITF == 1 ]]           && run_tool mk_trp  -S LombokStrait       $TAG $RUNID $FREQ $mooVyid:$mooUyid:$mooTyid
             [[ $runITF == 1 ]]           && run_tool mk_trp  -S OmbaiStrait        $TAG $RUNID $FREQ $mooVyid:$mooUyid:$mooTyid
             [[ $runITF == 1 ]]           && run_tool mk_trp  -S TimorPassage       $TAG $RUNID $FREQ $mooVyid:$mooUyid:$mooTyid 
-            [[ $runBSF_NA == 1 ]]        && run_tool mk_psi_NA   $TAG $RUNID $FREQ $mooVyid:$mooUyid
-            [[ $runAMOC == 1 ]]          && run_tool mk_amoc     $TAG $RUNID $FREQ $mooVyid:$mooUyid:$mooTyid
-            [[ $runSST_NWCorner == 1 ]]  && run_tool mk_sst_NA   $TAG $RUNID $FREQ $mooTyid
-            [[ $runSSS_LabSea == 1 ]]    && run_tool mk_sss      $TAG $RUNID $FREQ $mooTyid
-            [[ $runHTC == 1 ]]           && run_tool mk_htc      $TAG $RUNID $FREQ $mooTyid
-            [[ $runGSL_NAC == 1 ]]       && run_tool mk_gsl_nac  $TAG $RUNID $FREQ $mooTyid
-            [[ $runOVF == 1 ]]           && run_tool mk_ovf      $TAG $RUNID $FREQ $mooTyid
+            [[ $runBSF_NA == 1 ]]        && run_tool mk_psi_NA    $TAG $RUNID $FREQ $mooVyid:$mooUyid
+            [[ $runAMOC == 1 ]]          && run_tool mk_amoc      $TAG $RUNID $FREQ $mooVyid:$mooUyid:$mooTyid
+            [[ $runOSNAP == 1 ]]         && run_tool mk_osnap_moc $TAG $RUNID $FREQ $mooVyid:$mooUyid:$mooTyid
+            [[ $runSST_NWCorner == 1 ]]  && run_tool mk_sst_NA    $TAG $RUNID $FREQ $mooTyid
+            [[ $runSSS_LabSea == 1 ]]    && run_tool mk_sss       $TAG $RUNID $FREQ $mooTyid
+            [[ $runHTC == 1 ]]           && run_tool mk_htc       $TAG $RUNID $FREQ $mooTyid
+            [[ $runGSL_NAC == 1 ]]       && run_tool mk_gsl_nac   $TAG $RUNID $FREQ $mooTyid
+            [[ $runOVF == 1 ]]           && run_tool mk_ovf       $TAG $RUNID $FREQ $mooTyid
             [[ $runMHT == 1 ]]     && run_tool mk_mht  $TAG $RUNID $FREQ $mooVyid:$mooVyid
             [[ $runQHF == 1 ]]     && run_tool mk_hfds $TAG $RUNID $FREQ $mooTyid 
             [[ $runMedOVF == 1 ]]   && run_tool mk_medovf $TAG $RUNID $FREQ $mooTyid
