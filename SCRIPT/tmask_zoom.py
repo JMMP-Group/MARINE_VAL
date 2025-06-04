@@ -55,13 +55,14 @@ def filter_depth(array, mesh_data, args):
     Returns:
     xr.array: Masked array.
     """
+    MAXDEPTH = np.nanmax(mesh_data['gdept_0'])
     bathymetry = mesh_data['bathy_metry'][0] # 1206 x 1440 array, depth of the ocean floor in meters
 
-    assert 0 <= args.mindepth[0] <= 6003, "Minimum depth value must be between 0 and 6003" 
+    assert 0 <= args.mindepth[0] <= MAXDEPTH, f"Minimum depth value must be between 0 and {MAXDEPTH:.3f}"
     depth_mask = (bathymetry >= args.mindepth[0]) # 1206 x 1440 array, boolean mask for a given depth 
 
     if args.maxdepth:
-        assert 0 <= args.maxdepth[0] <= 6003, "Maximum depth value must be between 0 and 6003"
+        assert 0 <= args.maxdepth[0] <= MAXDEPTH, f"Maximum depth value must be between 0 and {MAXDEPTH:.3f}"
         assert args.maxdepth[0] > args.mindepth[0], "Maximum depth value must be greater than minimum depth value"
         depth_mask &= (bathymetry <= args.maxdepth[0])
 
