@@ -20,9 +20,9 @@ RUN_NAME=${RUNID#*-}
 FILE=`ls [nu]*${RUN_NAME}o_${FREQ}_${TAG}*_grid[-_]${GRID}.nc`
 if [ ! -f $FILE ] ; then echo "$FILE is missing; exit"; echo "E R R O R in : ./mk_hfds.bash $@ (see SLURM/${RUNID}/hfds_${FREQ}_${TAG}.out)" >> ${EXEPATH}/ERROR.txt ; exit 1 ; fi
 
-# make mxl
+# make global heat flux
 FILEOUT=GLO_hfds_nemo_${RUN_NAME}o_${FREQ}_${TAG}_grid-${GRID}.nc
-$CDFPATH/cdfmean -f $FILE -v '|sohefldo|hfds|' -p T -minmax -o tmp_$FILEOUT 
+$SCRPATH/reduce_fields.py -i $FILE -v hfds -c longitude latitude -A mean -G measures -g cell_area -o tmp_$FILEOUT 
 
 # mv output file
 if [[ $? -eq 0 ]]; then 
