@@ -45,7 +45,6 @@ retrieve_data() {
       echo "Retrieval attempt $count. Exit code $exit_code." >> ${JOBOUT_PATH}/sbatch_moo_${2}_${3}_${4}.out
    done
 }
-
 run_tool() {
    # $1 = TOOL ; [possible flags]; $2 = $TAG ; $3 = $RUNID ; $4 = $FREQ ; $5+ = retrieval job IDs
    # global var njob
@@ -53,7 +52,7 @@ run_tool() {
    TOOL=$1;shift
    flags=""
    jobtag=""
-   while getopts S:s:A:B opt ; do
+   while getopts S:s:A:Bf: opt ; do
      if [ "$opt" == "B" ];then  
         jobtag="${jobtag}_B" 
         flags="$flags -${opt}"
@@ -63,7 +62,7 @@ run_tool() {
      fi     
    done
    shift `expr $OPTIND - 1`  
-   # echo "run_tool running $TOOL $flags $1 $2 $3"
+   echo "run_tool running $TOOL $flags $1 $2 $3"
    sbatchschopt='--wait ' #--qos=long '  
    sbatchrunopt="--dependency=afterany:${@:4} --job-name=P$$_${TOOL}_${1}_${2} --output=${JOBOUT_PATH}/${TOOL}${jobtag}_${3}_${1}.out"
    exit_code=1
@@ -177,9 +176,19 @@ for RUNID in `echo $RUNIDS`; do
    echo "$RUNID ..."
 
    njob=0
-   LSTY=$(eval echo {${YEARB}..${YEARE}})
+   # Allow for a stride > 1 if counting in years.
+   # Doesn't work for months at the moment.
+   if [[ $FREQ =~ .*y$ ]];
+   then
+       stride=$(( $(echo $FREQ | cut -d"y" -f1) ))
+       # reset FREQ here because the rest of the code expects FREQ=1y...
+       FREQ="1y"
+   else
+       stride=1
+   fi
+   LSTY=$(eval echo {${YEARB}..${YEARE}..${stride}})
    if   [[ $FREQ == 1m ]]; then MONTHB=1  ; MONTHE=12 ; LSTM=$(eval echo {$MONTHB..$MONTHE}) ;
-   elif [[ $FREQ == 1y ]]; then MONTHB=12 ; MONTHE=12 ; LSTM=$(eval echo {$MONTHB..$MONTHE}) ;
+   elif [[ $FREQ =~ .*y$ ]]; then MONTHB=12 ; MONTHE=12 ; LSTM=$(eval echo {$MONTHB..$MONTHE}) ;
    else 
         echo "E R R O R : $FREQ not supported; exit 42"
         exit 42
@@ -209,7 +218,7 @@ for RUNID in `echo $RUNIDS`; do
          moo_wait
          [[ $runTRP == 1 || $runBSF == 1 || $runAMOC == 1 ]] && mooUyid=$(retrieve_data $RUNID $FREQ grid-U $TAG_LIST)
          moo_wait
-         [[ $runTRP == 1 || $runQHF == 1 || $runTS == 1 || $runAMOC == 1 || $runHTC == 1 || $runGSL_NAC == 1 || $runMHT == 1 ]] && mooTyid=$(retrieve_data $RUNID $FREQ grid-T $TAG_LIST)
+         [[ $runTRP == 1 || $runQHF == 1 || $runSpAvgT == 1 || $runTS == 1 || $runAMOC == 1 || $runHTC == 1 || $runGSL_NAC == 1 || $runMHT == 1 ]] && mooTyid=$(retrieve_data $RUNID $FREQ grid-T $TAG_LIST)
           
          echo "mooTyid : $mooTyid"
          echo "mooUyid : $mooUyid"
@@ -248,6 +257,7 @@ for RUNID in `echo $RUNIDS`; do
             [[ $runQHF == 1 ]]     && run_tool mk_hfds $TAG $RUNID $FREQ $mooTyid 
             [[ $runMedOVF == 1 ]]   && run_tool mk_medovf $TAG $RUNID $FREQ $mooTyid
             [[ $runAABW == 1 ]] && run_tool mk_aabw $TAG $RUNID $FREQ $mooTyid
+            [[ $runSpAvgT == 1 ]]        && run_tool mk_spatial_avg -f thetao_pot $TAG $RUNID $FREQ $mooTyid 
          done
          let tagcount=0
          TAG_LIST=""
