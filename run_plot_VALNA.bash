@@ -77,11 +77,11 @@ python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f *${FREQ}*NA_crop_T.n
 if [[ $? -ne 0 ]]; then exit 42; fi
 
 # max practical salinity in med overflow
-python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f nemo_dl879o_${FREQ}*_medovf_mean.nc -var so_pra -title "Med Outflow Max Salinity" -dir ${DATPATH} -o ${KEY}_medovf_salinity -obs OBS/medovf_salinity.txt
+python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f *${FREQ}*_medovf_mean.nc -var so_pra -title "Med Outflow Max Salinity" -dir ${DATPATH} -o ${KEY}_medovf_salinity -obs OBS/medovf_salinity.txt
 if [[ $? -ne 0 ]]; then exit 42; fi
 
 # depth of max practical salinity in med overflow
-python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f nemo_dl879o_${FREQ}*_medovf_mean_depth.nc -var deptht -title "Med Outflow Depth of Max Salinity (m)" -dir ${DATPATH} -o ${KEY}_medovf_depth -obs OBS/medovf_salinity_depth.txt
+python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f *${FREQ}*_medovf_mean_depth.nc -var deptht -title "Med Outflow Depth of Max Salinity (m)" -dir ${DATPATH} -o ${KEY}_medovf_depth -obs OBS/medovf_salinity_depth.txt
 if [[ $? -ne 0 ]]; then exit 42; fi
 
 # crop figure (rm legend)

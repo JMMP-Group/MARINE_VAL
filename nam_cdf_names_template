@@ -75,6 +75,7 @@
     cn_vosaline  = 'so_pra'     !: absolute salinity
     cn_vozocrtx  = 'uo'         !: zonal velocity
     cn_vomecrty  = 'vo'         !: meridional velocity
+    cn_sozotaux  = 'tauuo'
 /
 
 !---------------------------------------

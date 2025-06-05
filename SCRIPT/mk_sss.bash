@@ -1,6 +1,6 @@
 #!/bin/bash
-#SBATCH --mem=20G
-#SBATCH --time=10
+#SBATCH --mem=50G
+#SBATCH --time=15
 #SBATCH --ntasks=1
 
 if [[ $# -ne 3 ]]; then echo 'mk_sss.bash [RUNID (mi-aa000)] [TAG (19991201_20061201_ANN)] [FREQ (1y)]'; exit 1 ; fi
@@ -28,7 +28,7 @@ if [ ! -f $FILE ] ; then echo "$FILE is missing; exit"; echo "E R R O R in : ./m
 ## calculate sss in Labrador Sea (same region as MXL)
 FILEOUT=SSSav_LabSea_${RUN_NAME}o_${FREQ}_${TAG}_grid-${GRID}.nc
 $SCRPATH/reduce_fields.py -i $FILE -v so_pra -c longitude latitude -A mean -G measures -g cell_area \
-	                          -W-60.000 -E-50.000 -S55.000 -N62.000 -B1.5 -o $FILEOUT 
+	                          -W-60.000 -E-50.000 -S55.000 -N62.000 -B1.5 -o tmp_$FILEOUT 
 
 #mv output file
 if [[ $? -eq 0 ]]; then

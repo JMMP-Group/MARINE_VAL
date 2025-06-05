@@ -29,7 +29,7 @@ FILEOUT=nemo_${RUN_NAME}o_${FREQ}_${TAG}_moc.nc
 $CDFPATH/cdfmoc -v $FILEV -u $FILEU -t $FILET -s $FILES -rapid -vvl -o tmp_$FILEOUT
 
 # mv output file
-if [[ $? -eq 0 ]]; then 
+if [[ $? -eq 99 || $? -eq 0 ]]; then 
    mv rapid_tmp_$FILEOUT AMOC_rapid_$FILEOUT
 else 
    echo "error when running cdfmoc; exit"; echo "E R R O R in : ./mk_moc.bash $@ (see SLURM/${RUNID}/mk_moc_${FREQ}_${TAG}.out)" >> ${EXEPATH}/ERROR.txt ; exit 1
