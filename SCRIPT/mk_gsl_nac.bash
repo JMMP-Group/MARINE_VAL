@@ -1,6 +1,6 @@
 #!/bin/bash
-#SBATCH --mem=1G
-#SBATCH --time=10
+#SBATCH --mem=10G
+#SBATCH --time=20
 #SBATCH --ntasks=1
 
 if [[ $# -ne 3 ]]; then echo 'mk_gsl_nac.bash [RUNID (mi-aa000)] [TAG (19991201_20061201_ANN)] [FREQ (1y)]'; exit 1 ; fi

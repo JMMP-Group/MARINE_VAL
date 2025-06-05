@@ -1,6 +1,6 @@
 #!/bin/bash
-#SBATCH --mem=20G
-#SBATCH --time=10
+#SBATCH --mem=50G
+#SBATCH --time=15
 #SBATCH --ntasks=1
 
 if [[ $# -ne 3 ]]; then echo 'mk_sst.bash [RUNID (mi-aa000)] [TAG (19991201_20061201_ANN)] [FREQ (1y)]'; exit 1 ; fi
