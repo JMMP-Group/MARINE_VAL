@@ -73,6 +73,7 @@ run_tool() {
       if ! declare -p "$first_tool_id" &>/dev/null; then
          declare -g "$first_tool_id"
          sbatch_output=$(sbatch ${sbatchschopt} ${sbatchrunopt} ${SCRPATH}/${TOOL}.bash ${flags} $2 $1 $3 | awk '{print $4}')
+         exit_code=$?
          eval "$first_tool_id=$sbatch_output"
       else
          slurm_wait
@@ -210,7 +211,7 @@ for RUNID in `echo $RUNIDS`; do
          moo_wait
          [[ $runTRP == 1 || $runBSF == 1 || $runMOC == 1 ]] && mooUyid=$(retrieve_data $RUNID $FREQ grid-U $TAG_LIST)
          moo_wait
-         [[ $runTRP == 1 || $runQHF == 1 || $runTS == 1 || $runMOC == 1 || $runHTC == 1 || $runGSL_NAC || $runMHT == 1 ]] && mooTyid=$(retrieve_data $RUNID $FREQ grid-T $TAG_LIST)
+         [[ $runTRP == 1 || $runQHF == 1 || $runTS == 1 || $runAMOC == 1 || $runHTC == 1 || $runGSL_NAC == 1 || $runMHT == 1 ]] && mooTyid=$(retrieve_data $RUNID $FREQ grid-T $TAG_LIST)
           
          echo "mooTyid : $mooTyid"
          echo "mooUyid : $mooUyid"
