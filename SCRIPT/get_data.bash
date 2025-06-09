@@ -1,6 +1,6 @@
 #!/bin/bash -l
 #SBATCH --mem=100G
-#SBATCH --time=120
+#SBATCH --time=360
 #SBATCH --ntasks=1
 
 sleep 30
@@ -28,13 +28,16 @@ FILE_LST=""
 for TAG in $TAGLIST;do
    if   [ $FREQ == '5d'  ]; then FILE_LST="$FILE_LST $(moo ls moose:/crum/$RUNID/${CRUM_FREQ}.nc.file/*_${FREQ}_${GRID}_${TAG}.nc)"
    elif [ $FREQ == 'i1m' ]; then FILE_LST="$FILE_LST $(moo ls moose:/crum/$RUNID/${CRUM_FREQ}.nc.file/*_1m_${TAG}.nc)"
-   else FILE_LST="$FILE_LST $(moo ls moose:/crum/$RUNID/${CRUM_FREQ}.nc.file/*_${FREQ}_${TAG}*_${GRID}.nc)"; 
+   else FILE_LST="$FILE_LST $(moo ls moose:/crum/$RUNID/${CRUM_FREQ}.nc.file/*_${RUNID:2}o_${FREQ}_${TAG}*_${GRID}.nc)"; 
    fi
 done
 
 MOO_GET_LIST=""
 MOO_RESTORED_LIST=""
 CONVERT_EOS_LIST=""
+TEOS10=0
+EOS80=0
+
 for MFILE in ${FILE_LST}; do
    FILE=${MFILE#*${CRUM_FREQ}.nc.file/}
    if [ -f $FILE ]; then 
@@ -43,21 +46,37 @@ for MFILE in ${FILE_LST}; do
 #      SIZESYST=`    ls -l $FILE  | awk '{ print $5}'`
 #      if [[ $SIZEMASS -ne $SIZESYST ]]; then echo " $FILE is corrupted "; rm $FILE; fi
       if [[ $TIME -eq 0 ]]; then echo " $FILE is corrupted "; rm $FILE; fi
-      Tvarname=$(ncdump -h $FILE | grep float | grep thetao[_\ ] | cut -d' ' -f2 | cut -d'(' -f1 )
-      Svarname=$(ncdump -h $FILE | grep float | grep so[_\ ] | cut -d' ' -f2 | cut -d'(' -f1 )
-      if [[ "$Tvarname" == "thetao_con" && "$Svarname" == "so_abs" ]]; then 
-         CONVERT_EOS_LIST="$CONVERT_EOS_LIST $FILE"
-      elif [[ "$Tvarname" == "thetao_con" || "$Svarname" == "so_abs" ]]; then
-         # If file has only one of thetao_con or so_abs, something has gone wrong
-         # delete and restore from MASS again. 
-         echo " $FILE is corrupted "; rm $FILE
+
+      if [[ "${GRID}" == "T" ]]; then
+         Tv10=$(ncdump -h $FILE | grep float | grep thetao[_\ ]con | cut -d' ' -f2 | cut -d'(' -f1 )
+         Sv10=$(ncdump -h $FILE | grep float | grep so[_\ ]abs | cut -d' ' -f2 | cut -d'(' -f1 )
+         Tv80=$(ncdump -h $FILE | grep float | grep thetao[_\ ]pot | cut -d' ' -f2 | cut -d'(' -f1 )
+         Sv80=$(ncdump -h $FILE | grep float | grep so[_\ ]pra | cut -d' ' -f2 | cut -d'(' -f1 )
+         #echo "Tv10= " $Tv10 ", Sv10= " $Sv10
+         #echo "Tv80= " $Tv80 ", Sv80= " $Sv80
+         if [[ "$Tv10" == "thetao_con" && "$Sv10" == "so_abs" ]]; then TEOS10=1; fi
+         if [[ "$Tv80" == "thetao_pot" && "$Sv80" == "so_pra" ]]; then EOS80=1; fi
+         echo "TEOS10= " $TEOS10 ", EOS80= " $EOS80
+
+         if [[ "$TEOS10" == 0 ]]; then
+            # If file has only one of thetao_con or so_abs, something has gone wrong
+            # delete and restore from MASS again. 
+            echo " $FILE is corrupted "; rm $FILE
+         elif [[ "$TEOS10" == 1 && "$EOS80" == 0 ]]; then
+            # If file has only TEOS10 variables, we need to compute the EOS80 ones. 
+            CONVERT_EOS_LIST="$CONVERT_EOS_LIST $FILE"
+         else
+            echo 'nothing to do ... '
+         fi
       fi
    fi
+
    if [ ! -f $FILE ]; then
       echo "downloading file ${FILE}"
       MOO_GET_LIST="$MOO_GET_LIST $MFILE"
       MOO_RESTORED_LIST="$MOO_RESTORED_LIST $FILE"
    fi
+
 done
 
 if [[ -n "$MOO_GET_LIST" ]];then 
@@ -66,13 +85,15 @@ if [[ -n "$MOO_GET_LIST" ]];then
 fi
 
 for FILE in $MOO_RESTORED_LIST;do
-   Tvarname=$(ncdump -h $FILE | grep float | grep thetao[_\ ] | cut -d' ' -f2 | cut -d'(' -f1 )
-   Svarname=$(ncdump -h $FILE | grep float | grep so[_\ ] | cut -d' ' -f2 | cut -d'(' -f1 )
-   echo "$FILE : $Tvarname $Svarname"
-   if [[ "$Tvarname" == "thetao_con" && "$Svarname" == "so_abs" ]]; then 
-      echo "hello!"
-      CONVERT_EOS_LIST="$CONVERT_EOS_LIST $FILE"
-   fi
+   if [[ "${GRID}" == "T" ]]; then   
+      Tv10=$(ncdump -h $FILE | grep float | grep thetao[_\ ]c | cut -d' ' -f2 | cut -d'(' -f1 )
+      Sv10=$(ncdump -h $FILE | grep float | grep so[_\ ]a | cut -d' ' -f2 | cut -d'(' -f1 )
+      echo "$FILE : $Tv10 $Sv10"
+      if [[ "$Tv10" == "thetao_con" && "$Sv10" == "so_abs" ]]; then 
+         echo "hello!"
+         CONVERT_EOS_LIST="$CONVERT_EOS_LIST $FILE"
+      fi
+   fi 
    # Set standard_name for depth coordinate so Iris will recognise it:
    [[ "$FILE" =~ *grid-T\.nc ]] && depvar="deptht"
    [[ "$FILE" =~ *grid-U\.nc ]] && depvar="depthu"
@@ -83,6 +104,6 @@ done
 
 for FILE in $CONVERT_EOS_LIST;do
    python3 ${EXEPATH}/SCRIPT/convert_nemo_eos80.py $FILE
-   ncks -x -v thetao_con,so_abs $FILE -o ${FILE%.nc}_noTEOS10var.nc
-   mv -f ${FILE%.nc}_noTEOS10var.nc $FILE
+   #ncks -x -v thetao_con,so_abs $FILE -o ${FILE%.nc}_noTEOS10var.nc
+   #mv -f ${FILE%.nc}_noTEOS10var.nc $FILE
 done
