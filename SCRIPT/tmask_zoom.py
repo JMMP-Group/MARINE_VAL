@@ -57,8 +57,7 @@ def filter_depth(array, mesh_data, args):
     xr.array: Masked array.
     """
     MAXDEPTH = np.nanmax(mesh_data['gdept_0'])
-    # bathymetry = mesh_data['bathy_metry'][0] # 1206 x 1440 array, depth of the ocean floor in meters
-    bathymetry = mesh_data['gdept_0'][0] # Initial filter for depth to ensure values compare with previous method.
+    bathymetry = mesh_data['bathy_metry'][0] # 1206 x 1440 array, depth of the ocean floor in meters
 
     assert 0 <= args.mindepth[0] <= MAXDEPTH, f"Minimum depth value must be between 0 and {MAXDEPTH:.3f}"
     depth_mask = (bathymetry >= args.mindepth[0]) # 1206 x 1440 array, boolean mask for a given depth 
@@ -109,20 +108,6 @@ def main():
     args = load_argument()
     mesh_data = xr.open_dataset(args.mesh[0])
     tmask = mesh_data['tmask'] # 1 x 75 x 1206 x 1440 array, 1 for ocean, 0 for land
-
-    # Initial tmask using ones. Previous values reduced over a box. This will imitate after filtering for lat, lon, depth. 
-    tmask = xr.DataArray(
-        np.ones((1, 75, 1206, 1440), dtype=np.int8),
-        dims=("time_counter", "nav_lev", "y", "x"),
-        coords={
-            "time_counter": tmask.coords["time_counter"],
-            "nav_lev": tmask.coords["nav_lev"],
-            "y": tmask.coords["y"],
-            "x": tmask.coords["x"],
-        },
-        name="tmask"
-    )
-
     masked_tmask = filter_lat_lon(tmask, mesh_data, args) # 1 x 75 x 1206 x 1440 array, 0 for all values outside the domain
     masked_tmask = filter_depth(masked_tmask, mesh_data, args) # 1 x 75 x 1206 x 1440 array, 0 for all values below the depth threshold
     masked_tmask = filter_largest_cluster(masked_tmask, mesh_data, args) # 1 x 75 x 1206 x 1440 array, 0 for all values outside the largest cluster
