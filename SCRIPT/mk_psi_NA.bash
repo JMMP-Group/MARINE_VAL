@@ -45,15 +45,14 @@ else
    echo "error when running cdfpsi; exit"; echo "E R R O R in : ./mk_psi.bash $@ (see ${JOBOUT_PATH}/mk_psi_${FREQ}_${TAG}.out)" >> ${EXEPATH}/ERROR.txt ; exit 1
 fi
 
-# calculate volume of NA subpolar gyre in m3
-if [ ! -f ${DATPATH}/${RUNID}/masked_tmask_NA_gyre.nc ] ; then
-   MIN_DEPTH=1000
-   python ${SCRPATH}/tmask_zoom.py -W -60.000 -E -20.000 -S 48.000 -N 72.000 -mindepth ${MIN_DEPTH} -dir ${DATPATH} -runid ${RUNID} -m mesh.nc 
-   if [[ $? -ne 0 ]]; then exit 42; fi
+# generate tmask of NA gyre
+TMASK=${DATPATH}/${RUNID}/tmask_NA_gyre.nc
+if [ ! -f $TMASK ] ; then
+   python ${SCRPATH}/tmask_zoom.py -W -60.000 -E -20.000 -S 48.000 -N 72.000 -j -40 -i 50 -m ${DATPATH}/${RUNID}/mesh.nc -o $TMASK
+   if [[ $? -ne 0 ]]; then exit 42; fi 
 fi
 
 # NA subpolar min
 # Update the meta data in the psi file so that Iris can read it:
-TMASK_FPATH=${DATPATH}/${RUNID}/masked_tmask_NA_gyre.nc
-ncatted -a coordinates,sobarstf,c,c,"time_centered nav_lat nav_lon" $FILEOUT
-$SCRPATH/reduce_fields.py -i $FILEOUT -v sobarstf -c longitude latitude -A min -o BSF_NA_$FILEOUT -m $TMASK_FPATH
+ncatted -O -a coordinates,sobarstf,c,c,"time_centered nav_lat nav_lon" $FILEOUT
+$SCRPATH/reduce_fields.py -i $FILEOUT -v sobarstf -c longitude latitude -A min -o BSF_NA_$FILEOUT -m $TMASK

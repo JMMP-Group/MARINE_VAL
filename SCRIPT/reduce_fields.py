@@ -64,7 +64,7 @@ def get_weights(wgtsfile,wgtsname,cube):
     return wgts
 
 def reduce_fields(infile,tmask,invars=None,coords=None,wgtsfiles=None,wgtsnames=None,
-                  aggr=None,outfile=None,subout=None):
+                  aggr=None,outfile=None,subout=None,surface=None):
 
     aggregators = { "mean"     :  iris.analysis.MEAN ,
                     "min"      :  iris.analysis.MIN  ,
@@ -87,25 +87,42 @@ def reduce_fields(infile,tmask,invars=None,coords=None,wgtsfiles=None,wgtsnames=
     # Filter for subdomain
     tmask_cube = iris.load_cube(tmask[0])
     nav_lev_index = tmask_cube.coord_dims('nav_lev')[0]
-    nav_lev_index = tuple([0 if i == nav_lev_index else slice(None) for i in range(tmask_cube.data.ndim)])
+    nav_lev_index = tuple([0 if i == nav_lev_index else slice(None) for i in range(tmask_cube.data.ndim)]) # index to filter surface
 
-    for cube in cubes:
-        has_depth = any(
-            coord.var_name in ("deptht", "depthu", "depthv")
-            for coord in (list(cube.dim_coords) + list(cube.aux_coords))
+    for cube in cubes[1:]:
+        assert cubes[0].shape == cube.shape, "All input cubes must have the same shape"
+    
+    for i, cube in enumerate(cubes):
+
+        depth_coord = next(
+            (coord for coord in (list(cube.dim_coords) + list(cube.aux_coords))
+             if coord.var_name in ("deptht", "depthu", "depthv")),
+            None
         )
+        has_depth = depth_coord is not None
 
-        tmask_cube = tmask_cube.data if has_depth else tmask_cube.data[nav_lev_index]
-        tmask_cube = np.broadcast_to(tmask_cube, cube.data.shape)
-        cube.data = ma.masked_where(tmask_cube, cube.data) # mask data using tmask for lat, lon and depth
+        if surface and has_depth:
+            depth_index = cube.coord_dims(depth_coord)[0]
+            depth_index = tuple([0 if i == depth_index else slice(None) for i in range(cube.data.ndim)]) # index to filter surface
+            tmask = tmask_cube.data[nav_lev_index]
+            cube = cube[depth_index]
+        elif surface or not has_depth:
+            tmask = tmask_cube.data[nav_lev_index]
+        elif has_depth:
+            tmask = tmask_cube.data
+        
+        tmask = ~tmask.astype(bool) # Ensure tmask is of type bool. Inverse values as ma.masked_where keeps False values.
+        tmask = np.broadcast_to(tmask, cube.data.shape)
+        cube.data = ma.masked_where(tmask, cube.data) # mask data using tmask for lat, lon and depth
+        cubes[i] = cube
     
     if subout:
-        subdomain_file=".".join(infile.split(".")[:-1])+"_subdomain."+infile.split(".")[-1]
+        subdomain_file=".".join(outfile.split(".")[:-1])+"_subdomain."+outfile.split(".")[-1]
         iris.save(cubes,subdomain_file)
         
     if coords is None:
         coords = "time"
-        
+
     if wgtsnames is not None:
         if not isinstance(wgtsnames,list):
             wgtsnames=[wgtsnames]
@@ -131,13 +148,15 @@ def reduce_fields(infile,tmask,invars=None,coords=None,wgtsfiles=None,wgtsnames=
                 wgts = iris.analysis.maths.multiply(wgts, wgts_to_multiply, in_place=True)
         elif wgtsfiles[0] == "measures":
             # in this case, broadcast the weights to be the same shape as the cube... 
-            wgts = ma.ones(cubes[0].shape)[:] * wgts[:]
+            wgts = iris.cube.Cube(ma.ones(cubes[0].shape)[:] * wgts[:])
         
-        wgts = ma.masked_where(tmask_cube, wgts) # mask weights using tmask for lat, lon and depth
+        assert wgts.shape == cubes[0].shape, f"Weights cube must have shape {cubes[0].shape} but has shape {wgts.shape}"
+
+        wgts.data = ma.masked_where(tmask, wgts.data) # mask weights using tmask for lat, lon and depth
 
     else:
         wgts = None
-                
+                    
     if aggr in ["min","max"]:
         # no weights keyword
         cubes_reduced=[cube.collapsed(coords, aggregators[aggr]) for cube in cubes]
@@ -167,12 +186,13 @@ if __name__=="__main__":
     parser.add_argument("-M", "--subout", action="store_true",dest="subout",
                          help="output fields on subdomain to file as sanity check")
     parser.add_argument("-m", "--tmask", action="store",dest="tmask", 
-                         help="tmask file", nargs=1, type=str, required=True)
+                         help="tmask file", nargs=1, type=str, required=True),
+    parser.add_argument("-S", "--surf", dest="surface", action="store_true", 
+                         help="flag to indicate surface-only reduction")
     args = parser.parse_args()
 
     reduce_fields(infile=args.infile,tmask=args.tmask,invars=args.invars,outfile=args.outfile,
                   wgtsfiles=args.wgtsfiles,wgtsnames=args.wgtsnames,coords=args.coords,aggr=args.aggr,
-                  subout=args.subout)
-
+                  subout=args.subout,surface=args.surface)
 
 
