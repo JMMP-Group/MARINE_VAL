@@ -53,23 +53,59 @@ do
 
 if [[ "$area" == "AMU" ]]
 then
+
+# generate tmask of AMU @ 390m +
+TMASK=${DATPATH}/${RUNID}/tmask_AMU_390.nc
+if [ ! -f $TMASK ] ; then
+   echo "Generating tmask for AMU @ 390m ..."
+   python ${SCRPATH}/tmask_zoom.py -W -109.640 -E -102.230 -S -75.800 -N -71.660 -j -106 -i -74 -mindepth 390.000 -m ${DATPATH}/${RUNID}/mesh.nc -o $TMASK
+   if [[ $? -ne 0 ]]; then exit 42; fi 
+fi
+
 $SCRPATH/reduce_fields.py -i $FILE -v thetao_pot -c longitude latitude depth -A mean -G self measures -g cell_thickness cell_area \
-	       -W-109.640 -E-102.230 -S-75.800 -N-71.660 -T390.000 -o AMU_thetao_$FILEOUT 
+	       -o AMU_thetao_$FILEOUT -m $TMASK
     
 elif [[ "$area" == "WROSS" ]]
 then
+
+# generate tmask of WROSS @ 390m +
+TMASK=${DATPATH}/${RUNID}/tmask_WROSS_390.nc
+if [ ! -f $TMASK ] ; then
+   echo "Generating tmask for WROSS @ 390m ..."
+   python ${SCRPATH}/tmask_zoom.py -W 157.100 -E 173.333 -S -78.130 -N -74.040 -j 165 -i -77 -mindepth 390.000 -m ${DATPATH}/${RUNID}/mesh.nc -o $TMASK
+   if [[ $? -ne 0 ]]; then exit 42; fi 
+fi
+
 $SCRPATH/reduce_fields.py -i $FILE -v so_pra -c longitude latitude depth -A mean -G self measures -g cell_thickness cell_area \
-	       -W157.100 -E173.333 -S-78.130 -N-74.040 -T390.000 -o WROSS_so_$FILEOUT 
+	      -o WROSS_so_$FILEOUT -m $TMASK
 
 elif [[ "$area" == "EROSS" ]]
 then
+
+# generate tmask of EROSS @ 390m +
+TMASK=${DATPATH}/${RUNID}/tmask_EROSS_390.nc
+if [ ! -f $TMASK ] ; then
+   echo "Generating tmask for EROSS @ 390m ..."
+   python ${SCRPATH}/tmask_zoom.py -W -176.790 -E -157.820 -S -78.870 -N -77.520 -j -167 -i -78 -mindepth 390.000 -m ${DATPATH}/${RUNID}/mesh.nc -o $TMASK
+   if [[ $? -ne 0 ]]; then exit 42; fi 
+fi
+
 $SCRPATH/reduce_fields.py -i $FILE -v thetao_pot -c longitude latitude depth -A mean -G self measures -g cell_thickness cell_area \
-	       -W-176.790 -E-157.820 -S-78.870 -N-77.520 -T390.000 -o EROSS_thetao_$FILEOUT 
+	       -o EROSS_thetao_$FILEOUT -m $TMASK 
 
 elif [[ "$area" == "WWED" ]]
 then
+
+# generate tmask of WWED @ 390m +
+TMASK=${DATPATH}/${RUNID}/tmask_WWED_390.nc
+if [ ! -f $TMASK ] ; then
+   echo "Generating tmask for WWED @ 390m ..."
+   python ${SCRPATH}/tmask_zoom.py -W -65.130 -E -53.020 -S -75.950 -N -72.340 -j -59 -i -74 -mindepth 390.000 -m ${DATPATH}/${RUNID}/mesh.nc -o $TMASK
+   if [[ $? -ne 0 ]]; then exit 42; fi 
+fi
+
 $SCRPATH/reduce_fields.py -i $FILE -v so_pra -c longitude latitude depth -A mean -G self measures -g cell_thickness cell_area \
-	       -W-65.130 -E-53.020 -S-75.950 -N-72.340 -T390.000 -o WED_so_$FILEOUT 
+	      -o WED_so_$FILEOUT -m $TMASK
 
 fi
 done

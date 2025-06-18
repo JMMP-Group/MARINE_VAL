@@ -7,11 +7,16 @@ from util import get_ij_from_lon_lat
 
 def load_argument():
     parser = argparse.ArgumentParser()
-    parser.add_argument("-w", metavar='coordinates list', help="LON_MIN, LON_MAX, LAT_MIN, LAT_MAX values", type=float, nargs='+', required=True )
-    parser.add_argument("-c", metavar='mesh file', help="the mesh file to work from", type=str, nargs=1 , required=False, default=['mesh.nc'])
-    parser.add_argument("-mindepth", metavar='depth constraint', help="value to qualify the mesh mask", type=float, nargs=1, required=True)
-    parser.add_argument("-runid", metavar='runid' , help="used to look information in runid.db", type=str, nargs=1 , required=True)
-    parser.add_argument("-dir", metavar='directory of input file', help="directory of input file", type=str, nargs=1, required=False, default=['./'])
+    parser.add_argument("-W", "--west", dest="west", metavar="western limit", help="western limit of the domain", type=float, nargs=1, required=True)
+    parser.add_argument("-E", "--east", dest="east", metavar="eastern limit", help="eastern limit of the domain", type=float, nargs=1, required=True)
+    parser.add_argument("-S", "--south", dest="south", metavar="southern limit", help="southern limit of the domain", type=float, nargs=1, required=True)
+    parser.add_argument("-N", "--north", dest="north", metavar="northern limit", help="northern limit of the domain", type=float, nargs=1, required=True)
+    parser.add_argument("-m", "--mesh", dest="mesh", metavar="mesh file", help="the mesh file to work from", type=str, nargs=1 , required=True)
+    parser.add_argument("-mindepth", metavar="depth constraint", help="min depth limit of the domain", type=float, nargs=1, required=False, default=[0.0])
+    parser.add_argument("-maxdepth", metavar="depth constraint", help="max depth limit of the domain", type=float, nargs=1, required=False)
+    parser.add_argument("-j, --target_j", dest="target_j", metavar="latitude for target j coordinate", help="latitude for j coordinate which should be present in the largest cluster", type=float, nargs=1, required=True)
+    parser.add_argument("-i, --target_i", dest="target_i", metavar="longitude for target i coordinate", help="longitude for i coordinate which should be present in the largest cluster", type=float, nargs=1, required=True)
+    parser.add_argument("-o, --outf", dest="outf", metavar="output file", help="name of output file", type=str, nargs=1, required=True)
     return parser.parse_args()
 
 def filter_lat_lon(array, mesh_data, args):
@@ -26,17 +31,16 @@ def filter_lat_lon(array, mesh_data, args):
     Returns:
     xr.array: Masked array.
     """
-    LON_MIN, LON_MAX, LAT_MIN, LAT_MAX = args.w
 
-    assert LON_MIN < LON_MAX, "LON_MIN must be less than LON_MAX"
-    assert LAT_MIN < LAT_MAX, "LAT_MIN must be less than LAT_MAX"
-    assert -90 <= LAT_MIN <= 90 and -90 <= LAT_MAX <= 90, "Latitude values must be between -90 and 90"
-    assert -180 <= LON_MIN <= 180 and -180 <= LON_MAX <= 180, "Longitude values must be between -180 and 180"
+    assert args.west[0] < args.east[0], "W (western limit) must be less than E (eastern limit)"
+    assert args.south[0] < args.north[0], "S (southern limit) must be less than N (northern limit)"
+    assert -90 <= args.south[0] <= 90 and -90 <= args.north[0] <= 90, "Latitude values must be between -90 and 90"
+    assert -180 <= args.west[0] <= 180 and -180 <= args.east[0] <= 180, "Longitude values must be between -180 and 180"
 
     lat_grid = mesh_data['nav_lat'].values # 1206 x 1440 array, latitudes of each grid point
     lon_grid = mesh_data['nav_lon'].values # 1206 x 1440 array, longitudes of each grid point
     
-    domain_mask = (lat_grid >= LAT_MIN) & (lat_grid <= LAT_MAX) & (lon_grid >= LON_MIN) & (lon_grid <= LON_MAX) # 1206 x 1440 array, boolean mask for a given domain
+    domain_mask = (lat_grid >= args.south[0]) & (lat_grid <= args.north[0]) & (lon_grid >= args.west[0]) & (lon_grid <= args.east[0]) # 1206 x 1440 array, boolean mask for a given domain
     
     return array.where(domain_mask, 0)
 
@@ -52,14 +56,20 @@ def filter_depth(array, mesh_data, args):
     Returns:
     xr.array: Masked array.
     """
-    DEPTH = args.mindepth[0]
-    assert 0 <= DEPTH <= 6003, "Depth value must be between 0 and 6003" 
+    MAXDEPTH = np.nanmax(mesh_data['gdept_0'])
     bathymetry = mesh_data['bathy_metry'][0] # 1206 x 1440 array, depth of the ocean floor in meters
-    depth_mask = (bathymetry >= DEPTH) # 1206 x 1440 array, boolean mask for a given depth 
+
+    assert 0 <= args.mindepth[0] <= MAXDEPTH, f"Minimum depth value must be between 0 and {MAXDEPTH:.3f}"
+    depth_mask = (bathymetry >= args.mindepth[0]) # 1206 x 1440 array, boolean mask for a given depth 
+
+    if args.maxdepth:
+        assert 0 <= args.maxdepth[0] <= MAXDEPTH, f"Maximum depth value must be between 0 and {MAXDEPTH:.3f}"
+        assert args.maxdepth[0] > args.mindepth[0], "Maximum depth value must be greater than minimum depth value"
+        depth_mask &= (bathymetry <= args.maxdepth[0])
 
     return array.where(depth_mask, 0) 
 
-def filter_largest_cluster(array, TARGET_J, TARGET_I):
+def filter_largest_cluster(array, mesh_data, args):
     """
     Retains only the largest cluster of non-zero values for each 2D array representation of a vertical level.
 
@@ -71,6 +81,9 @@ def filter_largest_cluster(array, TARGET_J, TARGET_I):
     Returns:
     xr.array: 4D array with only the largest cluster of non-zero values retained.
     """
+    lon = mesh_data['nav_lon'].values # 1206 x 1440 array, longitudes of each grid point
+    lat = mesh_data['nav_lat'].values # 1206 x 1440 array, latitudes of each grid point
+    TARGET_J, TARGET_I = get_ij_from_lon_lat(args.target_j[0], args.target_i[0], lon, lat) 
     
     for t in range(array.shape[0]):
         for olevel in range(array.shape[1]):
@@ -93,18 +106,13 @@ def filter_largest_cluster(array, TARGET_J, TARGET_I):
 def main():
 
     args = load_argument()
-    DATADIR = f"{args.dir[0]}/{args.runid[0]}"
-    mesh_data = xr.open_dataset(f"{DATADIR}/{args.c[0]}")
+    mesh_data = xr.open_dataset(args.mesh[0])
     tmask = mesh_data['tmask'] # 1 x 75 x 1206 x 1440 array, 1 for ocean, 0 for land
-    lon = mesh_data['nav_lon'].values # 1206 x 1440 array, longitudes of each grid point
-    lat = mesh_data['nav_lat'].values # 1206 x 1440 array, latitudes of each grid point
-    TARGET_J, TARGET_I = get_ij_from_lon_lat(-41, 49, lon, lat) 
-
     masked_tmask = filter_lat_lon(tmask, mesh_data, args) # 1 x 75 x 1206 x 1440 array, 0 for all values outside the domain
     masked_tmask = filter_depth(masked_tmask, mesh_data, args) # 1 x 75 x 1206 x 1440 array, 0 for all values below the depth threshold
-    masked_tmask = filter_largest_cluster(masked_tmask, TARGET_J, TARGET_I) # 1 x 75 x 1206 x 1440 array, 0 for all values outside the largest cluster
+    masked_tmask = filter_largest_cluster(masked_tmask, mesh_data, args) # 1 x 75 x 1206 x 1440 array, 0 for all values outside the largest cluster
     masked_tmask = masked_tmask.squeeze() # 75 x 1206 x 1440 array, removes the first dimension
-    masked_tmask.to_netcdf(f"{DATADIR}/masked_tmask_NA_gyre.nc")
+    masked_tmask.to_netcdf(args.outf[0])
 
 if __name__=="__main__":
     main()

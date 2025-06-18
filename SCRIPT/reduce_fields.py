@@ -10,6 +10,7 @@ Wrapper to make it easy to call cube.collapsed from the command line.
 import iris
 import iris.analysis
 import iris.util
+import numpy as np
 import numpy.ma as ma
 
 def read_cube(filename,fieldname):
@@ -62,82 +63,8 @@ def get_weights(wgtsfile,wgtsname,cube):
     
     return wgts
 
-def get_subdomain(cubes,west=None,east=None,south=None,north=None,bottom=None,top=None):
-    '''
-    Select subdomain:
-    1. For 1D coordinates use cube.extract to subset the cube.
-    2. For 2D auxillary coordinates, mask points outside of the subdomain.
-    '''
-    
-    constraints=[]
-    
-    if len(cubes[0].coord("longitude").points.shape) > 1:
-        # lats/lons as 2D auxillary coordinates
-        ones_array = ma.ones(cubes[0].data.shape)
-        if west is not None or east is not None:
-            lons = cubes[0].coord("longitude").points * ones_array
-        if south is not None or north is not None:
-            lats = cubes[0].coord("latitude").points * ones_array
-    else:
-        lons = None
-        lats = None
-            
-    if bottom is not None or top is not None:
-        try:
-            depths = cubes[0].coord("depth").points
-        except(iris.exceptions.CoordinateNotFoundError):
-            raise Exception("Could not find depth coordinate for cube ",cubes[0].var_name,
-                            ". Set standard_name='depth' for depth coordinate.")
-        
-    if west is not None:
-        if lons is None:
-            longitude_constraint = iris.Constraint(longitude=lambda cell: cell > west)
-            cubes = [cube.extract(longitude_constraint) for cube in cubes]
-            constraints.append(longitude_constraint)
-        else:
-            for cube in cubes:
-                cube.data[:] = ma.masked_where(lons < west, cube.data[:])
-    if east is not None:
-        if lons is None:
-            longitude_constraint = iris.Constraint(longitude=lambda cell: cell < east)
-            cubes = [cube.extract(longitude_constraint) for cube in cubes]
-            constraints.append(longitude_constraint)
-        else:
-            for cube in cubes:
-                cube.data[:] = ma.masked_where(lons > east, cube.data[:])
-    if south is not None:
-        if lats is None:
-            latitude_constraint = iris.Constraint(latitude=lambda cell: cell > south)
-            cubes = [cube.extract(latitude_constraint) for cube in cubes]
-            constraints.append(latitude_constraint)
-        else:
-            for cube in cubes:
-                cube.data[:] = ma.masked_where(lats < south, cube.data[:])
-    if north is not None:
-        if lats is None:
-            latitude_constraint = iris.Constraint(latitude=lambda cell: cell < north)
-            cubes = [cube.extract(latitude_constraint) for cube in cubes]
-            constraints.append(latitude_constraint)
-        else:
-            for cube in cubes:
-                cube.data[:] = ma.masked_where(lats > north, cube.data[:])
-    if bottom is not None:
-        depth_constraint = iris.Constraint(depth=lambda cell: cell < bottom)
-        cubes = [cube.extract(depth_constraint) for cube in cubes]
-        constraints.append(depth_constraint)
-    if top is not None:
-        depth_constraint = iris.Constraint(depth=lambda cell: cell > top)
-        cubes = [cube.extract(depth_constraint) for cube in cubes]
-        constraints.append(depth_constraint)
-
-    if cubes[0] is None:
-        raise Exception("Subdomain extraction resulted in a null cube. Check your box limits and try again.")
-
-    return cubes, constraints
-        
-def reduce_fields(infile=None,invars=None,coords=None,wgtsfiles=None,wgtsnames=None,
-                  aggr=None,outfile=None,east=None,west=None,south=None,north=None,
-                  top=None,bottom=None,subout=None):
+def reduce_fields(infile,tmask,invars=None,coords=None,wgtsfiles=None,wgtsnames=None,
+                  aggr=None,outfile=None,subout=None,surface=None):
 
     aggregators = { "mean"     :  iris.analysis.MEAN ,
                     "min"      :  iris.analysis.MIN  ,
@@ -157,19 +84,45 @@ def reduce_fields(infile=None,invars=None,coords=None,wgtsfiles=None,wgtsnames=N
     else:
         cubes = [read_cube(infile,varname) for varname in invars]
         
-    print("cubes read in : ",[cube.var_name for cube in cubes])
+    # Filter for subdomain
+    tmask_cube = iris.load_cube(tmask[0])
+    nav_lev_index = tmask_cube.coord_dims('nav_lev')[0]
+    nav_lev_index = tuple([0 if i == nav_lev_index else slice(None) for i in range(tmask_cube.data.ndim)]) # index to filter surface
 
-    constraints=[]
-    if any([arg is not None for arg in [east,west,south,north,top,bottom]]):
-        cubes, constraints = get_subdomain(cubes,east=east,west=west,south=south,north=north,
-                                top=top,bottom=bottom)
-        if subout:
-            subdomain_file=".".join(infile.split(".")[:-1])+"_subdomain."+infile.split(".")[-1]
-            iris.save(cubes,subdomain_file)
+    for cube in cubes[1:]:
+        assert cubes[0].shape == cube.shape, "All input cubes must have the same shape"
+    
+    for i, cube in enumerate(cubes):
+
+        depth_coord = next(
+            (coord for coord in (list(cube.dim_coords) + list(cube.aux_coords))
+             if coord.var_name in ("deptht", "depthu", "depthv")),
+            None
+        )
+        has_depth = depth_coord is not None
+
+        if surface and has_depth:
+            depth_index = cube.coord_dims(depth_coord)[0]
+            depth_index = tuple([0 if i == depth_index else slice(None) for i in range(cube.data.ndim)]) # index to filter surface
+            tmask = tmask_cube.data[nav_lev_index]
+            cube = cube[depth_index]
+        elif surface or not has_depth:
+            tmask = tmask_cube.data[nav_lev_index]
+        elif has_depth:
+            tmask = tmask_cube.data
+        
+        tmask = ~tmask.astype(bool) # Ensure tmask is of type bool. Inverse values as ma.masked_where keeps False values.
+        tmask = np.broadcast_to(tmask, cube.data.shape)
+        cube.data = ma.masked_where(tmask, cube.data) # mask data using tmask for lat, lon and depth
+        cubes[i] = cube
+    
+    if subout:
+        subdomain_file=".".join(outfile.split(".")[:-1])+"_subdomain."+outfile.split(".")[-1]
+        iris.save(cubes,subdomain_file)
         
     if coords is None:
         coords = "time"
-        
+
     if wgtsnames is not None:
         if not isinstance(wgtsnames,list):
             wgtsnames=[wgtsnames]
@@ -195,18 +148,15 @@ def reduce_fields(infile=None,invars=None,coords=None,wgtsfiles=None,wgtsnames=N
                 wgts = iris.analysis.maths.multiply(wgts, wgts_to_multiply, in_place=True)
         elif wgtsfiles[0] == "measures":
             # in this case, broadcast the weights to be the same shape as the cube... 
-            wgts = ma.ones(cubes[0].shape)[:] * wgts[:]
-        # Apply same subdomain extraction to the weights as we did to the field.
-        # Note don't need to apply masking because a masked point multiplied by an unmasked point
-        # is a masked point.
-        if len(constraints) > 0:
-            for constraint in constraints:
-                if type(wgts) is iris.cube.Cube:
-                    # only apply the contraints to the cube weights, not the "measures" weights
-                    wgts = wgts.extract(constraint)
+            wgts = iris.cube.Cube(ma.ones(cubes[0].shape)[:] * wgts[:])
+        
+        assert wgts.shape == cubes[0].shape, f"Weights cube must have shape {cubes[0].shape} but has shape {wgts.shape}"
+
+        wgts.data = ma.masked_where(tmask, wgts.data) # mask weights using tmask for lat, lon and depth
+
     else:
         wgts = None
-                
+                    
     if aggr in ["min","max"]:
         # no weights keyword
         cubes_reduced=[cube.collapsed(coords, aggregators[aggr]) for cube in cubes]
@@ -220,7 +170,7 @@ if __name__=="__main__":
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", "--infile", action="store", dest="infile", 
-                         help="names of input file")
+                         help="names of input file", required=True)
     parser.add_argument("-v", "--vars", action="store", dest="invars", nargs="+", 
                          help="names of input variables")
     parser.add_argument("-G", "--wgtsfiles", action="store", dest="wgtsfiles", nargs="+",
@@ -233,26 +183,16 @@ if __name__=="__main__":
                          help="name of coordinates to reduce over (default time)")
     parser.add_argument("-A", "--aggr", action="store",dest="aggr",
                          help="name of aggregator: mean, max, min")
-    parser.add_argument("-W", "--west", action="store",dest="west",type=float,
-                         help="western limit of area to reduce")
-    parser.add_argument("-E", "--east", action="store",dest="east",type=float,
-                         help="eastern limit of area to reduce")
-    parser.add_argument("-S", "--south", action="store",dest="south",type=float,
-                         help="southern limit of area to reduce")
-    parser.add_argument("-N", "--north", action="store",dest="north",type=float,
-                         help="northern limit of area to reduce")
-    parser.add_argument("-T", "--top", action="store",dest="top",type=float,
-                         help="top limit of volume to reduce")
-    parser.add_argument("-B", "--bottom", action="store",dest="bottom",type=float,
-                         help="bottom limit of volume to reduce")
     parser.add_argument("-M", "--subout", action="store_true",dest="subout",
                          help="output fields on subdomain to file as sanity check")
+    parser.add_argument("-m", "--tmask", action="store",dest="tmask", 
+                         help="tmask file", nargs=1, type=str, required=True),
+    parser.add_argument("-S", "--surf", dest="surface", action="store_true", 
+                         help="flag to indicate surface-only reduction")
     args = parser.parse_args()
 
-    reduce_fields(infile=args.infile,invars=args.invars,outfile=args.outfile,
+    reduce_fields(infile=args.infile,tmask=args.tmask,invars=args.invars,outfile=args.outfile,
                   wgtsfiles=args.wgtsfiles,wgtsnames=args.wgtsnames,coords=args.coords,aggr=args.aggr,
-                  south=args.south,north=args.north,west=args.west,east=args.east,
-                  top=args.top,bottom=args.bottom,subout=args.subout)
-
+                  subout=args.subout,surface=args.surface)
 
 
