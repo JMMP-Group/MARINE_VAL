@@ -8,7 +8,6 @@ if [[ $# -ne 3 ]]; then echo 'mk_htc.bash [RUNID (mi-aa000)] [TAG (19991201_2006
 RUNID=$1
 TAG=$2
 FREQ=$3
-MIN_DEPTH=100
 
 # name
 RUN_NAME=${RUNID#*-}
@@ -22,14 +21,15 @@ FILEOUT=HEATC_NA_${RUN_NAME}o_${FREQ}_${TAG}_heatc.nc
 ijbox=$($CDFPATH/cdffindij -w -60.000 -20.000 48.000 72.000 -c mesh.nc -p T | tail -2 | head -1 )
 echo "ijbox : $ijbox"
 
-# calculate volume of NA subpolar gyre in m3
-if [ ! -f ${DATPATH}/${RUNID}/masked_tmask_NA_gyre.nc ] ; then
-   python ${SCRPATH}/tmask_zoom.py -w -60.000 -20.000 48.000 72.000 -mindepth ${MIN_DEPTH} -dir ${DATPATH} -runid ${RUNID} -c mesh.nc 
+# generate tmask of NA gyre
+TMASK=${DATPATH}/${RUNID}/tmask_NA_gyre_1000.nc
+if [ ! -f $TMASK ] ; then
+   python ${SCRPATH}/tmask_zoom.py -W -60.000 -E -20.000 -S 48.000 -N 72.000 -mindepth 1000 -j -40 -i 50 -m ${DATPATH}/${RUNID}/mesh.nc -o $TMASK # confirm min depth
    if [[ $? -ne 0 ]]; then exit 42; fi 
 fi
 
 # assumes 75 levels in ocean:
-$CDFPATH/cdfheatc -f $FILET -zoom ${ijbox} 1 75 -M ${DATPATH}/${RUNID}/masked_tmask_NA_gyre.nc tmask -o tmp_$FILEOUT #
+$CDFPATH/cdfheatc -f $FILET -zoom ${ijbox} 1 75 -M $TMASK tmask -o tmp_$FILEOUT #
 
 #Computes the heat content in the specified area (Joules). Using all depth.
 #cdfheatc  -f T-file [-mxloption option] [-mxlf MXL-file] ...'

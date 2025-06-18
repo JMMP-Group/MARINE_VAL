@@ -32,9 +32,23 @@ fi
 # Update the meta data in the psi file so that Iris can read it:
 ncatted -a coordinates,sobarstf,c,c,"time_centered nav_lat nav_lon" $FILEOUT
 
+# generate tmask of WG
+TMASK1=${DATPATH}/${RUNID}/tmask_WG.nc
+if [ ! -f $TMASK1 ] ; then
+   python ${SCRPATH}/tmask_zoom.py -W -31.250 -E 37.500 -S -66.500 -N -60.400 -j 3 -i -63.5 -m ${DATPATH}/${RUNID}/mesh.nc -o $TMASK1
+   if [[ $? -ne 0 ]]; then exit 42; fi 
+fi
+
+# generate tmask of RG
+TMASK2=${DATPATH}/${RUNID}/tmask_RG.nc
+if [ ! -f $TMASK2 ] ; then
+   python ${SCRPATH}/tmask_zoom.py -W -168.500 -E -135.750 -S -72.650 -N -61.600 -j -152 -i -67 -m ${DATPATH}/${RUNID}/mesh.nc -o $TMASK2
+   if [[ $? -ne 0 ]]; then exit 42; fi 
+fi
+
 # WG max
-$SCRPATH/reduce_fields.py -i $FILEOUT -v sobarstf -c longitude latitude -A max -W-31.250 -E37.500 -S-66.500 -N-60.400 -o WG_$FILEOUT 
+$SCRPATH/reduce_fields.py -i $FILEOUT -v sobarstf -c longitude latitude -A max -o WG_$FILEOUT -m $TMASK1
 
 # RG max
-$SCRPATH/reduce_fields.py -i $FILEOUT -v sobarstf -c longitude latitude -A max -W-168.500 -E-135.750 -S-72.650 -N-61.600 -o RG_$FILEOUT 
+$SCRPATH/reduce_fields.py -i $FILEOUT -v sobarstf -c longitude latitude -A max -o RG_$FILEOUT -m $TMASK2
 

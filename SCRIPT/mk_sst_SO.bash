@@ -20,10 +20,17 @@ RUN_NAME=${RUNID#*-}
 FILE=`ls [nu]*${RUN_NAME}o_${FREQ}_${TAG}*_grid[-_]${GRID}.nc`
 if [ ! -f $FILE ] ; then echo "$FILE is missing; exit"; echo "E R R O R in : ./mk_sst.bash $@ (see SLURM/${RUNID}/mk_sst_${FREQ}_${TAG}.out)" >> ${EXEPATH}/ERROR.txt ; exit 1 ; fi
 
+# generate tmask of southern ocean surface
+TMASK=${DATPATH}/${RUNID}/tmask_SS_so.nc
+if [ ! -f $TMASK ] ; then
+   python ${SCRPATH}/tmask_zoom.py -W -180.0 -E 180.0 -S -75.800 -N -71.660 -j 0 -i -74 -maxdepth 1.5 -m ${DATPATH}/${RUNID}/mesh.nc -o $TMASK
+   if [[ $? -ne 0 ]]; then exit 42; fi 
+fi
+
 # make sst
 set -x
 FILEOUT=SO_sst_nemo_${RUN_NAME}o_${FREQ}_${TAG}_grid-${GRID}.nc
-$SCRPATH/reduce_fields.py -i $FILE -v thetao_pot -c longitude latitude -A mean -G measures -g cell_area \
-	                          -S-75.800 -N-71.660 -B1.5 -o $FILEOUT 
+$SCRPATH/reduce_fields.py --surf -i $FILE -v thetao_pot -c longitude latitude -A mean -G measures -g cell_area \
+	                          -o $FILEOUT -m $TMASK
 
 
