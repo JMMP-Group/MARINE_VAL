@@ -34,13 +34,8 @@ fi
 
 ## calculate sss in Labrador Sea (same region as MXL)
 FILEOUT=SSSav_LabSea_${RUN_NAME}o_${FREQ}_${TAG}_grid-${GRID}.nc
-<<<<<<< 17-add-osnap-depth-and-density-overturning-streamfunctions-to-valna
-$SCRPATH/reduce_fields.py -i $FILE -v so_pra -c longitude latitude -A mean -G measures -g cell_area \
-	                          -W-60.000 -E-50.000 -S55.000 -N62.000 -B1.5 -o tmp_$FILEOUT 
-=======
 $SCRPATH/reduce_fields.py --surf -i $FILE -v so_pra -c longitude latitude -A mean -G measures -g cell_area \
 	                          -o tmp_$FILEOUT -m $TMASK
->>>>>>> main
 
 #mv output file
 if [[ $? -eq 0 ]]; then

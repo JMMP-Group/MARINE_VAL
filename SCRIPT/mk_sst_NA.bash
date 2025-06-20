@@ -32,13 +32,8 @@ fi
 
 ## calculate sst
 FILEOUT=SSTav_Newfound_${RUN_NAME}o_${FREQ}_${TAG}_grid-${GRID}.nc
-<<<<<<< 17-add-osnap-depth-and-density-overturning-streamfunctions-to-valna
-$SCRPATH/reduce_fields.py -i $FILE -v thetao_pot -c longitude latitude -A mean -G measures -g cell_area \
-	                          -W-43.0 -E-37.0 -S-45.0 -N50.0 -B1.5 -o tmp_$FILEOUT 
-=======
 $SCRPATH/reduce_fields.py --surf -i $FILE -v thetao_pot -c longitude latitude -A mean -G measures -g cell_area \
 	                          -o tmp_$FILEOUT -m $TMASK
->>>>>>> main
 
 #mv output file
 if [[ $? -eq 0 ]]; then 
