@@ -159,7 +159,8 @@ if __name__ == "__main__":
      # Saving datarray and netCDF file
      ds_moc = xr.Dataset(
                    data_vars=dict(
-                         osnap_moc_sig=(["t", "rho_bins"], MOC_rho.data)
+                         osnap_moc_sig=(["t", "rho_bins"], MOC_rho.data), 
+                         time_centered=(["t"], timed)
                    ),
                    coords=dict(
                          time=(["t"], timed),
@@ -167,5 +168,19 @@ if __name__ == "__main__":
                    ),
                    attrs=dict(description="Overturning streamfunction in sigma-0 space"),
               )
+     
+     ds_moc_max = xr.Dataset(
+                   data_vars=dict(
+                         osnap_moc_sig=([], np.nanmax(MOC_rho.data)), 
+                         time_centered=(["t"], timed)
+                   ),
+                   coords=dict(
+                         time=(["t"], timed),
+                         rho_bins=(["rho_bins"], bins_sect),
+                   ),
+                   attrs=dict(description="Max of overturning streamfunction in sigma-0 space"),
+              )
 
      ds_moc.to_netcdf('osnap_moc_sigma0_' + label + '.nc')
+     ds_moc_max.to_netcdf('osnap_moc_sigma0_' + label + '_max.nc')
+
