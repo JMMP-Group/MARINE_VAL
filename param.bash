@@ -57,7 +57,9 @@ runOVF=0            # Mean overflow bottom temperature and salinity (below 27.8 
                     # at various locations. Currently, VALNA isolates and averages the 
                     # Irminger and Icelandic basins at the osnap observational cross-section.
 runGSL_NAC=0        # GS separation latitude and NA current latitude
-runMedOVF=0        # Mediterranean overflow water max salinity and corresponding depth
+runMedOVF=0         # Mediterranean overflow water max salinity and corresponding depth
+runOSNAP=0          # Overturning streamfunction profile in density space accros OSNAP 
+                    # East and West arrays.
 
 # VALTRANS (Transports and exchanges in straits)
 runMargSea=0        # Marginal Seas exchanges: Gibraltar, Bab el Mandeb, Strait of Hormuz
@@ -94,6 +96,9 @@ if [[ $RUNVALNA == 1 || $RUNALL == 1 ]]; then
 #   runOVF=1
    runGSL_NAC=1
    runMedOVF=1
+#   Because of observations, OSNAP metric should be computed only 
+#   using monthly outputs and for the 2014-2016 period.
+#   runOSNAP=1
 fi
 if [[ $RUNVALTRANS == 1 || $RUNALL == 1 ]]; then
    runITF=1
@@ -118,6 +123,5 @@ then
     exit 11
 fi
 
-# After testing, I found that I need to activate the conda env before launching run_proc.bash, because the 2 lines below were not working.
-# conda init
-# conda activate marval
+conda init
+conda activate marval

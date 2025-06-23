@@ -77,12 +77,28 @@ python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f *${FREQ}*NA_crop_T.n
 if [[ $? -ne 0 ]]; then exit 42; fi
 
 # max practical salinity in med overflow
-python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f nemo_dl879o_${FREQ}*_medovf_mean.nc -var so_pra -title "Med Outflow Max Salinity" -dir ${DATPATH} -o ${KEY}_medovf_salinity -obs OBS/medovf_salinity.txt
+python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f *${FREQ}*_medovf_mean.nc -var so_pra -title "Med Outflow Max Salinity" -dir ${DATPATH} -o ${KEY}_medovf_salinity -obs OBS/medovf_salinity.txt
 if [[ $? -ne 0 ]]; then exit 42; fi
 
 # depth of max practical salinity in med overflow
-python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f nemo_dl879o_${FREQ}*_medovf_mean_depth.nc -var deptht -title "Med Outflow Depth of Max Salinity (m)" -dir ${DATPATH} -o ${KEY}_medovf_depth -obs OBS/medovf_salinity_depth.txt
+python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f *${FREQ}*_medovf_mean_depth.nc -var deptht -title "Med Outflow Depth of Max Salinity (m)" -dir ${DATPATH} -o ${KEY}_medovf_depth -obs OBS/medovf_salinity_depth.txt
 if [[ $? -ne 0 ]]; then exit 42; fi
+
+# OSNAP West
+echo 'plot OSNAP west mocsig'
+python SCRIPT/plot_osnap_mocsig.py -runid $RUNIDS -dir ${DATPATH} -o ${KEY}_osnap_mocsig_west -st OSNAPwest -p osnap_moc_sigma0
+
+echo 'plot OSNAP west mocsig max time series'
+python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f osnap*${FREQ}*OSNAPwest_max.nc -var 'osnap_moc_sig' -title "OSNAP west mocsig" \
+        -dir ${DATPATH} -o ${KEY}_OSNAP_west -obs OBS/OSNAP_mocsig_west.txt
+
+# OSNAP East
+echo 'plot OSNAP east mocsig'
+python SCRIPT/plot_osnap_mocsig.py -runid $RUNIDS -dir ${DATPATH} -o ${KEY}_osnap_mocsig_east -st OSNAPeast -p osnap_moc_sigma0
+
+echo 'plot OSNAP east mocsig max time series'
+python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f osnap*${FREQ}*OSNAPeast_max.nc -var 'osnap_moc_sig' -title "OSNAP east mocsig" \
+        -dir ${DATPATH} -o ${KEY}_OSNAP_east -obs OBS/OSNAP_mocsig_east.txt
 
 # crop figure (rm legend)
 convert ${KEY}_BSF.png                     -crop 1240x1040+0+0 tmp01.png
