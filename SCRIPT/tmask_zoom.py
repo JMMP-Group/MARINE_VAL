@@ -14,8 +14,8 @@ def load_argument():
     parser.add_argument("-m", "--mesh", dest="mesh", metavar="mesh file", help="the mesh file to work from", type=str, nargs=1 , required=True)
     parser.add_argument("-mindepth", metavar="depth constraint", help="min depth limit of the domain", type=float, nargs=1, required=False, default=[0.0])
     parser.add_argument("-maxdepth", metavar="depth constraint", help="max depth limit of the domain", type=float, nargs=1, required=False)
-    parser.add_argument("-j, --target_j", dest="target_j", metavar="latitude for target j coordinate", help="latitude for j coordinate which should be present in the largest cluster", type=float, nargs=1, required=True)
-    parser.add_argument("-i, --target_i", dest="target_i", metavar="longitude for target i coordinate", help="longitude for i coordinate which should be present in the largest cluster", type=float, nargs=1, required=True)
+    parser.add_argument("-tlon, --target_lon", dest="target_lon", metavar="target longitude", help="longitude which should be present in the largest cluster", type=float, nargs=1, required=True)
+    parser.add_argument("-tlat, --target_lat", dest="target_lat", metavar="target latitude", help="latitude which should be present in the largest cluster", type=float, nargs=1, required=True)
     parser.add_argument("-o, --outf", dest="outf", metavar="output file", help="name of output file", type=str, nargs=1, required=True)
     return parser.parse_args()
 
@@ -37,9 +37,13 @@ def filter_lat_lon(array, mesh_data, args):
     assert -90 <= args.south[0] <= 90 and -90 <= args.north[0] <= 90, "Latitude values must be between -90 and 90"
     assert -180 <= args.west[0] <= 180 and -180 <= args.east[0] <= 180, "Longitude values must be between -180 and 180"
 
-    lat_grid = mesh_data['nav_lat'].values # 1206 x 1440 array, latitudes of each grid point
-    lon_grid = mesh_data['nav_lon'].values # 1206 x 1440 array, longitudes of each grid point
-    
+    if "nav_lon" in mesh_data.variables:
+       lat_grid = mesh_data['nav_lat'].values # 1206 x 1440 array, latitudes of each grid point
+       lon_grid = mesh_data['nav_lon'].values # 1206 x 1440 array, longitudes of each grid point
+    else:
+       lon_grid = mesh_data['glamt'].squeeze().values
+       lat_grid = mesh_data['gphit'].squeeze().values    
+
     domain_mask = (lat_grid >= args.south[0]) & (lat_grid <= args.north[0]) & (lon_grid >= args.west[0]) & (lon_grid <= args.east[0]) # 1206 x 1440 array, boolean mask for a given domain
     
     return array.where(domain_mask, 0)
@@ -81,9 +85,13 @@ def filter_largest_cluster(array, mesh_data, args):
     Returns:
     xr.array: 4D array with only the largest cluster of non-zero values retained.
     """
-    lon = mesh_data['nav_lon'].values # 1206 x 1440 array, longitudes of each grid point
-    lat = mesh_data['nav_lat'].values # 1206 x 1440 array, latitudes of each grid point
-    TARGET_J, TARGET_I = get_ij_from_lon_lat(args.target_j[0], args.target_i[0], lon, lat) 
+    if "nav_lon" in mesh_data.variables:
+       lon = mesh_data['nav_lon'].values # 1206 x 1440 array, longitudes of each grid point
+       lat = mesh_data['nav_lat'].values # 1206 x 1440 array, latitudes of each grid point
+    else:
+       lon = mesh_data['glamt'].squeeze().values
+       lat = mesh_data['gphit'].squeeze().values
+    TARGET_J, TARGET_I = get_ij_from_lon_lat(args.target_lon[0], args.target_lat[0], lon, lat) 
     
     for t in range(array.shape[0]):
         for olevel in range(array.shape[1]):

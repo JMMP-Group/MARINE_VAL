@@ -26,6 +26,11 @@ echo 'plot heat content of subpolar gyre time series'
 python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f *HEATC_NA_*${FREQ}*heatc.nc -var heatc3d -title "Heat content in SPG (*10^23 J)" -dir ${DATPATH} -o ${KEY}_HTC -obs OBS/HTC_subp_obs.txt
 if [[ $? -ne 0 ]]; then exit 42; fi
 
+# Salt content of subpolar gyre
+echo 'plot salt content of subpolar gyre time series'
+python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f *SALTC_NA_*${FREQ}*saltc.nc -var saltc3d -title "Salt content in SPG" -dir ${DATPATH} -o ${KEY}_STC -obs OBS/STC_subp_obs.txt
+if [[ $? -ne 0 ]]; then exit 42; fi
+
 # AMOC at 26.5N (maximum in z)
 echo 'plot AMOC time series'
 python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f *AMOC*${FREQ}*moc.nc -var Total_max_amoc_rapid -title "AMOC @26.5N (Sv)" -dir ${DATPATH} -o ${KEY}_AMOC -obs OBS/AMOC_max_obs.txt
@@ -77,12 +82,12 @@ python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f *${FREQ}*NA_crop_T.n
 if [[ $? -ne 0 ]]; then exit 42; fi
 
 # max practical salinity in med overflow
-python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f *${FREQ}*_medovf_mean.nc -var so_pra -title "Med Outflow Max Salinity" -dir ${DATPATH} -o ${KEY}_medovf_salinity -obs OBS/medovf_salinity.txt
-if [[ $? -ne 0 ]]; then exit 42; fi
+#python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f *${FREQ}*_medovf_mean.nc -var so_pra -title "Med Outflow Max Salinity" -dir ${DATPATH} -o ${KEY}_medovf_salinity -obs OBS/medovf_salinity.txt
+#if [[ $? -ne 0 ]]; then exit 42; fi
 
 # depth of max practical salinity in med overflow
-python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f *${FREQ}*_medovf_mean_depth.nc -var deptht -title "Med Outflow Depth of Max Salinity (m)" -dir ${DATPATH} -o ${KEY}_medovf_depth -obs OBS/medovf_salinity_depth.txt
-if [[ $? -ne 0 ]]; then exit 42; fi
+#python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f *${FREQ}*_medovf_mean_depth.nc -var deptht -title "Med Outflow Depth of Max Salinity (m)" -dir ${DATPATH} -o ${KEY}_medovf_depth -obs OBS/medovf_salinity_depth.txt
+#if [[ $? -ne 0 ]]; then exit 42; fi
 
 # OSNAP West
 echo 'plot OSNAP west mocsig'
