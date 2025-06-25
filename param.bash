@@ -49,6 +49,7 @@ runAABW=0           # Volume of water for a given sigma4 threshold
 # VALNA (North Atlantic)
 runBSF_NA=0         # North Atlantic subpolar gyre strength
 runHTC=0            # North Atlantic subpolar gyre heat content
+runSTC=0            # North Atlantic subpolar gyre salt content
 runAMOC=0           # AMOC at 26.5N at max. depth
 runMLD_LabSea=0     # Mixed layer depth in Labrador Sea in March
 runSSS_LabSea=0     # Mean SSS anomaly in Labrador Sea
@@ -86,6 +87,7 @@ fi
 if [[ $RUNVALNA == 1 || $RUNALL == 1 ]]; then
    runBSF_NA=1
    runHTC=1
+   runSTC=1
    runAMOC=1
 #   MHT metric only works if relevant diagnostic in model output
 #   runMHT=1
@@ -123,5 +125,6 @@ then
     exit 11
 fi
 
-conda init
+#conda init
 conda activate marval
+echo `which python`

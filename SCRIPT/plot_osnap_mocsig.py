@@ -77,13 +77,7 @@ for e, runid in enumerate([args.runid[0]] + args.runid):
     mocsig_mean = ds[moc].mean(dim=time).values
     mocsig_std = ds[moc].std(dim=time).values
     sigma = ds[sigm].values 
-    if e == 0: mocsig_mean = -mocsig_mean # / 10**6
-    #if e == 1 or e == 3 or e == 5: mocsig_mean = -mocsig_mean
- 
-    #if e == 0:
     ax.plot(mocsig_mean, sigma, color=cpltcolor, linestyle="-", linewidth=2.5, label=cpltname)
-    #else:
-    #   ax.plot(mocsig_mean, sigma, color=col[e], linestyle="--", linewidth=2.0, label=lab[e])
     if e == 0:
        ax.fill_betweenx(sigma, mocsig_mean+mocsig_std, mocsig_mean-mocsig_std, alpha=alpha, facecolor=cpltcolor)
     
@@ -92,14 +86,12 @@ plt.rc('legend', **{'fontsize':12})
 ax.legend(loc=1, ncol=1, frameon=False)
 ax.set_xlabel('Vol. Transport [Sv]')
 ax.set_ylabel(r'$\sigma_{\theta}$ [$kg\;m^{-3}$]')
-#ax.set_ylim(25.5, 28.2)
-#ax.set_ylim(22., 28.5)
 ax.set_ylim(26.8, 28.)
-#ax.set_xlim(-4,17)
-ax.set_xlim(-4,9)
+if 'east' in args.stem[0]:
+   ax.set_xlim(-4,17)
+elif 'west' in args.stem[0]:
+   ax.set_xlim(-4,9)
 plt.gca().invert_yaxis()
-# name = 'osnap_mocsig.png'
-#name = 'osnap_mocsig_damp.png'
 plt.savefig(f"{args.outfile[0]}.png")
 
 

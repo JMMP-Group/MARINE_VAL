@@ -156,31 +156,22 @@ if __name__ == "__main__":
          # integrate bottom to top
          MOC_rho[t,:] = tmp[::-1].cumsum()[::-1]
 
+     if "obs_osnap" in Fsection: MOC_rho[:,:] = -1.*MOC_rho[:,:]
+
      # Saving datarray and netCDF file
      ds_moc = xr.Dataset(
                    data_vars=dict(
-                         osnap_moc_sig=(["t", "rho_bins"], MOC_rho.data), 
-                         time_centered=(["t"], timed)
+                         osnap_moc_sig=(["t", "rho_bins"], MOC_rho.data),
+                         max_osnap_moc_sig=(["t"], np.nanmax(MOC_rho.data, axis=1)), 
                    ),
                    coords=dict(
-                         time=(["t"], timed),
+                         time_centered=(["t"], timed),
                          rho_bins=(["rho_bins"], bins_sect),
                    ),
-                   attrs=dict(description="Overturning streamfunction in sigma-0 space"),
+                   attrs=dict(description="Overturning streamfunction profile in sigma-0 space and its maximum timeseries"),
               )
      
-     ds_moc_max = xr.Dataset(
-                   data_vars=dict(
-                         osnap_moc_sig=([], np.nanmax(MOC_rho.data)), 
-                         time_centered=(["t"], timed)
-                   ),
-                   coords=dict(
-                         time=(["t"], timed),
-                         rho_bins=(["rho_bins"], bins_sect),
-                   ),
-                   attrs=dict(description="Max of overturning streamfunction in sigma-0 space"),
-              )
 
-     ds_moc.to_netcdf('osnap_moc_sigma0_' + label + '.nc')
-     ds_moc_max.to_netcdf('osnap_moc_sigma0_' + label + '_max.nc')
+     enc = {"time_centered"        : {"_FillValue": None }}
+     ds_moc.to_netcdf('osnap_moc_sigma0_' + label + '.nc', encoding=enc, unlimited_dims={'t':True})
 
