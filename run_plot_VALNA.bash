@@ -94,7 +94,7 @@ echo 'plot OSNAP west mocsig'
 python SCRIPT/plot_osnap_mocsig.py -runid $RUNIDS -dir ${DATPATH} -o ${KEY}_osnap_mocsig_west -st OSNAPwest -p osnap_moc_sigma0
 
 echo 'plot OSNAP west mocsig max time series'
-python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f osnap*${FREQ}*OSNAPwest_max.nc -var 'osnap_moc_sig' -title "OSNAP west mocsig" \
+python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f osnap*${FREQ}*OSNAPwest.nc -var 'max_osnap_moc_sig' -title "OSNAP west mocsig" \
         -dir ${DATPATH} -o ${KEY}_OSNAP_west -obs OBS/OSNAP_mocsig_west.txt
 
 # OSNAP East
@@ -102,7 +102,7 @@ echo 'plot OSNAP east mocsig'
 python SCRIPT/plot_osnap_mocsig.py -runid $RUNIDS -dir ${DATPATH} -o ${KEY}_osnap_mocsig_east -st OSNAPeast -p osnap_moc_sigma0
 
 echo 'plot OSNAP east mocsig max time series'
-python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f osnap*${FREQ}*OSNAPeast_max.nc -var 'osnap_moc_sig' -title "OSNAP east mocsig" \
+python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f osnap*${FREQ}*OSNAPeast.nc -var 'max_osnap_moc_sig' -title "OSNAP east mocsig" \
         -dir ${DATPATH} -o ${KEY}_OSNAP_east -obs OBS/OSNAP_mocsig_east.txt
 
 # crop figure (rm legend)

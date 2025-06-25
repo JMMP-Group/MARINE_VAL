@@ -165,13 +165,13 @@ if __name__ == "__main__":
                          max_osnap_moc_sig=(["t"], np.nanmax(MOC_rho.data, axis=1)), 
                    ),
                    coords=dict(
-                         time=(["t"], timed),
+                         time_centered=(["t"], timed),
                          rho_bins=(["rho_bins"], bins_sect),
                    ),
                    attrs=dict(description="Overturning streamfunction profile in sigma-0 space and its maximum timeseries"),
               )
      
 
-     enc = {"time"        : {"_FillValue": None }}
+     enc = {"time_centered"        : {"_FillValue": None }}
      ds_moc.to_netcdf('osnap_moc_sigma0_' + label + '.nc', encoding=enc, unlimited_dims={'t':True})
 
