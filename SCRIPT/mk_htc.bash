@@ -28,15 +28,8 @@ echo 'mk_htc.bash: Calculate Obs Heat content SPG NA metrics.'
 OBSPATH="/data/users/nemo/obs_data/NOAA_WOA13v2/1955-2012/025/orca025"
 FILET="${OBSPATH}/woa13v2.omip-clim.con_tem_gosi10p1-025_flooded.nc"
 MESHF="${OBSPATH}/mesh_mask_eORCA025_v3.2_r42.nc"
-OTMSK="${DATPATH}/${RUNID}/mesh_mask_eORCA025_v3.2_r42.nc"
-OMSKS="${DATPATH}/${RUNID}/woa13v2_masked_tmask_NA_gyre.nc"
-
-if [ ! -f "${OTMSK}" ]; then ln -s ${MESHF} ${OTMSK}; fi
-
-if [ -f "${OMSKS}" ]; then rm ${OMSKS}; fi # when tmasks will be computed all at the same time and only once, this want be needed anymore
-
-python ${SCRPATH}/tmask_zoom.py -W ${MIN_LON} -E ${MAX_LON} -S ${MIN_LAT} -N ${MAX_LAT} -mindepth ${MIN_DEP} -tlon ${TAR_LON} -tlat ${TAR_LAT} -m ${OTMSK} -o ${OMSKS}
-if [[ $? -ne 0 ]]; then exit 42; fi
+TMASK="${DATPATH}/${RUNID}/tmask_NA_gyre_mindepth-1000.nc"
+OMSKS="${DATPATH}/${RUNID}/tmask_NA_gyre_obs-woa13v2_mindepth-1000.nc"
 
 # calculate heat content of NA subpolar gyre --> area of heat content for each layer
 FILEOUT=HEATC_NA_WOA13v2_heatc.nc
@@ -76,11 +69,6 @@ FILEOUT=HEATC_NA_${RUN_NAME}o_${FREQ}_${TAG}_heatc.nc
 
 ijbox=$($CDFPATH/cdffindij -w ${MIN_LON} ${MAX_LON} ${MIN_LAT} ${MAX_LAT} -c mesh.nc -p T | tail -2 | head -1 )
 echo "ijbox : $ijbox"
-
-# generate tmask of NA gyre
-TMASK=${DATPATH}/${RUNID}/tmask_NA_gyre.nc
-python ${SCRPATH}/tmask_zoom.py -W ${MIN_LON} -E ${MAX_LON} -S ${MIN_LAT} -N ${MAX_LAT} -mindepth ${MIN_DEP} -tlon ${TAR_LON} -tlat ${TAR_LAT} -m ${DATPATH}/${RUNID}/mesh.nc -o $TMASK # confirm min depth
-if [[ $? -ne 0 ]]; then exit 42; fi 
 
 # assumes 75 levels in ocean:
 $CDFPATH/cdfheatc -f $FILET -zoom ${ijbox} 1 75 -M $TMASK tmask -o tmp_$FILEOUT #

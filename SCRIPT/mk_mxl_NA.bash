@@ -48,18 +48,11 @@ else
    echo "error when running cdfmxl; exit"; echo "E R R O R in : ./mk_mxl.bash $@ (see ${JOBOUT_PATH}/mxl_${FREQ}_${TAG}.out)" >> ${EXEPATH}/ERROR.txt ; exit 1
 fi
 
-# generate tmask of lab sea
-TMASK=${DATPATH}/${RUNID}/tmask_lab_sea.nc
-if [ ! -f $TMASK ] ; then
-   python ${SCRPATH}/tmask_zoom.py -W -60.000 -E -50.000 -S 55.000 -N 62.000 -j -55 -i 58.5 -m ${DATPATH}/${RUNID}/mesh.nc -o $TMASK
-   if [[ $? -ne 0 ]]; then exit 42; fi 
-fi
-
 # averaging MXL depth in Lab Sea: 60° W–50° W, 55° N–62° N
 ncks -v area $FILE -A $FILEOUT
 ncatted -a cell_measures,somxl030,c,c,"area: area" -a coordinates,somxl030,c,c,"time_centered nav_lat nav_lon" $FILEOUT
 $SCRPATH/reduce_fields.py -i $FILEOUT -v somxl030 -c longitude latitude -A mean -G measures -g cell_area \
-			    -o tmp_LAB_MXL_$FILEOUT -m $TMASK
+			    -o tmp_LAB_MXL_$FILEOUT -m ${DATPATH}/${RUNID}/tmask_lab_sea.nc
 
 # mv output file
 if [[ $? -eq 0 ]]; then

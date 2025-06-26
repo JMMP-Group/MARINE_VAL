@@ -187,6 +187,9 @@ for RUNID in `echo $RUNIDS`; do
         exit 42
    fi
 
+   echo Generating tmasks...
+   python ${SCRPATH}/gen_tmasks.py -r $RUNID
+
    let tagcount=0
    let tag2count=0
    TAG_LIST=""
