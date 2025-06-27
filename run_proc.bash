@@ -65,7 +65,7 @@ run_tool() {
    shift `expr $OPTIND - 1`  
    # echo "run_tool running $TOOL $flags $1 $2 $3"
    sbatchschopt='--wait ' #--qos=long '  
-   sbatchrunopt="--dependency=afterany:${@:4} --job-name=P$$_${TOOL}_${1}_${2} --output=${JOBOUT_PATH}/${TOOL}${jobtag}_${3}_${1}.out"
+   sbatchrunopt="--dependency=afterany:${tmasks_sbatch}:${@:4} --job-name=P$$_${TOOL}_${1}_${2} --output=${JOBOUT_PATH}/${TOOL}${jobtag}_${3}_${1}.out"
    exit_code=1
    
    while [[ "$exit_code" != "0" ]];do
@@ -186,6 +186,9 @@ for RUNID in `echo $RUNIDS`; do
         echo "E R R O R : $FREQ not supported; exit 42"
         exit 42
    fi
+
+   # generate tmasks
+   tmasks_sbatch=$(sbatch --output=${JOBOUT_PATH}/mk_msks.out ${SCRPATH}/mk_msks.bash $RUNID | awk '{print $4}')
 
    let tagcount=0
    let tag2count=0
@@ -318,6 +321,8 @@ for RUNID in `echo $RUNIDS`; do
    wait
 
 done # end runids
+
+rm -f ${SCRPATH}/.obs_done* # remove obs_done flag file if it exists
 
 # print out
 sleep 1

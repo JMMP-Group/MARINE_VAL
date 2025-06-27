@@ -125,6 +125,7 @@ then
     exit 11
 fi
 
+source /opt/conda/etc/profile.d/conda.sh # Ensure conda commands are available in this shell session
 #conda init
 conda activate marval
 echo `which python`
