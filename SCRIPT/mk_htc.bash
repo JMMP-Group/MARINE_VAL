@@ -9,56 +9,78 @@ RUNID=$1
 TAG=$2
 FREQ=$3
 
-# Spatial filtering parameters
-MIN_LON=-60.000
-MAX_LON=-20.000
-MIN_LAT=48.000
-MAX_LAT=72.000
-MIN_DEP=1000
-TAR_LON=-40
-TAR_LAT=50
+OBS_DONE_FLAG="${SCRPATH}/.obs_done_HTC"
 
-### Obs ###
-# We compute this everytime, to allow the possibility 
-# of changing the parameters for the spatial filtering
-# while having always consistent observational values
+# Only run obs section if not already completed once
+if [[ ! -f $OBS_DONE_FLAG ]]; then
+   touch $OBS_DONE_FLAG
 
-echo 'mk_htc.bash: Calculate Obs Heat content SPG NA metrics.'
+   # Spatial filtering parameters
+   TMASK_FNAME="tmask_NA_gyre_obs-woa13v2_mindepth-1000.nc"
+   for TMASK_GENERATED in $(jq -r '.[]' ${SCRPATH}/tmasks_generated.json); do
+      if [[ "$TMASK_GENERATED" == "$TMASK_FNAME" ]]; then
 
-OBSPATH="/data/users/nemo/obs_data/NOAA_WOA13v2/1955-2012/025/orca025"
-FILET="${OBSPATH}/woa13v2.omip-clim.con_tem_gosi10p1-025_flooded.nc"
-MESHF="${OBSPATH}/mesh_mask_eORCA025_v3.2_r42.nc"
-TMASK="${DATPATH}/${RUNID}/tmask_NA_gyre_mindepth-1000.nc"
-OMSKS="${DATPATH}/${RUNID}/tmask_NA_gyre_obs-woa13v2_mindepth-1000.nc"
+         PARAMS=$(jq -c --arg tmask "$TMASK_FNAME" '.[$tmask]' ${SCRPATH}/tmasks_all_params.json)
+         MIN_LON=$(echo "$PARAMS" | jq -r '.W')
+         MAX_LON=$(echo "$PARAMS" | jq -r '.E')
+         MIN_LAT=$(echo "$PARAMS" | jq -r '.S')
+         MAX_LAT=$(echo "$PARAMS" | jq -r '.N')
+         TAR_LON=$(echo "$PARAMS" | jq -r '.tlon')
+         TAR_LAT=$(echo "$PARAMS" | jq -r '.tlat')
+         TMASK=$(echo "$PARAMS" | jq -r '.o')
+         MESHF=$(echo "$PARAMS" | jq -r '.m')
+         MIN_DEP=$(echo "$PARAMS" | jq -r '.mindepth // empty')
+         MAX_DEP=$(echo "$PARAMS" | jq -r '.maxdepth // empty')
 
-# calculate heat content of NA subpolar gyre --> area of heat content for each layer
-FILEOUT=HEATC_NA_WOA13v2_heatc.nc
-ijbox=$($CDFPATH/cdffindij -w ${MIN_LON} ${MAX_LON} ${MIN_LAT} ${MAX_LAT} -c $MESHF -p T | tail -2 | head -1 )
-echo "ijbox : $ijbox"
-# assumes 75 levels in ocean:
-$CDFPATH/cdfheatc -f $FILET -zoom ${ijbox} 1 75 -M ${OMSKS} tmask -o $FILEOUT
+         echo "Unpacking $TMASK_GENERATED parameters"
+         echo -e "MIN_LON=$MIN_LON \nMAX_LON=$MAX_LON \nMIN_LAT=$MIN_LAT \nMAX_LAT=$MAX_LAT \nTAR_LON=$TAR_LON \nTAR_LAT=$TAR_LAT \nMIN_DEP=$MIN_DEP \nMAX_DEP=$MAX_DEP \nTMASK=$TMASK \nMESHF=$MESHF"
+      fi
+   done
 
-# compute
-# 1) the mean
-ncwa -O -v heatc3d -a time_counter ${FILEOUT} mean_${FILEOUT}
-mean_obs=`ncdump -v heatc3d mean_${FILEOUT} | sed -e "1,/data:/d" -e '$d' -e "s/heatc3d =//g" -e "s/;//g"`
-mean_obs="${mean_obs//$'\n'/}"
-# 2) the deviations with respect to the mean
-ncbo -O -v heatc3d ${FILEOUT} mean_${FILEOUT} dev_${FILEOUT}
-# 3) the sum of the square of the deviations, then divide by (N-1) and take the square root
-ncra -O -y rmssdn dev_${FILEOUT} std_dev_${FILEOUT}
-std_obs=`ncdump -v heatc3d std_dev_${FILEOUT} | sed -e "1,/data:/d" -e '$d' -e "s/heatc3d =//g" -e "s/;//g"`
-std_obs="${std_obs//$'\n'/}"
+   ### Obs ###
+   # We compute this everytime, to allow the possibility 
+   # of changing the parameters for the spatial filtering
+   # while having always consistent observational values
 
-cat > "${MARINE_VAL}/OBS/HTC_subp_obs.txt" << EOF
-ref = WOA13v2
-mean = ${mean_obs}
-std = ${std_obs}
-EOF
+   echo 'mk_htc.bash: Calculate Obs Heat content SPG NA metrics.'
 
+   OBSPATH="/data/users/nemo/obs_data/NOAA_WOA13v2/1955-2012/025/orca025"
+   FILET="${OBSPATH}/woa13v2.omip-clim.con_tem_gosi10p1-025_flooded.nc"
+
+   # calculate heat content of NA subpolar gyre --> area of heat content for each layer
+   FILEOUT=HEATC_NA_WOA13v2_heatc.nc
+   ijbox=$($CDFPATH/cdffindij -w ${MIN_LON} ${MAX_LON} ${MIN_LAT} ${MAX_LAT} -c $MESHF -p T | tail -2 | head -1 )
+   echo "ijbox : $ijbox"
+   # assumes 75 levels in ocean:
+   $CDFPATH/cdfheatc -f $FILET -zoom ${ijbox} 1 75 -M ${TMASK} tmask -o $FILEOUT
+   # compute subp_obs
+   ${SCRPATH}/mk_subp_obs.bash heatc3d HTC $FILEOUT
+fi
 
 ### Models ### 
 RUN_NAME=${RUNID#*-}
+
+# Spatial filtering parameters
+TMASK_FNAME="tmask_NA_gyre_mindepth-1000.nc"
+for TMASK_GENERATED in $(jq -r '.[]' ${SCRPATH}/tmasks_generated.json); do
+   if [[ "$TMASK_GENERATED" == "$TMASK_FNAME" ]]; then
+
+      PARAMS=$(jq -c --arg tmask "$TMASK_FNAME" '.[$tmask]' ${SCRPATH}/tmasks_all_params.json)
+      MIN_LON=$(echo "$PARAMS" | jq -r '.W')
+      MAX_LON=$(echo "$PARAMS" | jq -r '.E')
+      MIN_LAT=$(echo "$PARAMS" | jq -r '.S')
+      MAX_LAT=$(echo "$PARAMS" | jq -r '.N')
+      TAR_LON=$(echo "$PARAMS" | jq -r '.tlon')
+      TAR_LAT=$(echo "$PARAMS" | jq -r '.tlat')
+      TMASK=$(echo "$PARAMS" | jq -r '.o')
+      MESHF=$(echo "$PARAMS" | jq -r '.m')
+      MIN_DEP=$(echo "$PARAMS" | jq -r '.mindepth // empty')
+      MAX_DEP=$(echo "$PARAMS" | jq -r '.maxdepth // empty')
+
+      echo "Unpacking $TMASK_GENERATED parameters"
+      echo -e "MIN_LON=$MIN_LON \nMAX_LON=$MAX_LON \nMIN_LAT=$MIN_LAT \nMAX_LAT=$MAX_LAT \nTAR_LON=$TAR_LON \nTAR_LAT=$TAR_LAT \nMIN_DEP=$MIN_DEP \nMAX_DEP=$MAX_DEP \nTMASK=$TMASK \nMESHF=$MESHF"
+   fi
+done
 
 # check presence of input file
 FILET=`ls [nu]*${RUN_NAME}o_${FREQ}_${TAG}*_grid[-_]T.nc`
@@ -67,7 +89,7 @@ if [ ! -f $FILET ] ; then echo "$FILET is missing; exit"; echo "E R R O R in : .
 # Calculate heat content of NA subpolar gyre in Joules --> area of heat content for each layer
 FILEOUT=HEATC_NA_${RUN_NAME}o_${FREQ}_${TAG}_heatc.nc
 
-ijbox=$($CDFPATH/cdffindij -w ${MIN_LON} ${MAX_LON} ${MIN_LAT} ${MAX_LAT} -c mesh.nc -p T | tail -2 | head -1 )
+ijbox=$($CDFPATH/cdffindij -w ${MIN_LON} ${MAX_LON} ${MIN_LAT} ${MAX_LAT} -c ${MESHF} -p T | tail -2 | head -1 )
 echo "ijbox : $ijbox"
 
 # assumes 75 levels in ocean:

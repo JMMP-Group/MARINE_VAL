@@ -1,7 +1,13 @@
+'''
+Routine to generate tmask files for processes defined
+@author: Hatim Chahout
+'''
+
 import argparse
 import subprocess
 import os
 import time
+import json
 
 def source_bash(param_file_path):
     """Source a bash script and return all variables with the prefix 'run'."""
@@ -96,31 +102,44 @@ tmask_params = {
       "tmask_WWED": {"W": -65.130, "E": -53.020, "S": -75.950, "N": -72.340, "tlon": -59, "tlat": -74}
 }
 
+all_tmask_params = {}
+tmasks_generated = []
 extra_params_order = ('obs', 'mindepth', 'maxdepth')
 
 for proc, tmask_list in proc_tmask_map.items():
-      if proc in processes.keys() and int(processes[proc]) == 1:
-            for tmask_dict in tmask_list:
-                  for tmask, extra_params in tmask_dict.items():
-                        assert all(k in extra_params_order for k in extra_params.keys()), f"Unexpected parameter(s) in gen_tmasks.py: {set(extra_params.keys()) - set(extra_params_order)}"
-                        extra_params = {k: extra_params[k] for k in extra_params_order if k in extra_params.keys()}
-                        tmask_path = '_'.join([tmask]+[f"{k}-{v}" for k, v in extra_params.items()]) if extra_params else tmask
-                        tmask_path = os.path.join(run_path, tmask_path + '.nc')
-                        if not os.path.exists(tmask_path):
-                              print(f"Generating {tmask_path.split('/')[-1]} ...")
-                              mesh = mesh_path if 'obs' not in extra_params.keys() else obs_mesh_path
-                              params = {**tmask_params[tmask], **extra_params}
-                              param_str = ' '.join(f"-{k} {v}" for k, v in params.items() if k != 'obs') + f" -o {tmask_path} -m {mesh}"
-                              print(f"param_string: {param_str}")
-                              start_time = time.time()
-                              subprocess.run(["python", os.path.join(os.environ["SCRPATH"], "tmask_zoom.py"), *param_str.split()])
-                              elapsed = time.time() - start_time
-                              print(f"{tmask_path.split('/')[-1]} generated in {elapsed:.2f} seconds.\n")
+     for tmask_dict in tmask_list:
+          for tmask, extra_params in tmask_dict.items():
+               assert all(k in extra_params_order for k in extra_params.keys()), f"Unexpected parameter(s) in gen_tmasks.py: {set(extra_params.keys()) - set(extra_params_order)}"
+               extra_params = {k: extra_params[k] for k in extra_params_order if k in extra_params.keys()} # For filename generation
+               tmask_fname = '_'.join([tmask]+[f"{k}-{v}" for k, v in extra_params.items()]) + '.nc' if extra_params else tmask + '.nc'
+               mesh = mesh_path if 'obs' not in extra_params.keys() else obs_mesh_path
+               # Prepare parameters
+               params = {**tmask_params[tmask], **extra_params}
+               params = {k: v for k, v in params.items() if k != 'obs'}
+               params['o'] = os.path.join(run_path, tmask_fname)
+               params['m'] = mesh
+               param_str = ' '.join(f"-{k} {v}" for k, v in params.items())
+               all_tmask_params[tmask_fname] = params # Update all params to save later
+               # Generate tmask 
+               if proc in processes.keys() and int(processes[proc]) == 1:
+                    print(f"Generating {tmask_fname} ...")
+                    print(f"param_string: {param_str}")
+                    tmasks_generated.append(tmask_fname)
+                    start_time = time.time()
+                    subprocess.run(["python", os.path.join(os.environ["SCRPATH"], "tmask_zoom.py"), *param_str.split()])
+                    elapsed = time.time() - start_time
+                    print(f"{tmask_fname} generated in {elapsed:.2f} seconds.\n")
+               elif proc not in processes.keys():
+                    print(f"{proc} not found in param.bash\n")
 
-      elif int(processes[proc]) != 1:
-            print(f"Skipping {proc} as it is not enabled in param.bash\n")
+print("All tmasks parameters:")
+for tmask_name, params in all_tmask_params.items():
+     print(f"{tmask_name}: {params}")
 
-      else:
-            print(f"Skipping {proc} as it is not found in param.bash\n")
-      
-   
+print(f"Tmasks generated python file: {set(tmasks_generated)}")
+
+with open(os.path.join(os.environ["SCRPATH"], "tmasks_all_params.json"), "w") as f:
+    json.dump(all_tmask_params, f, indent=2)
+
+with open(os.path.join(os.environ["SCRPATH"], "tmasks_generated.json"), "w") as f:
+    json.dump(list(set(tmasks_generated)), f, indent=2)
