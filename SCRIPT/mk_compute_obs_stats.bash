@@ -28,8 +28,6 @@ mean_obs="$(echo "$mean_obs" | xargs)"
 std_obs="$(echo "$std_obs" | xargs)"
 
 # create output file
-echo creating obs
-echo MARINE_VAL: $MARINE_VAL
 cat > "${MARINE_VAL}/OBS/${FILEOUT}" << EOF
 ref = ${REF}
 mean = ${mean_obs}
