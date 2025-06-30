@@ -9,6 +9,7 @@ RUNID=$1
 TAG=$2
 FREQ=$3
 
+PROC='runSTC'
 OBS_DONE_FLAG="${SCRPATH}/.obs_done_STC"
 
 # Only run obs section if not already completed once
@@ -16,9 +17,10 @@ if [[ ! -f $OBS_DONE_FLAG ]]; then
    touch $OBS_DONE_FLAG
 
    # Spatial filtering parameters
-   TMASK_FNAME="tmask_NA_gyre_obs-woa13v2_mindepth-1000.nc"
-   for TMASK_GENERATED in $(jq -r '.[]' ${SCRPATH}/tmasks_generated.json); do
-      if [[ "$TMASK_GENERATED" == "$TMASK_FNAME" ]]; then
+   TMASK_FNAME="tmask_NA_gyre_obs-woa13v2"
+   for TMASK_GENERATED in $(jq -r ".${PROC}[]" ${SCRPATH}/tmasks_generated.json); do
+      if [[ "$TMASK_GENERATED" == "$TMASK_FNAME"* ]]; then
+         TMASK_FNAME="$TMASK_GENERATED"
 
          PARAMS=$(jq -c --arg tmask "$TMASK_FNAME" '.[$tmask]' ${SCRPATH}/tmasks_all_params.json)
          MIN_LON=$(echo "$PARAMS" | jq -r '.W')
@@ -61,9 +63,10 @@ fi
 RUN_NAME=${RUNID#*-}
 
 # Spatial filtering parameters
-TMASK_FNAME="tmask_NA_gyre_mindepth-1000.nc"
-for TMASK_GENERATED in $(jq -r '.[]' ${SCRPATH}/tmasks_generated.json); do
-   if [[ "$TMASK_GENERATED" == "$TMASK_FNAME" ]]; then
+TMASK_FNAME="tmask_NA_gyre"
+for TMASK_GENERATED in $(jq -r ".${PROC}[]" ${SCRPATH}/tmasks_generated.json); do
+   if [[ "$TMASK_GENERATED" == "$TMASK_FNAME"* && "$TMASK_GENERATED" != *obs* ]]; then
+      TMASK_FNAME="$TMASK_GENERATED"
 
       PARAMS=$(jq -c --arg tmask "$TMASK_FNAME" '.[$tmask]' ${SCRPATH}/tmasks_all_params.json)
       MIN_LON=$(echo "$PARAMS" | jq -r '.W')

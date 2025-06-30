@@ -103,10 +103,11 @@ tmask_params = {
 }
 
 all_tmask_params = {}
-tmasks_generated = []
+tmasks_generated = {}
 extra_params_order = ('obs', 'mindepth', 'maxdepth')
 
 for proc, tmask_list in proc_tmask_map.items():
+     proc_tmasks_generated = []
      for tmask_dict in tmask_list:
           for tmask, extra_params in tmask_dict.items():
                assert all(k in extra_params_order for k in extra_params.keys()), f"Unexpected parameter(s) in gen_tmasks.py: {set(extra_params.keys()) - set(extra_params_order)}"
@@ -124,13 +125,15 @@ for proc, tmask_list in proc_tmask_map.items():
                if proc in processes.keys() and int(processes[proc]) == 1:
                     print(f"Generating {tmask_fname} ...")
                     print(f"param_string: {param_str}")
-                    tmasks_generated.append(tmask_fname)
+                    proc_tmasks_generated.append(tmask_fname)
                     start_time = time.time()
                     subprocess.run(["python", os.path.join(os.environ["SCRPATH"], "tmask_zoom.py"), *param_str.split()])
                     elapsed = time.time() - start_time
                     print(f"{tmask_fname} generated in {elapsed:.2f} seconds.\n")
                elif proc not in processes.keys():
                     print(f"{proc} not found in param.bash\n")
+     # Store generated tmasks for each process               
+     tmasks_generated[proc]= proc_tmasks_generated
 
 print("All tmasks parameters:")
 for tmask_name, params in all_tmask_params.items():
@@ -142,4 +145,4 @@ with open(os.path.join(os.environ["SCRPATH"], "tmasks_all_params.json"), "w") as
     json.dump(all_tmask_params, f, indent=2)
 
 with open(os.path.join(os.environ["SCRPATH"], "tmasks_generated.json"), "w") as f:
-    json.dump(list(set(tmasks_generated)), f, indent=2)
+    json.dump(tmasks_generated, f, indent=2)
