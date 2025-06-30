@@ -11,18 +11,17 @@ FREQ=$3
 
 PROC='runHTC' 
 OBS_DONE_FLAG="${SCRPATH}/.obs_done_HTC"
+GENERATED_TMASKS=($(jq -r ".${PROC}[]" "${SCRPATH}/tmasks_generated.json"))
 
 # Only run obs section if not already completed once
 if [[ ! -f $OBS_DONE_FLAG ]]; then
    touch $OBS_DONE_FLAG
 
    # Spatial filtering parameters
-   TMASK_FNAME="tmask_NA_gyre_obs-woa13v2"
-   for TMASK_GENERATED in $(jq -r ".${PROC}[]" ${SCRPATH}/tmasks_generated.json); do
-      if [[ "$TMASK_GENERATED" == "$TMASK_FNAME"* ]]; then
-         TMASK_FNAME="$TMASK_GENERATED"
-
-         PARAMS=$(jq -c --arg tmask "$TMASK_FNAME" '.[$tmask]' ${SCRPATH}/tmasks_all_params.json)
+   PATTERN="NA_GYRE_obs-woa13v2"
+   for GEN_TMASK in "${GENERATED_TMASKS[@]}"; do
+      if [[ "$GEN_TMASK" == *"$PATTERN"* ]]; then
+         PARAMS=$(jq -c --arg tmask "$GEN_TMASK" '.[$tmask]' ${SCRPATH}/tmasks_all_params.json)
          MIN_LON=$(echo "$PARAMS" | jq -r '.W')
          MAX_LON=$(echo "$PARAMS" | jq -r '.E')
          MIN_LAT=$(echo "$PARAMS" | jq -r '.S')
@@ -34,7 +33,7 @@ if [[ ! -f $OBS_DONE_FLAG ]]; then
          MIN_DEP=$(echo "$PARAMS" | jq -r '.mindepth // empty')
          MAX_DEP=$(echo "$PARAMS" | jq -r '.maxdepth // empty')
 
-         echo "Unpacking $TMASK_GENERATED parameters"
+         echo "Unpacking $GEN_TMASK parameters"
          echo -e "MIN_LON=$MIN_LON \nMAX_LON=$MAX_LON \nMIN_LAT=$MIN_LAT \nMAX_LAT=$MAX_LAT \nTAR_LON=$TAR_LON \nTAR_LAT=$TAR_LAT \nMIN_DEP=$MIN_DEP \nMAX_DEP=$MAX_DEP \nTMASK=$TMASK \nMESHF=$MESHF"
       fi
    done
@@ -63,12 +62,10 @@ fi
 RUN_NAME=${RUNID#*-}
 
 # Spatial filtering parameters
-TMASK_FNAME="tmask_NA_gyre"
-for TMASK_GENERATED in $(jq -r ".${PROC}[]" ${SCRPATH}/tmasks_generated.json); do
-   if [[ "$TMASK_GENERATED" == "$TMASK_FNAME"* && "$TMASK_GENERATED" != *obs* ]]; then
-      TMASK_FNAME="$TMASK_GENERATED"
-
-      PARAMS=$(jq -c --arg tmask "$TMASK_FNAME" '.[$tmask]' ${SCRPATH}/tmasks_all_params.json)
+PATTERN="tmask_NA_GYRE"
+for GEN_TMASK in "${GENERATED_TMASKS[@]}"; do
+   if [[ "$GEN_TMASK" == *"$PATTERN"* && "$GEN_TMASK" != *obs* ]]; then
+      PARAMS=$(jq -c --arg tmask "$GEN_TMASK" '.[$tmask]' ${SCRPATH}/tmasks_all_params.json)
       MIN_LON=$(echo "$PARAMS" | jq -r '.W')
       MAX_LON=$(echo "$PARAMS" | jq -r '.E')
       MIN_LAT=$(echo "$PARAMS" | jq -r '.S')
@@ -80,7 +77,7 @@ for TMASK_GENERATED in $(jq -r ".${PROC}[]" ${SCRPATH}/tmasks_generated.json); d
       MIN_DEP=$(echo "$PARAMS" | jq -r '.mindepth // empty')
       MAX_DEP=$(echo "$PARAMS" | jq -r '.maxdepth // empty')
 
-      echo "Unpacking $TMASK_GENERATED parameters"
+      echo "Unpacking $GEN_TMASK parameters"
       echo -e "MIN_LON=$MIN_LON \nMAX_LON=$MAX_LON \nMIN_LAT=$MIN_LAT \nMAX_LAT=$MAX_LAT \nTAR_LON=$TAR_LON \nTAR_LAT=$TAR_LAT \nMIN_DEP=$MIN_DEP \nMAX_DEP=$MAX_DEP \nTMASK=$TMASK \nMESHF=$MESHF"
    fi
 done

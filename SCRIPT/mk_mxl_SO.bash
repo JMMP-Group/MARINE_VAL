@@ -11,6 +11,8 @@ RUNID=$1
 TAG=$2
 FREQ=$3
 GRID='T'
+PROC='runMLD_Weddell'
+GENERATED_TMASKS=($(jq -r ".${PROC}[]" "${SCRPATH}/tmasks_generated.json"))
 
 # name
 RUN_NAME=${RUNID#*-}
@@ -22,7 +24,17 @@ RUN_NAME=${RUNID#*-}
 FILE=`ls [nu]*${RUN_NAME}o_${FREQ}_${TAG}*_grid[-_]${GRID}.nc`
 if [ ! -f $FILE ] ; then echo "$FILE is missing; exit"; echo "E R R O R in : ./mk_mxl.bash $@ (see SLURM/${RUNID}/mk_mxl_${FREQ}_${TAG}.out)" >> ${EXEPATH}/ERROR.txt ; exit 1 ; fi
 
+# Extract tmask filename
+PATTERN="WG"
+for GEN_TMASK in "${GENERATED_TMASKS[@]}"; do
+   if [[ "$GEN_TMASK" == *"$PATTERN"* ]]; then
+      PARAMS=$(jq -c --arg tmask "$GEN_TMASK" '.[$tmask]' ${SCRPATH}/tmasks_all_params.json)
+      TMASK=$(echo "$PARAMS" | jq -r '.o')
+   fi
+done
+echo TMASK: $TMASK
+
 # make mxl
 FILEOUT=WMXL_nemo_${RUN_NAME}o_${FREQ}_${TAG}_grid-${GRID}.nc
-$SCRPATH/reduce_fields.py -i $FILE -v somxzint1 -c longitude latitude -A max -o $FILEOUT -m ${DATPATH}/${RUNID}/tmask_WG.nc
+$SCRPATH/reduce_fields.py -i $FILE -v somxzint1 -c longitude latitude -A max -o $FILEOUT -m $TMASK
 

@@ -8,6 +8,8 @@ if [[ $# -ne 3 ]]; then echo 'mk_psi.bash [RUNID (mi-aa000)] [TAG (19991201_2006
 RUNID=$1
 TAG=$2
 FREQ=$3
+PROC='runBSF_NA'
+GENERATED_TMASKS=($(jq -r ".${PROC}[]" "${SCRPATH}/tmasks_generated.json"))
 
 # name
 RUN_NAME=${RUNID#*-}
@@ -45,7 +47,17 @@ else
    echo "error when running cdfpsi; exit"; echo "E R R O R in : ./mk_psi.bash $@ (see ${JOBOUT_PATH}/mk_psi_${FREQ}_${TAG}.out)" >> ${EXEPATH}/ERROR.txt ; exit 1
 fi
 
+# Extract tmask filename
+PATTERN="NA_GYRE"
+for GEN_TMASK in "${GENERATED_TMASKS[@]}"; do
+   if [[ "$GEN_TMASK" == *"$PATTERN"* ]]; then
+      PARAMS=$(jq -c --arg tmask "$GEN_TMASK" '.[$tmask]' ${SCRPATH}/tmasks_all_params.json)
+      TMASK=$(echo "$PARAMS" | jq -r '.o')
+   fi
+done
+echo TMASK: $TMASK
+
 # NA subpolar min
 # Update the meta data in the psi file so that Iris can read it:
 ncatted -O -a coordinates,sobarstf,c,c,"time_centered nav_lat nav_lon" $FILEOUT
-$SCRPATH/reduce_fields.py -i $FILEOUT -v sobarstf -c longitude latitude -A min -o BSF_NA_$FILEOUT -m ${DATPATH}/${RUNID}/tmask_NA_gyre.nc
+$SCRPATH/reduce_fields.py -i $FILEOUT -v sobarstf -c longitude latitude -A min -o BSF_NA_$FILEOUT -m $TMASK

@@ -9,6 +9,8 @@ RUNID=$1
 TAG=$2
 FREQ=$3
 GRID='T'
+PROC='runMLD_LabSea'
+GENERATED_TMASKS=($(jq -r ".${PROC}[]" "${SCRPATH}/tmasks_generated.json"))
 
 # name
 RUN_NAME=${RUNID#*-}
@@ -48,11 +50,21 @@ else
    echo "error when running cdfmxl; exit"; echo "E R R O R in : ./mk_mxl.bash $@ (see ${JOBOUT_PATH}/mxl_${FREQ}_${TAG}.out)" >> ${EXEPATH}/ERROR.txt ; exit 1
 fi
 
+# Extract tmask filename
+PATTERN="LAB_SEA"
+for GEN_TMASK in "${GENERATED_TMASKS[@]}"; do
+   if [[ "$GEN_TMASK" == *"$PATTERN"* ]]; then
+      PARAMS=$(jq -c --arg tmask "$GEN_TMASK" '.[$tmask]' ${SCRPATH}/tmasks_all_params.json)
+      TMASK=$(echo "$PARAMS" | jq -r '.o')
+   fi
+done
+echo TMASK: $TMASK
+
 # averaging MXL depth in Lab Sea: 60° W–50° W, 55° N–62° N
 ncks -v area $FILE -A $FILEOUT
 ncatted -a cell_measures,somxl030,c,c,"area: area" -a coordinates,somxl030,c,c,"time_centered nav_lat nav_lon" $FILEOUT
 $SCRPATH/reduce_fields.py -i $FILEOUT -v somxl030 -c longitude latitude -A mean -G measures -g cell_area \
-			    -o tmp_LAB_MXL_$FILEOUT -m ${DATPATH}/${RUNID}/tmask_lab_sea.nc
+			    -o tmp_LAB_MXL_$FILEOUT -m $TMASK
 
 # mv output file
 if [[ $? -eq 0 ]]; then

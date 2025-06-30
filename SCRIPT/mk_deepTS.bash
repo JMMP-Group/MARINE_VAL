@@ -32,8 +32,9 @@ if [[ $# -ne 3 ]]; then echo 'mk_deepTS.bash -A [list of areas] [RUNID (mi-aa000
 RUNID=$1
 TAG=$2
 FREQ=$3
-
 GRID=T
+PROC='runDEEPTS'
+GENERATED_TMASKS=($(jq -r ".${PROC}[]" "${SCRPATH}/tmasks_generated.json"))
 
 # name
 RUN_NAME=${RUNID#*-}
@@ -51,33 +52,44 @@ FILEOUT=nemo_${RUN_NAME}o_${FREQ}_${TAG}_deepTS.nc
 for area in $areas
 do
 
+# Extract tmask filename
+PATTERN=$area
+for GEN_TMASK in "${GENERATED_TMASKS[@]}"; do
+   if [[ "$GEN_TMASK" == *"$PATTERN"* ]]; then
+      PARAMS=$(jq -c --arg tmask "$GEN_TMASK" '.[$tmask]' ${SCRPATH}/tmasks_all_params.json)
+      TMASK=$(echo "$PARAMS" | jq -r '.o')
+   fi
+done
+
+echo AREA: $area, TMASK: $TMASK
+
 if [[ "$area" == "AMU" ]]
 then
 
 echo mk_deepTS.bash: calculating AMU thetao
 $SCRPATH/reduce_fields.py -i $FILE -v thetao_pot -c longitude latitude depth -A mean -G self measures -g cell_thickness cell_area \
-	       -o AMU_thetao_$FILEOUT -m ${DATPATH}/${RUNID}/tmask_AMU_mindepth-390.nc
+	       -o AMU_thetao_$FILEOUT -m $TMASK
     
 elif [[ "$area" == "WROSS" ]]
 then
 
 echo mk_deepTS.bash: calculating WROSS so_pra
 $SCRPATH/reduce_fields.py -i $FILE -v so_pra -c longitude latitude depth -A mean -G self measures -g cell_thickness cell_area \
-	      -o WROSS_so_$FILEOUT -m ${DATPATH}/${RUNID}/tmask_WROSS_mindepth-390.nc
+	      -o WROSS_so_$FILEOUT -m $TMASK
 
 elif [[ "$area" == "EROSS" ]]
 then
 
 echo mk_deepTS.bash: calculating EROSS thetao
 $SCRPATH/reduce_fields.py -i $FILE -v thetao_pot -c longitude latitude depth -A mean -G self measures -g cell_thickness cell_area \
-	       -o EROSS_thetao_$FILEOUT -m ${DATPATH}/${RUNID}/tmask_EROSS_mindepth-390.nc 
+	       -o EROSS_thetao_$FILEOUT -m $TMASK
 
 elif [[ "$area" == "WWED" ]]
 then
 
 echo mk_deepTS.bash: calculating WED so_pra 
 $SCRPATH/reduce_fields.py -i $FILE -v so_pra -c longitude latitude depth -A mean -G self measures -g cell_thickness cell_area \
-	      -o WED_so_$FILEOUT -m ${DATPATH}/${RUNID}/tmask_WWED_mindepth-390.nc
+	      -o WED_so_$FILEOUT -m $TMASK
 
 fi
 done

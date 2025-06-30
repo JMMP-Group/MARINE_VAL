@@ -8,6 +8,8 @@ if [[ $# -ne 3 ]]; then echo 'mk_psi.bash [RUNID (mi-aa000)] [TAG (19991201_2006
 RUNID=$1
 TAG=$2
 FREQ=$3
+PROC='runBSF_SO'
+GENERATED_TMASKS=($(jq -r ".${PROC}[]" "${SCRPATH}/tmasks_generated.json"))
 
 # name
 RUN_NAME=${RUNID#*-}
@@ -32,9 +34,29 @@ fi
 # Update the meta data in the psi file so that Iris can read it:
 ncatted -a coordinates,sobarstf,c,c,"time_centered nav_lat nav_lon" $FILEOUT
 
+# Extract WG tmask filename
+PATTERN="WG"
+for GEN_TMASK in "${GENERATED_TMASKS[@]}"; do
+   if [[ "$GEN_TMASK" == *"$PATTERN"* ]]; then
+      PARAMS=$(jq -c --arg tmask "$GEN_TMASK" '.[$tmask]' ${SCRPATH}/tmasks_all_params.json)
+      TMASK=$(echo "$PARAMS" | jq -r '.o')
+   fi
+done
+echo WG TMASK: $TMASK
+
 # WG max
-$SCRPATH/reduce_fields.py -i $FILEOUT -v sobarstf -c longitude latitude -A max -o WG_$FILEOUT -m ${DATPATH}/${RUNID}/tmask_WG.nc
+$SCRPATH/reduce_fields.py -i $FILEOUT -v sobarstf -c longitude latitude -A max -o WG_$FILEOUT -m $TMASK
+
+# Extract RG tmask filename
+PATTERN="RG"
+for GEN_TMASK in "${GENERATED_TMASKS[@]}"; do
+   if [[ "$GEN_TMASK" == *"$PATTERN"* ]]; then
+      PARAMS=$(jq -c --arg tmask "$GEN_TMASK" '.[$tmask]' ${SCRPATH}/tmasks_all_params.json)
+      TMASK=$(echo "$PARAMS" | jq -r '.o')
+   fi
+done
+echo RG TMASK: $TMASK
 
 # RG max
-$SCRPATH/reduce_fields.py -i $FILEOUT -v sobarstf -c longitude latitude -A max -o RG_$FILEOUT -m ${DATPATH}/${RUNID}/tmask_RG.nc
+$SCRPATH/reduce_fields.py -i $FILEOUT -v sobarstf -c longitude latitude -A max -o RG_$FILEOUT -m $TMASK
 
