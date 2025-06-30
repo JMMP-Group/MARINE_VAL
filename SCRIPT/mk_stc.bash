@@ -54,7 +54,7 @@ if [[ ! -f $OBS_DONE_FLAG ]]; then
    # assumes 75 levels in ocean:
    $CDFPATH/cdfsaltc -f $FILET -zoom ${ijbox} 1 75 -M ${TMASK} tmask -o $FILEOUT
    # compute subp_obs
-   ${SCRPATH}/mk_subp_obs.bash saltc3d STC $FILEOUT
+   ${SCRPATH}/mk_compute_obs_stats.bash saltc3d time_counter $FILEOUT WOA13v2 STC_subp_obs.txt
 fi
 
 ### Models ### 

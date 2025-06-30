@@ -54,7 +54,7 @@ if [[ ! -f $OBS_DONE_FLAG ]]; then
    # assumes 75 levels in ocean:
    $CDFPATH/cdfheatc -f $FILET -zoom ${ijbox} 1 75 -M ${TMASK} tmask -o $FILEOUT
    # compute subp_obs
-   ${SCRPATH}/mk_subp_obs.bash heatc3d HTC $FILEOUT
+   ${SCRPATH}/mk_compute_obs_stats.bash heatc3d time_counter $FILEOUT WOA13v2 HTC_subp_obs.txt
 fi
 
 ### Models ### 

@@ -9,7 +9,7 @@ import os
 import time
 import json
 
-def source_bash(param_file_path):
+def source_param(param_file_path):
     """Source a bash script and return all variables with the prefix 'run'."""
     command = f"bash -c 'source {param_file_path} && declare -p'"
     proc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True, executable='/bin/bash')
@@ -37,7 +37,7 @@ def load_argument():
 
 args = load_argument()
 
-processes = source_bash(os.path.join(os.environ['MARINE_VAL'],'param.bash')) # load run environment variables
+processes = source_param(os.path.join(os.environ['MARINE_VAL'],'param.bash')) # load run environment variables
 print(f"Loaded environment variables from param.bash: \n{processes}\n")
 
 run_path = os.path.join(os.environ['DATPATH'], args.runid[0])
