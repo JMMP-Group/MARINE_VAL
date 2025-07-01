@@ -9,6 +9,8 @@ RUNID=$1
 TAG=$2
 FREQ=$3
 GRID='T'
+PROC='runMLD_LabSea'
+GENERATED_TMASKS=($(jq -r ".${PROC}[]" "${SCRPATH}/tmasks_generated.json"))
 
 # name
 RUN_NAME=${RUNID#*-}
@@ -48,12 +50,15 @@ else
    echo "error when running cdfmxl; exit"; echo "E R R O R in : ./mk_mxl.bash $@ (see ${JOBOUT_PATH}/mxl_${FREQ}_${TAG}.out)" >> ${EXEPATH}/ERROR.txt ; exit 1
 fi
 
-# generate tmask of lab sea
-TMASK=${DATPATH}/${RUNID}/tmask_lab_sea.nc
-if [ ! -f $TMASK ] ; then
-   python ${SCRPATH}/tmask_zoom.py -W -60.000 -E -50.000 -S 55.000 -N 62.000 -j -55 -i 58.5 -m ${DATPATH}/${RUNID}/mesh.nc -o $TMASK
-   if [[ $? -ne 0 ]]; then exit 42; fi 
-fi
+# Extract tmask filename
+PATTERN="LAB_SEA"
+for GEN_TMASK in "${GENERATED_TMASKS[@]}"; do
+   if [[ "$GEN_TMASK" == *"$PATTERN"* ]]; then
+      PARAMS=$(jq -c --arg tmask "$GEN_TMASK" '.[$tmask]' ${SCRPATH}/tmasks_all_params.json)
+      TMASK=$(echo "$PARAMS" | jq -r '.o')
+   fi
+done
+echo TMASK: $TMASK
 
 # averaging MXL depth in Lab Sea: 60° W–50° W, 55° N–62° N
 ncks -v area $FILE -A $FILEOUT

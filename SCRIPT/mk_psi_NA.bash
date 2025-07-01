@@ -8,6 +8,8 @@ if [[ $# -ne 3 ]]; then echo 'mk_psi.bash [RUNID (mi-aa000)] [TAG (19991201_2006
 RUNID=$1
 TAG=$2
 FREQ=$3
+PROC='runBSF_NA'
+GENERATED_TMASKS=($(jq -r ".${PROC}[]" "${SCRPATH}/tmasks_generated.json"))
 
 # name
 RUN_NAME=${RUNID#*-}
@@ -45,12 +47,15 @@ else
    echo "error when running cdfpsi; exit"; echo "E R R O R in : ./mk_psi.bash $@ (see ${JOBOUT_PATH}/mk_psi_${FREQ}_${TAG}.out)" >> ${EXEPATH}/ERROR.txt ; exit 1
 fi
 
-# generate tmask of NA gyre
-TMASK=${DATPATH}/${RUNID}/tmask_NA_gyre.nc
-if [ ! -f $TMASK ] ; then
-   python ${SCRPATH}/tmask_zoom.py -W -60.000 -E -20.000 -S 48.000 -N 72.000 -j -40 -i 50 -m ${DATPATH}/${RUNID}/mesh.nc -o $TMASK
-   if [[ $? -ne 0 ]]; then exit 42; fi 
-fi
+# Extract tmask filename
+PATTERN="NA_GYRE"
+for GEN_TMASK in "${GENERATED_TMASKS[@]}"; do
+   if [[ "$GEN_TMASK" == *"$PATTERN"* ]]; then
+      PARAMS=$(jq -c --arg tmask "$GEN_TMASK" '.[$tmask]' ${SCRPATH}/tmasks_all_params.json)
+      TMASK=$(echo "$PARAMS" | jq -r '.o')
+   fi
+done
+echo TMASK: $TMASK
 
 # NA subpolar min
 # Update the meta data in the psi file so that Iris can read it:

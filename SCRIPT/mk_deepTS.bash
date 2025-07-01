@@ -32,8 +32,9 @@ if [[ $# -ne 3 ]]; then echo 'mk_deepTS.bash -A [list of areas] [RUNID (mi-aa000
 RUNID=$1
 TAG=$2
 FREQ=$3
-
 GRID=T
+PROC='runDEEPTS'
+GENERATED_TMASKS=($(jq -r ".${PROC}[]" "${SCRPATH}/tmasks_generated.json"))
 
 # name
 RUN_NAME=${RUNID#*-}
@@ -51,59 +52,42 @@ FILEOUT=nemo_${RUN_NAME}o_${FREQ}_${TAG}_deepTS.nc
 for area in $areas
 do
 
+# Extract tmask filename
+PATTERN=$area
+for GEN_TMASK in "${GENERATED_TMASKS[@]}"; do
+   if [[ "$GEN_TMASK" == *"$PATTERN"* ]]; then
+      PARAMS=$(jq -c --arg tmask "$GEN_TMASK" '.[$tmask]' ${SCRPATH}/tmasks_all_params.json)
+      TMASK=$(echo "$PARAMS" | jq -r '.o')
+   fi
+done
+
+echo AREA: $area, TMASK: $TMASK
+
 if [[ "$area" == "AMU" ]]
 then
 
-# generate tmask of AMU @ 390m +
-TMASK=${DATPATH}/${RUNID}/tmask_AMU_390.nc
-if [ ! -f $TMASK ] ; then
-   echo "Generating tmask for AMU @ 390m ..."
-   python ${SCRPATH}/tmask_zoom.py -W -109.640 -E -102.230 -S -75.800 -N -71.660 -j -106 -i -74 -mindepth 390.000 -m ${DATPATH}/${RUNID}/mesh.nc -o $TMASK
-   if [[ $? -ne 0 ]]; then exit 42; fi 
-fi
-
+echo mk_deepTS.bash: calculating AMU thetao
 $SCRPATH/reduce_fields.py -i $FILE -v thetao_pot -c longitude latitude depth -A mean -G self measures -g cell_thickness cell_area \
 	       -o AMU_thetao_$FILEOUT -m $TMASK
     
 elif [[ "$area" == "WROSS" ]]
 then
 
-# generate tmask of WROSS @ 390m +
-TMASK=${DATPATH}/${RUNID}/tmask_WROSS_390.nc
-if [ ! -f $TMASK ] ; then
-   echo "Generating tmask for WROSS @ 390m ..."
-   python ${SCRPATH}/tmask_zoom.py -W 157.100 -E 173.333 -S -78.130 -N -74.040 -j 165 -i -77 -mindepth 390.000 -m ${DATPATH}/${RUNID}/mesh.nc -o $TMASK
-   if [[ $? -ne 0 ]]; then exit 42; fi 
-fi
-
+echo mk_deepTS.bash: calculating WROSS so_pra
 $SCRPATH/reduce_fields.py -i $FILE -v so_pra -c longitude latitude depth -A mean -G self measures -g cell_thickness cell_area \
 	      -o WROSS_so_$FILEOUT -m $TMASK
 
 elif [[ "$area" == "EROSS" ]]
 then
 
-# generate tmask of EROSS @ 390m +
-TMASK=${DATPATH}/${RUNID}/tmask_EROSS_390.nc
-if [ ! -f $TMASK ] ; then
-   echo "Generating tmask for EROSS @ 390m ..."
-   python ${SCRPATH}/tmask_zoom.py -W -176.790 -E -157.820 -S -78.870 -N -77.520 -j -167 -i -78 -mindepth 390.000 -m ${DATPATH}/${RUNID}/mesh.nc -o $TMASK
-   if [[ $? -ne 0 ]]; then exit 42; fi 
-fi
-
+echo mk_deepTS.bash: calculating EROSS thetao
 $SCRPATH/reduce_fields.py -i $FILE -v thetao_pot -c longitude latitude depth -A mean -G self measures -g cell_thickness cell_area \
-	       -o EROSS_thetao_$FILEOUT -m $TMASK 
+	       -o EROSS_thetao_$FILEOUT -m $TMASK
 
 elif [[ "$area" == "WWED" ]]
 then
 
-# generate tmask of WWED @ 390m +
-TMASK=${DATPATH}/${RUNID}/tmask_WWED_390.nc
-if [ ! -f $TMASK ] ; then
-   echo "Generating tmask for WWED @ 390m ..."
-   python ${SCRPATH}/tmask_zoom.py -W -65.130 -E -53.020 -S -75.950 -N -72.340 -j -59 -i -74 -mindepth 390.000 -m ${DATPATH}/${RUNID}/mesh.nc -o $TMASK
-   if [[ $? -ne 0 ]]; then exit 42; fi 
-fi
-
+echo mk_deepTS.bash: calculating WED so_pra 
 $SCRPATH/reduce_fields.py -i $FILE -v so_pra -c longitude latitude depth -A mean -G self measures -g cell_thickness cell_area \
 	      -o WED_so_$FILEOUT -m $TMASK
 

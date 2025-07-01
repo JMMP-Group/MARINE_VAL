@@ -9,6 +9,8 @@ RUNID=$1
 TAG=$2
 FREQ=$3
 GRID='T'
+PROC='runSST_NWCorner'
+GENERATED_TMASKS=($(jq -r ".${PROC}[]" "${SCRPATH}/tmasks_generated.json"))
 
 # name
 RUN_NAME=${RUNID#*-}
@@ -23,12 +25,15 @@ fi
 echo $FILE
 if [ ! -f $FILE ] ; then echo "$FILE is missing; exit"; echo "E R R O R in : ./mk_sst.bash $@ (see ${JOBOUT_PATH}/mk_sst_${FREQ}_${TAG}.out)" >> ${EXEPATH}/ERROR.txt ; exit 1 ; fi
 
-# generate tmask of newfoundland surface
-TMASK=${DATPATH}/${RUNID}/tmask_SS_newfound.nc
-if [ ! -f $TMASK ] ; then
-   python ${SCRPATH}/tmask_zoom.py -W -43.0 -E -37.0 -S -45.0 -N 50.0 -j -40 -i 2.5 -maxdepth 1.5 -m ${DATPATH}/${RUNID}/mesh.nc -o $TMASK
-   if [[ $? -ne 0 ]]; then exit 42; fi 
-fi
+# Extract tmask filename
+PATTERN="NEWFOUND"
+for GEN_TMASK in "${GENERATED_TMASKS[@]}"; do
+   if [[ "$GEN_TMASK" == *"$PATTERN"* ]]; then
+      PARAMS=$(jq -c --arg tmask "$GEN_TMASK" '.[$tmask]' ${SCRPATH}/tmasks_all_params.json)
+      TMASK=$(echo "$PARAMS" | jq -r '.o')
+   fi
+done
+echo TMASK: $TMASK
 
 ## calculate sst
 FILEOUT=SSTav_Newfound_${RUN_NAME}o_${FREQ}_${TAG}_grid-${GRID}.nc

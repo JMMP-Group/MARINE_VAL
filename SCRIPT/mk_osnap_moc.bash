@@ -50,22 +50,8 @@ for sec in "east" "west"; do
           exit 1
        fi
     fi
-    # compute
-    # 1) the mean
-    ncwa -O -v max_osnap_moc_sig -a t ${OBS_OSNAP} mean_${OBS_OSNAP}
-    mean_obs=`ncdump -v max_osnap_moc_sig mean_${OBS_OSNAP} | sed -e "1,/data:/d" -e '$d' -e "s/max_osnap_moc_sig =//g" -e "s/;//g"`
-    mean_obs="${mean_obs//$'\n'/}"
-    # 2) the deviations with respect to the mean
-    ncbo -O -v max_osnap_moc_sig ${OBS_OSNAP} mean_${OBS_OSNAP} dev_${OBS_OSNAP}
-    # 3) the sum of the square of the deviations, then divide by (N-1) and take the square root
-    ncra -O -y rmssdn dev_${OBS_OSNAP} std_dev_${OBS_OSNAP}
-    std_obs=`ncdump -v max_osnap_moc_sig std_dev_${OBS_OSNAP} | sed -e "1,/data:/d" -e '$d' -e "s/max_osnap_moc_sig =//g" -e "s/;//g"`
-    std_obs="${std_obs//$'\n'/}"
-    cat > "${MARINE_VAL}/OBS/OSNAP_mocsig_${sec}.txt" << EOF
-ref = OSNAP
-mean = ${mean_obs}
-std = ${std_obs}
-EOF
+
+   ${SCRPATH}/mk_compute_obs_stats.bash max_osnap_moc_sig t $OBS_OSNAP OSNAP OSNAP_mocsig_${sec}.txt
 done
 
 # Looping over east and west legs of the array
