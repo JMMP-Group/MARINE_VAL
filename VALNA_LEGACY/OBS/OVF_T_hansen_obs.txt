@@ -1,4 +1,0 @@
-ref = Hansen 2000 from nsv standardiser
-mean = 0.05831493
-std = 0.
-# no time dimen

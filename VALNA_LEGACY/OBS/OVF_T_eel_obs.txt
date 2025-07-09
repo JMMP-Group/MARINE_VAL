@@ -1,4 +1,0 @@
-ref = EEL Xsection from nsv standardiser
-mean = 3.21952773
-std = 0.11272316
-# 15 years, 1996-2017, some years are missing
