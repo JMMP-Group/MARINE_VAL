@@ -14,7 +14,10 @@ export MSKPATH=/YOUR/LOCAL/PATH/MESH_MASK_DIR
 # Path where cdftools executables are locally stored
 export CDFPATH=/YOUR/LOCAL/PATH/CDFTOOLS_DIR/bin
 
-# Local path of the nam_cdf_names namelist
+# Local path of the nam_cdf_names namelist.
+# You can use as a template the "nam_cdf_names_template"
+# file - you probably need to adapt to your need the following
+# namelists: namvars, nammeshmask, nammask  
 export NMLPATH=/YOUR/LOCAL/PATH/nam_cdf_names
 
 # toolbox location

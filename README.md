@@ -12,9 +12,10 @@
 <a name="introduction"></a>
 ## Introduction
 
-A software package for ocean scientists to calculate and plot scalar evaluation metrics for CMIP models with a 
-NEMO ocean. The data processing is currently mostly based on the CDFTools package. The evaluation metrics are
-grouped into three packages although any combination of metrics can be calculated and plotted:
+A software package for ocean scientists to calculate and plot scalar evaluation metrics from ocean general circualtion models (OGCM) 
+based on [Nucleus for European Modelling of the Ocean](https://www.nemo-ocean.eu/) (NEMO). 
+The data processing is currently mostly based on the [CDFTools](https://github.com/meom-group/CDFTOOLS) package. 
+The evaluation metrics are grouped into three packages although any combination of metrics can be calculated and plotted:
 
    * **VALSO** metrics (Southern Ocean assessment):
      * Drake Passage net eastward transport (ACC)
@@ -23,53 +24,76 @@ grouped into three packages although any combination of metrics can be calculate
      * Salinity of High Salinity Shelf Water (HSSW) in west Weddell and west Ross Seas
      * Intrusion of Circumpolar Deep Water (CDW) in Amundsen sea
      * Intrusion of CDW on East Ross shelf
+     * Census of Antarctic Bottom Water (AABW)
 
    * **VALNA** metrics (North Atlantic assessment):
      * Subpolar gyre strength (Sv)
      * Subpolar gyre heat content (J)
+     * Subpolar gyre salt content
      * AMOC at 26.5N at max. depth (Sv)
+     * Zonally averaged AMOC in depth and sigma-2000 space (Sv)
      * OHT at 26.5N (PW)
      * Mixed layer depth in Labrador Sea in March (m)
+     * Census of the magnitude and depth of the maximum salinity in the Mediterranean overflow area
      * Mean SSS anomaly in Labrador Sea (PSU)
      * Mean SST anomaly off Newfoundland (degC)
-     * Mean overflow bottom temperature (degC) and salinity (PSU) below the 27.8 isopycnal at various locations. Currently, VALNA isolates and averages the Irminger and Icelandic basins at the osnap observational cross-section.
      * GS separation latitude (degN)
      * NA current latitude (degN)
+     * Overturning streamfucntion profiles for the eastern and western legs of the OSNAP array in sigma-theta space.
 
    * **VALTRANS** metrics (Straits transports and exchanges):
      * North Atlantic deep overflows: Denmark Strait and Faroe Bank Channel.
      * Marginal Seas exchanges: Gibraltar, Bab el Mandeb, Strait of Hormuz.
      * Indonesian Throughflow: Lombok Strait, Ombai Strait, Timor Passage.
 
-Note that there is also a set of metrics called VALGLO but this needs debugging.
-
 <a name="installation_and_running"></a>
 ## Installation and running
 
 ### Installation
 
-Clone the MARINE_VAL repository:
+1) Clone the MARINE_VAL repository:
 
 ```
 git clone https://github.com/JMMP-Group/MARINE_VAL
 ```
 
-Build the CDFTOOLS executables. Note the make macro and modules shown 
-below work for the current Met Office linux servers
+2) Clone CDFFFTOOLS repository:
 
 ```
-module load gcc/8.1.0 mpi/mpich/3.2.1/gnu/8.1.0 \
-            hdf5/1.8.20/gnu/8.1.0               \
-            netcdf/4.6.1/gnu/8.1.0
-cd MARINE_VAL/CDFTOOLS-4.0/src
-ln -s ../Macrolib/macro.gfortran_metoffice make.macro
-make
+git clone --recurse-submodules https://github.com/JMMP-Group/CDFTOOLS.git CDFTOOLS_jmmp
+
+N.B.: we shuld add the meom-group repo once our modifications are merged. 
 ```
+
+Build the CDFTOOLS executables -> see instructions [here](https://github.com/JMMP-Group/CDFTOOLS?tab=readme-ov-file#compiling-cdftools).
+
+3) Create the needed conda environment
+
+```
+cd MARINE_VAL
+conda env create -f marval.yml
+```
+
+4) Install the nordic-seas validation package
+
+```
+cd ../
+git clone git@github.com:JMMP-Group/nordic-seas-validation.git
+cd nordic-seas-validation.git
+conda activate marval
+pip install -e .
+python -c "import nsv"
+cd ../MARINE_VAL
+```
+
 ### Data processing
 
 Edit environment variables in `param.bash` to fit your setup/need, including:
+   * $MARINE_VAL: path of local installation of MARINE_VAL toolbox
    * $MSKPATH: directory where model mesh_mask (and bathymetry) files are stored.
    * $CDFPATH: location of the CDFTOOLS toolbox
+   * $NMLPATH: path of the namelist to control names of dimensions and variables
+               in files to be analysed
    * $DATPATH: where to store the data output (or link to existing data location) 
 
 Edit `param.bash` to define which metrics you want to calculate, 
@@ -79,29 +103,38 @@ individual metrics.
 Process the data to generate the timeseries data:   
 
 ```
-./run_all.bash -C [chunksize] -B [BATHY] [MESHMASK] [YEARB] [YEARE] [FREQ] [RUNID list]
-``` 
+./run_proc.bash -C [chunksize] -B [BATHY] -V [ZCOMSHMSK] [MESHMASK] [YEARB] [YEARE] [FREQ] [RUNID list]
+```
+where, the optional parameters are:
+
+ * `[chunksize]`: is the number of dates that should be restored from MASS at a time, recommended value at least 10 or 20 to avoid clogging MASS with lots of small retrievals.
+
+ * `[BATHY]`: is the name of the bathymetry file that is stored in the $MSKPATH directory. Note that the bathymetry file is only required for metrics involving transports through straits or the OSNAP MOC. If needed, it can be created from the mesh_mask file using `SCRIPT/bathy_from_dommesh.py`.
+
+ * `[ZCOMSHMSK]: the z-levels mesh_mask.nc where you want to vertically remap your data - this is only needed if your model us using generalised vertical coordinates (e.g. sigma-coordinates, multi-envelope s-cooridnates).
+
+while the mandatory arguments are
+
+ * `[MESHMASK]` is the name of the mesh_mask file found in $MSKPATH.
+ * `[FREQ]` options currently 1y for annual means or 1m for monthly means.
+ * `[YEARB]` start year of the analysis
+ * `[YEARE]` end year of the analysis
+ * `[RUNID list]` list of the simualtions IDs to be retrieved and analysed
+ 
 for example : 
 ```
 ./run_all.bash -C 20 -B bathymetry_eORCA025-GO6.nc mesh_mask_eORCA025-GO6.nc 1981 1990 1y u-cl681
 ```
- * `[chunksize]` is the number of dates that should be restored from MASS at a time, recommended value at least 10 or 20 to avoid clogging MASS with lots of small retrievals.
- * `[BATHY]` is the name of the bathymetry file found in $MSKPATH
- * `[MESHMASK]` is the name of the mesh_mask file found in $MSKPATH.
- * `[FREQ]` options currently 1y for annual means or 1m for monthly means.
+Output from the processing scripts appears under the JOBOUT/RUNID directory.
 
-Note that the bathymetry file is only required for metrics involving transports through straits. It can be created from 
-the mesh_mask file using `SCRIPT/bathy_from_dommesh.py`.
-
-Output from the processing scripts appears under the SLURM directory. 
+Note: each time the tool is run, it is possible to only analyse simulations that are using the same model geometry - i.e., bathymetry, mesh_mask.nc, etc ...
 
 ### Plotting timeseries
 
 Edit `style.db` to define labels, colours and line styles for the 
 integrations you want to plot (some examples provided). 
 
-Plotting scripts are provided to produce sets of timeseries plots for each of the three packages, VALSO, VALNA and 
-VALTRANS. For example, to generate a standard set of VALSO plots, type:
+Plotting scripts are provided to produce sets of plots for each of the three packages, VALSO, VALNA and VALTRANS (mainly timeseries but not exclusively). For example, to generate a standard set of VALSO plots, type:
 ```
 ./run_plot_VALSO.bash [KEY] [FREQ] [RUNID list]
 ``` 
@@ -111,8 +144,7 @@ for example :
 ```
  * `[KEY]` is an arbitrary label that will be used to name the output PNG file.
 
-The individual timeseries plots will appear in the FIGURES directory and the combined figure in the main MARINE_VAL 
-directory.
+The individual timeseries plots will appear in the FIGURES directory and the combined figure in the main MARINE_VAL directory.
 
 <a name="output"></a>
 ## Example Output
