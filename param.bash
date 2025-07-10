@@ -36,7 +36,9 @@ RUNALL=0       # run all possible metrics
 RUNVALSO=1     # Southern Ocean metrics
 RUNVALNA=1     # North Atlantic metrics
 RUNVALTRANS=1  # Transports/exchanges in straits
-RUNVALGLO=0    # Global metrics (UNTESTED IN MERGED VERSION OF MARINE_VAL)
+
+# DISABLED, SINCE IT IS NOT WORKING YET
+#RUNVALGLO=0    # Global metrics
 
 # custom:
 
@@ -52,18 +54,27 @@ runAABW=0           # Volume of water for a given sigma4 threshold
 # VALNA (North Atlantic)
 runBSF_NA=0         # North Atlantic subpolar gyre strength
 runHTC=0            # North Atlantic subpolar gyre heat content
+                    # NB: MHT metric only works if relevant diagnostic 
+                    #     in model output. Therefore, the user needs to 
+                    #     explicitly activate this diagnostic.
 runSTC=0            # North Atlantic subpolar gyre salt content
 runAMOC=0           # AMOC at 26.5N at max. depth
 runMLD_LabSea=0     # Mixed layer depth in Labrador Sea in March
 runSSS_LabSea=0     # Mean SSS anomaly in Labrador Sea
 runSST_NWCorner=0   # Mean SST anomaly off Newfoundland
-runOVF=0            # Mean overflow bottom temperature and salinity (below 27.8 isopycnal) 
-                    # at various locations. Currently, VALNA isolates and averages the 
-                    # Irminger and Icelandic basins at the osnap observational cross-section.
+
+# DISABLED, SINCE IT IS NOT WORKING YET
+# runOVF=0            # Mean overflow bottom temperature and salinity (below 27.8 isopycnal) 
+#                     # at various locations. Currently, VALNA isolates and averages the 
+#                     # Irminger and Icelandic basins at the osnap observational cross-section.
+
 runGSL_NAC=0        # GS separation latitude and NA current latitude
 runMedOVF=0         # Mediterranean overflow water max salinity and corresponding depth
 runOSNAP=0          # Overturning streamfunction profile in density space accros OSNAP 
                     # East and West arrays.
+                    # NB: Because of the observations, OSNAP metrics should be computed only 
+                    #     using monthly outputs and for the 2014-2016 period. Therefore,
+                    #     the user needs to explicitly activate this diagnostic.
 
 # VALTRANS (Transports and exchanges in straits)
 runMargSea=0        # Marginal Seas exchanges: Gibraltar, Bab el Mandeb, Strait of Hormuz
@@ -71,11 +82,12 @@ runITF=0            # Indonesian Throughflow: Lombok Strait, Ombai Strait, Timor
 runNAtlOverflows=0  # North Atlantic deep overflows: Denmark Strait, Faroe Bank Channel
 runArcTrans=0       # Arctic transports: Fram Strait, Bering Strait, Davis Strait, Barents Sea
 
-# VALGLO (Global metrics) NB. THESE ARE UNTESTED AND MIGHT BE BUGGY
+# DISABLED, SINCE IT IS NOT WORKING YET
+# VALGLO (Global metrics)
 # The VALGLO package also includes a number of metrics in other packages above.
-runMHT=0            # Atlantic(?) meridional heat transport
-runSIE=0            # Arctic sea ice extent
-runQHF=0            #
+#runMHT=0            # Atlantic(?) meridional heat transport
+#runSIE=0            # Arctic sea ice extent
+#runQHF=0            #
 
 ##### USER CHOICES END ######
 
@@ -89,21 +101,18 @@ if [[ $RUNVALSO == 1 || $RUNALL == 1 ]]; then
 fi
 if [[ $RUNVALNA == 1 || $RUNALL == 1 ]]; then
    runBSF_NA=1
-   runHTC=1
+   #runHTC=1
    runSTC=1
    runAMOC=1
-#   MHT metric only works if relevant diagnostic in model output
-#   runMHT=1
+   #runMHT=1 # if you want to use this, you need to explicitely activate it!
    runMLD_LabSea=1
    runSSS_LabSea=1
    runSST_NWCorner=1
-#   OVF metrics not yet working in merged version of Marine_Val
-#   runOVF=1
+#  Disabled since not yet working
+#  runOVF=1
    runGSL_NAC=1
    runMedOVF=1
-#   Because of observations, OSNAP metric should be computed only 
-#   using monthly outputs and for the 2014-2016 period.
-#   runOSNAP=1
+   #runOSNAP=1 # if you want to use this, you need to explicitely activate it!
 fi
 if [[ $RUNVALTRANS == 1 || $RUNALL == 1 ]]; then
    runITF=1
@@ -111,15 +120,17 @@ if [[ $RUNVALTRANS == 1 || $RUNALL == 1 ]]; then
    runNAtlOverflows=1
    runArcTrans=1
 fi
-if [[ $RUNVALGLO == 1 || $RUNALL == 1 ]]; then
-   runACC=1 
-   runAMOC=1
-   runMHT=1
-   runSIE=1
-   runQHF=1
-   runSST_NWCorner=1
-   runSST_SO=1
-fi
+
+# Disabled since it is not ready yet 
+# if [[ $RUNVALGLO == 1 || $RUNALL == 1 ]]; then
+#    runACC=1 
+#    runAMOC=1
+#    runMHT=1
+#    runSIE=1
+#    runQHF=1
+#    runSST_NWCorner=1
+#    runSST_SO=1
+# fi
    
 if [[ -z "$(conda env list | grep ^marval)" ]]
 then

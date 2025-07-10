@@ -250,7 +250,7 @@ for RUNID in `echo $RUNIDS`; do
             [[ $runHTC == 1 ]]           && run_tool mk_htc       $TAG $RUNID $FREQ $mooTyid
             [[ $runSTC == 1 ]]           && run_tool mk_stc       $TAG $RUNID $FREQ $mooTyid
             [[ $runGSL_NAC == 1 ]]       && run_tool mk_gsl_nac   $TAG $RUNID $FREQ $mooTyid
-            [[ $runOVF == 1 ]]           && run_tool mk_ovf       $TAG $RUNID $FREQ $mooTyid
+            #[[ $runOVF == 1 ]]           && run_tool mk_ovf       $TAG $RUNID $FREQ $mooTyid
             [[ $runMHT == 1 ]]     && run_tool mk_mht  $TAG $RUNID $FREQ $mooVyid:$mooVyid
             [[ $runQHF == 1 ]]     && run_tool mk_hfds $TAG $RUNID $FREQ $mooTyid 
             [[ $runMedOVF == 1 ]]   && run_tool mk_medovf $TAG $RUNID $FREQ $mooTyid
