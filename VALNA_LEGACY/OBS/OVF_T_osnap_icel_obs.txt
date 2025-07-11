@@ -1,4 +1,0 @@
-ref = OSNAP from nsv standardiser
-mean = 3.03233039
-std = 0.0182862
-# 2014-2016, Icelandic basin only

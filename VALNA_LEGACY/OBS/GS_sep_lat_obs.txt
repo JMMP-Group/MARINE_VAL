@@ -1,3 +1,0 @@
-ref = EN4 temperature
-mean = 37.2
-std = 0.4

@@ -1,4 +1,0 @@
-ref = OSNAP from nsv standardiser
-mean = 34.947037
-std = 0.00142154
-# 2014-2016, Irminger and Icelandic basins

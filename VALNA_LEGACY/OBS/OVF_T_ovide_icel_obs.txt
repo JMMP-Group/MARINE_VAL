@@ -1,4 +1,0 @@
-ref = OVIDE
-mean = 2.90064253
-std = 0.04285094
-# 6 years, 2002-2012, cropped to Icelandic basin
