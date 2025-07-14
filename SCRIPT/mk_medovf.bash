@@ -9,43 +9,59 @@ RUNID=$1
 TAG=$2
 FREQ=$3
 
-MIN_DEPTH=500
-MAX_DEPTH=1500
-LONMIN=-16.000
-LONMAX=-5.500
-LATMIN=31.500
-LATMAX=39.500
-
 RUN_NAME=${RUNID#*-}
+PROC='runMedOVF'
+OBS_DONE_FLAG="${SCRPATH}/.obs_done_MEDOVF"
+GENERATED_TMASKS=($(jq -r ".${PROC}[]" "${SCRPATH}/tmasks_generated.json"))
 
-### Obs ###
-FILEOUT=medovf
-if [ ! -f "${MARINE_VAL}/OBS/${FILEOUT}_salinity.txt" ]; then
-FILET="/data/users/nemo/obs_data/NOAA_WOA13v2/1955-2012/025/woa13v2.omip-clim.abs_sal.nc"
-MESHF="/data/users/nemo/obs_data/NOAA_WOA13v2/1955-2012/025/mesh_mask_woa13v2.nc"
-TIME_VAR='time'
-SALVAR='so_abs'
-VARTYPE='salinity'
-echo 'mk_medovf.bash: Calculate Obs Med Overflow salinity metrics.'
-python ${SCRPATH}/cal_deep_tracers_metrics.py -obs -lonmin $LONMIN -lonmax $LONMAX -latmin $LATMIN -latmax $LATMAX \
-    -mindepth $MIN_DEPTH -maxdepth $MAX_DEPTH -datadir $DATPATH/$RUNID -datf $FILET -meshf $MESHF \
-    -outf $FILEOUT -marvaldir $MARINE_VAL -timevar $TIME_VAR -salvar $SALVAR -vartype $VARTYPE \
-    -freq $FREQ
-if [[ $? -ne 0 ]]; then exit 42; fi 
+# Only run obs section if not already completed once
+if [[ ! -f $OBS_DONE_FLAG ]]; then
+   touch $OBS_DONE_FLAG
+
+   # Spatial filtering parameters
+   PATTERN="MEDOVF_obs-woa13v2"
+   for GEN_TMASK in "${GENERATED_TMASKS[@]}"; do
+      if [[ "$GEN_TMASK" == *"$PATTERN"* ]]; then
+         PARAMS=$(jq -c --arg tmask "$GEN_TMASK" '.[$tmask]' ${SCRPATH}/tmasks_all_params.json)
+         TMASK=$(echo "$PARAMS" | jq -r '.o')
+         MESHF=$(echo "$PARAMS" | jq -r '.m')
+
+         echo "Unpacking $GEN_TMASK parameters"
+         echo -e "TMASK=$TMASK \nMESHF=$MESHF"
+      fi
+   done
+
+    ### Obs ###
+    FILEOUT=nemo_${RUN_NAME}o_${FREQ}_${TAG}_${PATTERN}
+    FILET="/data/users/nemo/obs_data/NOAA_WOA13v2/1955-2012/025/orca025/woa13v2.omip-clim.abs_sal_gosi10p1-025_flooded.nc" 
+    echo 'mk_medovf.bash: Calculate Obs Med Overflow salinity metrics.'
+    python ${SCRPATH}/cal_deep_tracers_metrics.py -obs -datadir $DATPATH/$RUNID -datf $FILET -meshf $MESHF \
+        -outf $FILEOUT -marvaldir $MARINE_VAL -timevar time_counter -salvar so_abs \
+        -freq $FREQ -t $TMASK -obsout MEDOVF -obsref "NOAA_WOA13v2: 1955-2012"
+    if [[ $? -ne 0 ]]; then exit 42; fi
+
 fi
 
+# Spatial filtering parameters
+PATTERN="MEDOVF"
+for GEN_TMASK in "${GENERATED_TMASKS[@]}"; do
+   if [[ "$GEN_TMASK" == *"$PATTERN"* && "$GEN_TMASK" != *obs* ]]; then
+      PARAMS=$(jq -c --arg tmask "$GEN_TMASK" '.[$tmask]' ${SCRPATH}/tmasks_all_params.json)
+      TMASK=$(echo "$PARAMS" | jq -r '.o')
+      MESHF=$(echo "$PARAMS" | jq -r '.m')
+
+      echo "Unpacking $GEN_TMASK parameters"
+      echo -e "TMASK=$TMASK \nMESHF=$MESHF"
+   fi
+done
+
 ### Model ###
-FILEOUT=nemo_${RUN_NAME}o_${FREQ}_${TAG}_medovf
-FILET=`ls [nu]*${RUN_NAME}o_${FREQ}_${TAG}*_grid[-_]T.nc`
+FILEOUT=nemo_${RUN_NAME}o_${FREQ}_${TAG}_${PATTERN}
+FILET=`ls $DATPATH/$RUNID/[nu]*${RUN_NAME}o_${FREQ}_${TAG}*_grid[-_]T.nc`
 if [ ! -f $FILET ] ; then echo "$FILET is missing; exit"; echo "E R R O R in : ./mk_medovf.bash $@ (see SLURM/${CONFIG}/${RUNID}/mk_medovf_${FREQ}_${TAG}.out)" >> ${EXEPATH}/ERROR.txt ; exit 1 ; fi
-MESHF="${DATPATH}/${RUNID}/mesh.nc"
-TIME_VAR='time_counter'
-SALVAR='so_pra'
-VARTYPE='salinity'
 echo 'mk_medovf.bash: Calculate Model Med Overflow salinity metrics.'
-python ${SCRPATH}/cal_deep_tracers_metrics.py -lonmin $LONMIN -lonmax $LONMAX -latmin $LATMIN -latmax $LATMAX \
-    -mindepth $MIN_DEPTH -maxdepth $MAX_DEPTH -datadir $DATPATH/$RUNID -datf $FILET -meshf $MESHF \
-    -outf $FILEOUT -marvaldir $MARINE_VAL -timevar $TIME_VAR -salvar $SALVAR -vartype $VARTYPE \
-    -freq $FREQ
+python ${SCRPATH}/cal_deep_tracers_metrics.py -datadir $DATPATH/$RUNID -datf $FILET -meshf $MESHF \
+    -outf $FILEOUT -marvaldir $MARINE_VAL -timevar time_counter -salvar so_pra \
+    -freq $FREQ -t $TMASK
 if [[ $? -ne 0 ]]; then exit 42; fi 
 

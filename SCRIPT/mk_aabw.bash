@@ -9,39 +9,57 @@ RUNID=$1
 TAG=$2
 FREQ=$3
 
-MIN_DEPTH=500
-MAX_DEPTH=1500
-DENSITY_THRESHOLD=45.8 
-
 RUN_NAME=${RUNID#*-}
-FILEOUT=nemo_${RUN_NAME}o_${FREQ}_${TAG}_aabw
+PROC='runAABW'
+GENERATED_TMASKS=($(jq -r ".${PROC}[]" "${SCRPATH}/tmasks_generated.json"))
 FILET=`ls [nu]*${RUN_NAME}o_${FREQ}_${TAG}*_grid[-_]T.nc`
 if [ ! -f $FILET ] ; then echo "$FILET is missing; exit"; echo "E R R O R in : ./mk_aabw.bash $@ (see SLURM/${CONFIG}/${RUNID}/mk_aabw_${FREQ}_${TAG}.out)" >> ${EXEPATH}/ERROR.txt ; exit 1 ; fi
-MESHF="${DATPATH}/${RUNID}/mesh.nc"
+
 TIME_VAR='time_counter'
 SALVAR='so_pra'
 TEMPVAR='thetao_pot'
-VARTYPE='density'
-echo 'mk_aabw.bash: Calculate Model Antarctic bottom Water metrics.'
+DENSITY_THRESHOLD=45.88
 
 ### Weddell sea ###
-LONMIN=-65.500
-LONMAX=-20.000
-LATMIN=-90.000
-LATMAX=-24.000
-python ${SCRPATH}/cal_deep_tracers_metrics.py -lonmin $LONMIN -lonmax $LONMAX -latmin $LATMIN -latmax $LATMAX \
-    -mindepth $MIN_DEPTH -maxdepth $MAX_DEPTH -datadir $DATPATH/$RUNID -datf $FILET -meshf $MESHF \
-    -outf ${FILEOUT}_weddell -marvaldir $MARINE_VAL -vartype $VARTYPE -timevar $TIME_VAR -salvar $SALVAR \
-    -tempvar $TEMPVAR -freq $FREQ -densthresh $DENSITY_THRESHOLD
+echo 'mk_aabw.bash: Calculate Model Antarctic bottom Water metrics - Weddell sea.'
+# Spatial filtering parameters
+PATTERN="WEDATL"
+for GEN_TMASK in "${GENERATED_TMASKS[@]}"; do
+   if [[ "$GEN_TMASK" == *"$PATTERN"* && "$GEN_TMASK" != *obs* ]]; then
+      PARAMS=$(jq -c --arg tmask "$GEN_TMASK" '.[$tmask]' ${SCRPATH}/tmasks_all_params.json)
+      TMASK=$(echo "$PARAMS" | jq -r '.o')
+      MESHF=$(echo "$PARAMS" | jq -r '.m')
+
+      echo "Unpacking $GEN_TMASK parameters"
+      echo -e "TMASK=$TMASK \nMESHF=$MESHF"
+   fi
+done
+
+FILEOUT=nemo_${RUN_NAME}o_${FREQ}_${TAG}_${PATTERN}
+
+python ${SCRPATH}/cal_deep_tracers_metrics.py -datadir $DATPATH/$RUNID -datf $FILET -meshf $MESHF \
+    -outf ${FILEOUT}_weddell -marvaldir $MARINE_VAL -timevar $TIME_VAR -salvar $SALVAR \
+    -tempvar $TEMPVAR -freq $FREQ -densthresh $DENSITY_THRESHOLD -t $TMASK
 if [[ $? -ne 0 ]]; then exit 42; fi 
 
 ### Southern ocean ###
-LONMIN=-180
-LONMAX=180
-LATMIN=-90.000
-LATMAX=-24.000
-python ${SCRPATH}/cal_deep_tracers_metrics.py -lonmin $LONMIN -lonmax $LONMAX -latmin $LATMIN -latmax $LATMAX \
-    -mindepth $MIN_DEPTH -maxdepth $MAX_DEPTH -datadir $DATPATH/$RUNID -datf $FILET -meshf $MESHF \
-    -outf ${FILEOUT}_so -marvaldir $MARINE_VAL -vartype $VARTYPE -timevar $TIME_VAR -salvar $SALVAR \
-    -tempvar $TEMPVAR -freq $FREQ -densthresh $DENSITY_THRESHOLD
+echo 'mk_aabw.bash: Calculate Model Antarctic bottom Water metrics - Southern ocean.'
+# Spatial filtering parameters
+PATTERN="SOUTHERN_OCEAN"
+for GEN_TMASK in "${GENERATED_TMASKS[@]}"; do
+   if [[ "$GEN_TMASK" == *"$PATTERN"* && "$GEN_TMASK" != *obs* ]]; then
+      PARAMS=$(jq -c --arg tmask "$GEN_TMASK" '.[$tmask]' ${SCRPATH}/tmasks_all_params.json)
+      TMASK=$(echo "$PARAMS" | jq -r '.o')
+      MESHF=$(echo "$PARAMS" | jq -r '.m')
+
+      echo "Unpacking $GEN_TMASK parameters"
+      echo -e "TMASK=$TMASK \nMESHF=$MESHF"
+   fi
+done
+
+FILEOUT=nemo_${RUN_NAME}o_${FREQ}_${TAG}_${PATTERN}
+
+python ${SCRPATH}/cal_deep_tracers_metrics.py -datadir $DATPATH/$RUNID -datf $FILET -meshf $MESHF \
+    -outf ${FILEOUT}_so -marvaldir $MARINE_VAL -timevar $TIME_VAR -salvar $SALVAR \
+    -tempvar $TEMPVAR -freq $FREQ -densthresh $DENSITY_THRESHOLD -t $TMASK
 if [[ $? -ne 0 ]]; then exit 42; fi 
