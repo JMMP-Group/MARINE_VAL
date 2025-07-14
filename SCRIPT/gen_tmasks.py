@@ -70,8 +70,8 @@ domains = {
 }
 
 proc_tmask_map = {
-     "runAABW": [{**domain_params("WEDATL"), "mindepth": None, "maxdepth": None, "obs": None}, 
-                 {**domain_params("SOUTHERN_OCEAN"), "mindepth": None, "maxdepth": None, "obs": None}],
+     "runAABW": [{**domain_params("WEDATL"), "mindepth": 1500, "maxdepth": None, "obs": None}, 
+                 {**domain_params("SOUTHERN_OCEAN"), "mindepth": 1500, "maxdepth": None, "obs": None}],
      "runDEEPTS": [{**domain_params("AMU"), "mindepth": 390, "maxdepth": None, "obs": None}, 
                    {**domain_params("WROSS"), "mindepth": 390, "maxdepth": None, "obs": None}, 
                    {**domain_params("EROSS"), "mindepth": 390, "maxdepth": None, "obs": None},
