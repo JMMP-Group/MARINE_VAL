@@ -79,8 +79,6 @@ def filter_bathy_or_depth(array, mesh_data, args):
         mesh_var = 'bathy_metry' # 1206 x 1440 array, depth of the ocean floor in meters
         min_filter = args.min_isobath[0] if args.min_isobath else 0
         max_filter = args.max_isobath[0] if args.max_isobath else None
-
-    print(f"Var: {mesh_var}, min_filter: {min_filter}, max_filter: {max_filter}")
     
     depth = mesh_data[mesh_var][0] 
     MAX_VAL = np.nanmax(depth) 

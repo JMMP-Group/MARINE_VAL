@@ -39,7 +39,7 @@ FILEOUT=nemo_${RUN_NAME}o_${FREQ}_${TAG}_${PATTERN}
 
 python ${SCRPATH}/cal_deep_tracers_metrics.py -datadir $DATPATH/$RUNID -datf $FILET -meshf $MESHF \
     -outf ${FILEOUT}_weddell -marvaldir $MARINE_VAL -timevar $TIME_VAR -salvar $SALVAR \
-    -tempvar $TEMPVAR -freq $FREQ -densthresh $DENSITY_THRESHOLD -t $TMASK
+    -tempvar $TEMPVAR -freq $FREQ -densthresh $DENSITY_THRESHOLD -t $TMASK -obsout AABW_$PATTERN -obsref "Dummy $PATTERN obs"
 if [[ $? -ne 0 ]]; then exit 42; fi 
 
 ### Southern ocean ###
@@ -61,5 +61,5 @@ FILEOUT=nemo_${RUN_NAME}o_${FREQ}_${TAG}_${PATTERN}
 
 python ${SCRPATH}/cal_deep_tracers_metrics.py -datadir $DATPATH/$RUNID -datf $FILET -meshf $MESHF \
     -outf ${FILEOUT}_so -marvaldir $MARINE_VAL -timevar $TIME_VAR -salvar $SALVAR \
-    -tempvar $TEMPVAR -freq $FREQ -densthresh $DENSITY_THRESHOLD -t $TMASK
+    -tempvar $TEMPVAR -freq $FREQ -densthresh $DENSITY_THRESHOLD -t $TMASK -obsout AABW_$PATTERN -obsref "Dummy $PATTERN obs"
 if [[ $? -ne 0 ]]; then exit 42; fi 

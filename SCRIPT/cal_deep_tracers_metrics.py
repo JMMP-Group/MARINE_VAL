@@ -46,6 +46,8 @@ def load_argument():
             parser.error(f"'{args.salvar[0]}' is not valid. Use 'so_pra' for practical salinity, which is converted into absolute salinity.")
         if args.tempvar[0] != 'thetao_pot':
             parser.error(f"'{args.tempvar[0]}' is not valid. Use 'thetao_pot' for potential temperature, which is converted into conservative temperature.")
+        if not (args.obsout and args.obsref):
+            parser.error("For density calculations, to create dummy obs files, both -obsout (obs output prefix) and -obsref (obs reference) must be specified.")
 
     return args
 
@@ -68,13 +70,11 @@ def get_bounds(tmask, args):
     y_min, y_max = (y_min, y_max + 1) if y_max < tmask.sizes['y'] - 1 else (y_min, None)
     x_min, x_max = (x_min, x_max + 1) if x_max < tmask.sizes['x'] - 1 else (x_min, None)
 
-    print(f"z_min: {z_min}, z_max: {z_max}, y_min: {y_min}, y_max: {y_max}, x_min: {x_min}, x_max: {x_max}")
+    # print(f"z_min: {z_min}, z_max: {z_max}, y_min: {y_min}, y_max: {y_max}, x_min: {x_min}, x_max: {x_max}")
 
     args.z_range = [z_min, z_max]
     args.y_range = [y_min, y_max]
     args.x_range = [x_min, x_max]
-
-    print(f"z_range: {args.z_range}, y_range: {args.y_range}, x_range: {args.x_range}")
 
 def crop_grid(array, args, depth=False):
     """
@@ -96,13 +96,10 @@ def restore_grid(array_like, output, args):
     ''' Restore the 2D grid dimensions from the cropped array, for plotting.'''
 
     assert hasattr(args, 'x_range') and args.x_range is not None, "get_bounds must be called to set args.x_range"
-
     uncropped = xr.full_like(array_like.isel({args.timevar[0]: 0, args.depthvar[0]: 0}).expand_dims(dim={args.timevar[0]:[0]}), np.nan, dtype=np.float64)
     uncropped.loc[{'y': slice(args.y_range[0], args.y_range[1]), 'x': slice(args.x_range[0], args.x_range[1])}] = output
 
     return uncropped
-
-
 
 def calc_sigma4(data, tmask, mesh, args):
     
@@ -139,6 +136,12 @@ def calc_sigma4(data, tmask, mesh, args):
 
     # Restore original dimensions for plotting
     uncropped_volume = restore_grid(data[args.salvar[0]], cell_volume.mean(dim=args.timevar[0]).max(dim='nav_lev'), args)
+
+    # Create dummy observations files
+    with open(f"{args.marvaldir[0]}/OBS/{args.obsout[0]}_{args.diagvar.lower()}.txt", "w") as f:
+        f.write(f"ref = Volume of {args.diagvar.lower()} {args.obsref[0]}\n")
+        f.write(f"mean = {total_volume.sigma4Vol.values}\n")
+        f.write(f"std = {1e-5 * total_volume.sigma4Vol.values}\n")
 
     return [uncropped_volume]
 
@@ -209,6 +212,7 @@ def plot_map(output, mesh, args, i):
     lat_grid, lon_grid = ('nav_lat', 'nav_lon') if 'nav_lat' in list(mesh.variables.keys()) else ('lat', 'lon')
     cmaps = ["cividis","plasma"]  
 
+    # Extract bounds for projection and extent
     lon_slice = crop_grid(mesh[lon_grid], args, depth=False)
     lat_slice = crop_grid(mesh[lat_grid], args, depth=False)
     lon_min = lon_slice.min()
@@ -218,6 +222,7 @@ def plot_map(output, mesh, args, i):
 
     # print(f"lon_min: {lon_min}, lon_max: {lon_max}, lat_min: {lat_min}, lat_max: {lat_max}")
     
+    # Set projection
     if lat_max <= 60 and lat_min <= -60:
         projection = ccrs.SouthPolarStereo()
     elif lat_max >= 60 and lat_min >= -60:
@@ -225,27 +230,28 @@ def plot_map(output, mesh, args, i):
     else:
         projection = ccrs.PlateCarree()
 
+    # Set title
+    tmask_depths = args.tmask[0].split('/')[-1].split('.')[0].split('_')
+    mindepth = next((chunk.split('-')[1] for chunk in tmask_depths if 'mindepth' in chunk), None)
+    maxdepth = next((chunk.split('-')[1] for chunk in tmask_depths if 'maxdepth' in chunk), None)
+    title = f"Obs " if args.obs else "Model "
+    title = f"Depth of {title.lower()}" if i==1 else title
     if (args.salvar and args.tempvar):
-        title = f"Density anomaly for sigma4 density > {args.densthresh[0]} \nat {args.time_counter[0]}" 
+        title += f"{args.diagvar} > {args.densthresh[0]} anomaly "
     else:
-        tmask_depths = args.tmask[0].split('/')[-1].split('.')[0].split('_')
-        print(f"Tmask depths: {tmask_depths}")
-        mindepth = next((chunk.split('-')[1] for chunk in tmask_depths if 'mindepth' in chunk), None)
-        maxdepth = next((chunk.split('-')[1] for chunk in tmask_depths if 'maxdepth' in chunk), None)
-        print(f"mindepth: {mindepth}, maxdepth: {maxdepth}")
-        title = f"Obs " if args.obs else "Model "
-        title = f"Depth of {title.lower()}" if i==1 else title
-        if (mindepth and maxdepth):
-            title += f"{args.diagvar} anomaly for depths between {mindepth}m - {maxdepth}m "
-        elif mindepth:
-            title += f"{args.diagvar} anomaly for depths above {mindepth}m "
-        elif maxdepth:
-            title += f"{args.diagvar} anomaly for depths below {maxdepth}m "
-        else:
-            title += f"{args.diagvar} anomaly for all depths "
+        title += f"{args.diagvar} anomaly "
+    if (mindepth and maxdepth):
+        title += f"for depths between {mindepth}m - {maxdepth}m "
+    elif mindepth:
+        title += f"for depths greater than {mindepth}m "
+    elif maxdepth:
+        title += f"for depths less than {maxdepth}m "
+    else:
+        title += f"for all depths "
 
-        title += f"\naveraged over {args.obsref[0].split(' ')[-1]}" if args.obs else f"\nat {args.time_counter[0]}"
+    title += f"\naveraged over {args.obsref[0].split(' ')[-1]}" if args.obs else f"\nat {args.time_counter[0]}"
 
+    # Configure the plot
     fig, ax = plt.subplots(figsize=(10, 10), subplot_kw={'projection': projection})
     fig.suptitle(title, fontsize=16, fontweight='bold')
     ax.set_extent([lon_min - pad, lon_max + pad, lat_min - pad, lat_max + pad], crs=ccrs.PlateCarree())
@@ -267,8 +273,6 @@ def main():
     args.depthvar = [next(d for d in depth_vars if d in xr.open_dataset(args.datf[0], decode_times=False).dims)]
     decode_times = False if args.obs else True
     drop_variables = None if args.depthvar[0] == 'nav_lev' else [args.depthvar[0]]
-
-    print(f"args.depthvar: {args.depthvar}, args.depthvar[0]: {args.depthvar[0]}")
 
     ### Load data ###
     # Load and prepare tmask
@@ -295,8 +299,6 @@ def main():
     # Plot outputs
     for i, df in enumerate(outputs):
         plot_map(df, mesh, args, i)
-
-    print(f"Plotting completed.")
 
 if __name__=="__main__":
     main()
