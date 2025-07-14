@@ -62,7 +62,7 @@ fi
 RUN_NAME=${RUNID#*-}
 
 # Spatial filtering parameters
-PATTERN="tmask_NA_GYRE"
+PATTERN="NA_GYRE"
 for GEN_TMASK in "${GENERATED_TMASKS[@]}"; do
    if [[ "$GEN_TMASK" == *"$PATTERN"* && "$GEN_TMASK" != *obs* ]]; then
       PARAMS=$(jq -c --arg tmask "$GEN_TMASK" '.[$tmask]' ${SCRPATH}/tmasks_all_params.json)
