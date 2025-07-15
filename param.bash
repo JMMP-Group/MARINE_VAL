@@ -30,6 +30,10 @@ export SCRPATH=${MARINE_VAL}/SCRIPT/
 # (working dir for $RUNID = $DATPATH/$RUNID)
 export DATPATH=${DATADIR}/MARINE_VAL/
 
+# Observations
+export OBSPATH=YOUR/LOCAL/PATH/OBS_PATH_DIR
+export runOBS=1      # run observations for HTC, STC and MEDOVF
+
 RUNALL=0       # run all possible metrics
 
 # diagnostics bundles

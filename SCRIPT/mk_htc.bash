@@ -13,6 +13,9 @@ PROC='runHTC'
 OBS_DONE_FLAG="${SCRPATH}/.obs_done_HTC"
 GENERATED_TMASKS=($(jq -r ".${PROC}[]" "${SCRPATH}/tmasks_generated.json"))
 
+# Only run obs section if runOBS is set
+if [[ "$runOBS" != "1" ]]; then touch $OBS_DONE_FLAG; fi
+
 # Only run obs section if not already completed once
 if [[ ! -f $OBS_DONE_FLAG ]]; then
    touch $OBS_DONE_FLAG

@@ -45,13 +45,14 @@ print(f"Loaded environment variables from param.bash: \n{processes}\n")
 
 run_path = os.path.join(os.environ['DATPATH'], args.runid[0])
 mesh_path = os.path.join(run_path, 'mesh.nc')
-obs_path = "/data/users/nemo/obs_data/NOAA_WOA13v2/1955-2012/025/orca025"
-obs_meshf = "mesh_mask_eORCA025_v3.2_r42.nc"
-obs_mesh_path = os.path.join(run_path, obs_meshf)
 
-if not os.path.exists(obs_mesh_path):
-    print(f"Linking files: \n{os.path.join(obs_path, obs_meshf)}\n--> {obs_mesh_path}")
-    os.symlink(os.path.join(obs_path, obs_meshf), obs_mesh_path)
+if int(os.environ['runOBS']) == 1:
+    obs_meshf = os.path.basename(os.environ['OBSPATH']) 
+    obs_mesh_path = os.path.join(run_path, obs_meshf)
+
+    if not os.path.exists(obs_mesh_path):
+        print(f"Linking files: \n{os.environ['OBSPATH']}\n--> {obs_mesh_path}")
+        os.symlink(os.environ['OBSPATH'], obs_mesh_path)
 
 domains = {
       "AMU": {"W": -109.640, "E": -102.230, "S": -75.800, "N": -71.660, "tlon": -106, "tlat": -74},
@@ -99,6 +100,9 @@ naming_params_order = ('obs', 'mindepth', 'minisobath', 'maxdepth', 'maxisobath'
 for proc, tmask_list in proc_tmask_map.items():
      proc_tmasks_generated = []
      for params in tmask_list:
+          if int(os.environ['runOBS']) != 1 and params['obs'] is not None:
+               print(f"Skipping {proc} for obs {params['obs']} as runOBS is not set.")
+               continue
           if ('mindepth' in params or 'maxdepth' in params) and ('minisobath' in params or 'maxisobath' in params):
                raise ValueError(f"{proc}: Specify either depth constraints (mindepth/maxdepth) OR isobath constraints (minisobath/maxisobath), not both.")
           tmask_fname = '_'.join(['tmask', params['o']] + [f"{k}-{params[k]}" for k in naming_params_order if k in params and params[k] is not None]) + '.nc'
@@ -115,8 +119,11 @@ for proc, tmask_list in proc_tmask_map.items():
                print(f"param_string: {param_str}")
                proc_tmasks_generated.append(tmask_fname)
                start_time = time.time()
-               subprocess.run(["python", os.path.join(os.environ["SCRPATH"], "tmask_zoom.py"), *param_str.split()])
+               jobout = subprocess.run(["python", os.path.join(os.environ["SCRPATH"], "tmask_zoom.py"), *param_str.split()], capture_output=True, text=True)
                elapsed = time.time() - start_time
+               print(jobout.stdout)
+               if jobout.stderr:
+                   print(jobout.stderr)
                print(f"{tmask_fname} generated in {elapsed:.2f} seconds.\n")
           elif proc not in processes.keys():
                print(f"{proc} not found in param.bash\n")
