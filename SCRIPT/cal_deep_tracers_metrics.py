@@ -135,7 +135,9 @@ def calc_sigma4(data, tmask, mesh, args):
     total_volume.to_netcdf(f"{args.datadir[0]}/{args.outf[0]}_density_volume.nc")
 
     # Restore original dimensions for plotting
-    uncropped_volume = restore_grid(data[args.salvar[0]], cell_volume.mean(dim=args.timevar[0]).max(dim='nav_lev'), args)
+    cell_volume = cell_volume.mean(dim=args.timevar[0]).sum(dim='nav_lev')
+    cell_volume = cell_volume.where(cell_volume > 0, np.nan)
+    uncropped_volume = restore_grid(data[args.salvar[0]], cell_volume, args)
 
     # Create dummy observations files
     with open(f"{args.marvaldir[0]}/OBS/{args.obsout[0]}_{args.diagvar.lower()}.txt", "w") as f:
@@ -237,7 +239,7 @@ def plot_map(output, mesh, args, i):
     title = f"Obs " if args.obs else "Model "
     title = f"Depth of {title.lower()}" if i==1 else title
     if (args.salvar and args.tempvar):
-        title += f"{args.diagvar} > {args.densthresh[0]} anomaly "
+        title += f"volume of {args.diagvar} > {args.densthresh[0]} "
     else:
         title += f"{args.diagvar} anomaly "
     if (mindepth and maxdepth):

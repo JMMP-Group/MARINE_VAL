@@ -32,7 +32,7 @@ if [[ ! -f $OBS_DONE_FLAG ]]; then
    done
 
     ### Obs ###
-    FILEOUT=nemo_${RUN_NAME}o_${FREQ}_${TAG}_${PATTERN}
+    FILEOUT=obs_${RUN_NAME}o_${FREQ}_${PATTERN}
     FILET="/data/users/nemo/obs_data/NOAA_WOA13v2/1955-2012/025/orca025/woa13v2.omip-clim.abs_sal_gosi10p1-025_flooded.nc" 
     echo 'mk_medovf.bash: Calculate Obs Med Overflow salinity metrics.'
     python ${SCRPATH}/cal_deep_tracers_metrics.py -obs -datadir $DATPATH/$RUNID -datf $FILET -meshf $MESHF \
