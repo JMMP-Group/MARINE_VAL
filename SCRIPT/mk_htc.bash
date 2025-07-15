@@ -13,6 +13,9 @@ PROC='runHTC'
 OBS_DONE_FLAG="${SCRPATH}/.obs_done_HTC"
 GENERATED_TMASKS=($(jq -r ".${PROC}[]" "${SCRPATH}/tmasks_generated.json"))
 
+# Only run obs section if runOBS is set
+if [[ "$runOBS" != "1" ]]; then touch $OBS_DONE_FLAG; fi
+
 # Only run obs section if not already completed once
 if [[ ! -f $OBS_DONE_FLAG ]]; then
    touch $OBS_DONE_FLAG
@@ -44,8 +47,6 @@ if [[ ! -f $OBS_DONE_FLAG ]]; then
    # while having always consistent observational values
 
    echo 'mk_htc.bash: Calculate Obs Heat content SPG NA metrics.'
-
-   OBSPATH="/data/users/nemo/obs_data/NOAA_WOA13v2/1955-2012/025/orca025"
    FILET="${OBSPATH}/woa13v2.omip-clim.con_tem_gosi10p1-025_flooded.nc"
 
    # calculate heat content of NA subpolar gyre --> area of heat content for each layer
@@ -62,7 +63,7 @@ fi
 RUN_NAME=${RUNID#*-}
 
 # Spatial filtering parameters
-PATTERN="tmask_NA_GYRE"
+PATTERN="NA_GYRE"
 for GEN_TMASK in "${GENERATED_TMASKS[@]}"; do
    if [[ "$GEN_TMASK" == *"$PATTERN"* && "$GEN_TMASK" != *obs* ]]; then
       PARAMS=$(jq -c --arg tmask "$GEN_TMASK" '.[$tmask]' ${SCRPATH}/tmasks_all_params.json)

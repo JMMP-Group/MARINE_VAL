@@ -12,12 +12,19 @@ def load_argument():
     parser.add_argument("-S", "--south", dest="south", metavar="southern limit", help="southern limit of the domain", type=float, nargs=1, required=True)
     parser.add_argument("-N", "--north", dest="north", metavar="northern limit", help="northern limit of the domain", type=float, nargs=1, required=True)
     parser.add_argument("-m", "--mesh", dest="mesh", metavar="mesh file", help="the mesh file to work from", type=str, nargs=1 , required=True)
-    parser.add_argument("-mindepth", metavar="depth constraint", help="min depth limit of the domain", type=float, nargs=1, required=False, default=[0.0])
-    parser.add_argument("-maxdepth", metavar="depth constraint", help="max depth limit of the domain", type=float, nargs=1, required=False)
+    parser.add_argument("-mindepth", dest="min_depth", metavar="depth constraint", help="min depth limit of the domain", type=float, nargs=1, required=False)
+    parser.add_argument("-maxdepth", dest="max_depth", metavar="depth constraint", help="max depth limit of the domain", type=float, nargs=1, required=False)
+    parser.add_argument("-minisobath", dest="min_isobath", metavar="isobath constraint", help="min isobath limit of the domain", type=float, nargs=1, required=False)
+    parser.add_argument("-maxisobath", dest="max_isobath", metavar="isobath constraint", help="max isobath limit of the domain", type=float, nargs=1, required=False)
     parser.add_argument("-tlon, --target_lon", dest="target_lon", metavar="target longitude", help="longitude which should be present in the largest cluster", type=float, nargs=1, required=True)
     parser.add_argument("-tlat, --target_lat", dest="target_lat", metavar="target latitude", help="latitude which should be present in the largest cluster", type=float, nargs=1, required=True)
     parser.add_argument("-o, --outf", dest="outf", metavar="output file", help="name of output file", type=str, nargs=1, required=True)
-    return parser.parse_args()
+    args = parser.parse_args()
+
+    if (args.min_depth or args.max_depth) and (args.min_isobath or args.max_isobath):
+        parser.error("Specify either depth constraints (-mindepth/-maxdepth) OR isobath constraints (-minisobath/-maxisobath), not both.")
+    
+    return args
 
 def filter_lat_lon(array, mesh_data, args):
     """
@@ -42,13 +49,17 @@ def filter_lat_lon(array, mesh_data, args):
        lon_grid = mesh_data['nav_lon'].values # 1206 x 1440 array, longitudes of each grid point
     else:
        lon_grid = mesh_data['glamt'].squeeze().values
-       lat_grid = mesh_data['gphit'].squeeze().values    
+       lat_grid = mesh_data['gphit'].squeeze().values
+
+    TARGET_J, TARGET_I = get_ij_from_lon_lat(args.target_lon[0], args.target_lat[0], lon_grid, lat_grid)
+    args.target_j = TARGET_J
+    args.target_i = TARGET_I
 
     domain_mask = (lat_grid >= args.south[0]) & (lat_grid <= args.north[0]) & (lon_grid >= args.west[0]) & (lon_grid <= args.east[0]) # 1206 x 1440 array, boolean mask for a given domain
-    
+
     return array.where(domain_mask, 0)
 
-def filter_depth(array, mesh_data, args):
+def filter_bathy_or_depth(array, mesh_data, args):
     """
     Filters the depth values from the arguments.
 
@@ -60,20 +71,28 @@ def filter_depth(array, mesh_data, args):
     Returns:
     xr.array: Masked array.
     """
-    MAXDEPTH = np.nanmax(mesh_data['gdept_0'])
-    bathymetry = mesh_data['bathy_metry'][0] # 1206 x 1440 array, depth of the ocean floor in meters
+    if (args.min_depth or args.max_depth):
+        mesh_var = 'gdept_0' # 75 x 1206 x 1440 array, depth in meters
+        min_filter = args.min_depth[0] if args.min_depth else 0
+        max_filter = args.max_depth[0] if args.max_depth else None
+    elif (args.min_isobath or args.max_isobath):
+        mesh_var = 'bathy_metry' # 1206 x 1440 array, depth of the ocean floor in meters
+        min_filter = args.min_isobath[0] if args.min_isobath else 0
+        max_filter = args.max_isobath[0] if args.max_isobath else None
+    
+    depth = mesh_data[mesh_var][0] 
+    MAX_VAL = np.nanmax(depth) 
+    assert 0 <= min_filter <= MAX_VAL, f"Minimum depth value must be between 0 and {MAX_VAL:.3f}"
+    depth_mask = (depth >= min_filter)
 
-    assert 0 <= args.mindepth[0] <= MAXDEPTH, f"Minimum depth value must be between 0 and {MAXDEPTH:.3f}"
-    depth_mask = (bathymetry >= args.mindepth[0]) # 1206 x 1440 array, boolean mask for a given depth 
-
-    if args.maxdepth:
-        assert 0 <= args.maxdepth[0] <= MAXDEPTH, f"Maximum depth value must be between 0 and {MAXDEPTH:.3f}"
-        assert args.maxdepth[0] > args.mindepth[0], "Maximum depth value must be greater than minimum depth value"
-        depth_mask &= (bathymetry <= args.maxdepth[0])
+    if max_filter:
+        assert 0 <= max_filter <= MAX_VAL, f"Maximum depth value must be between 0 and {MAX_VAL:.3f}"
+        assert max_filter > min_filter, "Maximum depth value must be greater than minimum depth value"
+        depth_mask &= (depth <= max_filter)
 
     return array.where(depth_mask, 0) 
 
-def filter_largest_cluster(array, mesh_data, args):
+def filter_largest_cluster(array, args):
     """
     Retains only the largest cluster of non-zero values for each 2D array representation of a vertical level.
 
@@ -85,13 +104,6 @@ def filter_largest_cluster(array, mesh_data, args):
     Returns:
     xr.array: 4D array with only the largest cluster of non-zero values retained.
     """
-    if "nav_lon" in mesh_data.variables:
-       lon = mesh_data['nav_lon'].values # 1206 x 1440 array, longitudes of each grid point
-       lat = mesh_data['nav_lat'].values # 1206 x 1440 array, latitudes of each grid point
-    else:
-       lon = mesh_data['glamt'].squeeze().values
-       lat = mesh_data['gphit'].squeeze().values
-    TARGET_J, TARGET_I = get_ij_from_lon_lat(args.target_lon[0], args.target_lat[0], lon, lat) 
     
     for t in range(array.shape[0]):
         for olevel in range(array.shape[1]):
@@ -105,8 +117,8 @@ def filter_largest_cluster(array, mesh_data, args):
             largest_cluster_mask = (labeled_array == np.argmax(cluster_sizes) + 1) # 1206 x 1440 array, boolean mask for the largest cluster
             array[t,olevel,:,:] = array[t,olevel,:,:].where(largest_cluster_mask, 0) # 1 x 75 x 1206 x 1440 array, 0 for all values outside the largest cluster
 
-            if not largest_cluster_mask[TARGET_J, TARGET_I]:
-                print(f"WARNING: Target grid point (J={TARGET_J}, I={TARGET_I}) is outside the bounds of the largest cluster in olevel={olevel}.")
+            if not largest_cluster_mask[args.target_j, args.target_i]:
+                print(f"WARNING: Target grid point (J={args.target_j}, I={args.target_i}) is outside the bounds of the largest cluster in olevel={olevel}.")
             
     return array
 
@@ -117,8 +129,9 @@ def main():
     mesh_data = xr.open_dataset(args.mesh[0])
     tmask = mesh_data['tmask'] # 1 x 75 x 1206 x 1440 array, 1 for ocean, 0 for land
     masked_tmask = filter_lat_lon(tmask, mesh_data, args) # 1 x 75 x 1206 x 1440 array, 0 for all values outside the domain
-    masked_tmask = filter_depth(masked_tmask, mesh_data, args) # 1 x 75 x 1206 x 1440 array, 0 for all values below the depth threshold
-    masked_tmask = filter_largest_cluster(masked_tmask, mesh_data, args) # 1 x 75 x 1206 x 1440 array, 0 for all values outside the largest cluster
+    if (args.min_depth or args.max_depth or args.min_isobath or args.max_isobath):
+        masked_tmask = filter_bathy_or_depth(masked_tmask, mesh_data, args) # 1 x 75 x 1206 x 1440 array, 0 for all values below the depth threshold
+    masked_tmask = filter_largest_cluster(masked_tmask, args) # 1 x 75 x 1206 x 1440 array, 0 for all values outside the largest cluster
     masked_tmask = masked_tmask.squeeze() # 75 x 1206 x 1440 array, removes the first dimension
     masked_tmask.to_netcdf(args.outf[0])
 

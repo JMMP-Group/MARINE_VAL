@@ -13,6 +13,9 @@ PROC='runSTC'
 OBS_DONE_FLAG="${SCRPATH}/.obs_done_STC"
 GENERATED_TMASKS=($(jq -r ".${PROC}[]" "${SCRPATH}/tmasks_generated.json"))
 
+# Only run obs section if runOBS is set
+if [[ "$runOBS" != "1" ]]; then touch $OBS_DONE_FLAG; fi
+
 # Only run obs section if not already completed once
 if [[ ! -f $OBS_DONE_FLAG ]]; then
    touch $OBS_DONE_FLAG
@@ -44,8 +47,6 @@ if [[ ! -f $OBS_DONE_FLAG ]]; then
    # while having always consistent observational values
 
    echo 'mk_stc.bash: Calculate Obs Salt content SPG NA metrics.'
-
-   OBSPATH="/data/users/nemo/obs_data/NOAA_WOA13v2/1955-2012/025/orca025"
    FILET="${OBSPATH}/woa13v2.omip-clim.abs_sal_gosi10p1-025_flooded.nc"
 
    # calculate salt content of NA subpolar gyre
