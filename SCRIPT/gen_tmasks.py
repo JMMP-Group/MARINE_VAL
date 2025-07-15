@@ -47,12 +47,16 @@ run_path = os.path.join(os.environ['DATPATH'], args.runid[0])
 mesh_path = os.path.join(run_path, 'mesh.nc')
 
 if int(os.environ['runOBS']) == 1:
-    obs_meshf = os.path.basename(os.environ['OBSPATH']) 
+    obs_meshf = os.environ['OBS_MESH']
     obs_mesh_path = os.path.join(run_path, obs_meshf)
 
     if not os.path.exists(obs_mesh_path):
-        print(f"Linking files: \n{os.environ['OBSPATH']}\n--> {obs_mesh_path}")
-        os.symlink(os.environ['OBSPATH'], obs_mesh_path)
+        print(f"Linking files: \n{os.path.join(os.environ['OBSPATH'], obs_meshf)}\n--> {obs_mesh_path}")
+        os.symlink(os.path.join(os.environ['OBSPATH'], obs_meshf), obs_mesh_path)
+
+#########################################################################################################################################
+###                                 User Params                                                                                       ###
+#########################################################################################################################################
 
 domains = {
       "AMU": {"W": -109.640, "E": -102.230, "S": -75.800, "N": -71.660, "tlon": -106, "tlat": -74},
@@ -92,6 +96,10 @@ proc_tmask_map = {
      "runSTC": [{**domain_params("NA_GYRE"), "minisobath": 1000, "maxisobath": None, "obs": None},
                 {**domain_params("NA_GYRE"), "minisobath": 1000, "maxisobath": None, "obs": 'woa13v2'}],
 }
+
+#########################################################################################################################################
+
+#########################################################################################################################################
 
 all_tmask_params = {}
 tmasks_generated = {}

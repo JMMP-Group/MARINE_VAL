@@ -47,8 +47,6 @@ if [[ ! -f $OBS_DONE_FLAG ]]; then
    # while having always consistent observational values
 
    echo 'mk_stc.bash: Calculate Obs Salt content SPG NA metrics.'
-
-   OBSPATH="/data/users/nemo/obs_data/NOAA_WOA13v2/1955-2012/025/orca025"
    FILET="${OBSPATH}/woa13v2.omip-clim.abs_sal_gosi10p1-025_flooded.nc"
 
    # calculate salt content of NA subpolar gyre

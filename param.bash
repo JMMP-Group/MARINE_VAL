@@ -32,6 +32,7 @@ export DATPATH=${DATADIR}/MARINE_VAL/
 
 # Observations
 export OBSPATH=YOUR/LOCAL/PATH/OBS_PATH_DIR
+export OBS_MESH=your_obs_mesh_file.nc
 export runOBS=1      # run observations for HTC, STC and MEDOVF
 
 RUNALL=0       # run all possible metrics

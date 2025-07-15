@@ -47,8 +47,6 @@ if [[ ! -f $OBS_DONE_FLAG ]]; then
    # while having always consistent observational values
 
    echo 'mk_htc.bash: Calculate Obs Heat content SPG NA metrics.'
-
-   OBSPATH="/data/users/nemo/obs_data/NOAA_WOA13v2/1955-2012/025/orca025"
    FILET="${OBSPATH}/woa13v2.omip-clim.con_tem_gosi10p1-025_flooded.nc"
 
    # calculate heat content of NA subpolar gyre --> area of heat content for each layer
