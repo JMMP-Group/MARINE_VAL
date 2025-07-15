@@ -35,6 +35,9 @@ export OBSPATH=YOUR/LOCAL/PATH/OBS_PATH_DIR
 export OBS_MESH=your_obs_mesh_file.nc
 export runOBS=1      # run observations for HTC, STC and MEDOVF
 
+# Retrieve data from MASS
+runRETRIEVE_DATA=0  # Set to 1 to retrieve data from MASS, 0 if you have previously downloaded the data
+
 RUNALL=0       # run all possible metrics
 
 # diagnostics bundles

@@ -65,7 +65,10 @@ run_tool() {
    shift `expr $OPTIND - 1`  
    # echo "run_tool running $TOOL $flags $1 $2 $3"
    sbatchschopt='--wait ' #--qos=long '  
-   sbatchrunopt="--dependency=afterany:${tmasks_sbatch}:${@:4} --job-name=P$$_${TOOL}_${1}_${2} --output=${JOBOUT_PATH}/${TOOL}${jobtag}_${3}_${1}.out"
+   sbatchrunopt="--dependency=afterany:${tmasks_sbatch} --job-name=P$$_${TOOL}_${1}_${2} --output=${JOBOUT_PATH}/${TOOL}${jobtag}_${3}_${1}.out"
+   if [[ -n "${@:4}" && "${@:4}" != ":" ]]; then
+      sbatchrunopt=$(echo "$sbatchrunopt" | sed "s/--dependency=afterany:/--dependency=afterany:${@:4}:/")
+   fi
    exit_code=1
    
    while [[ "$exit_code" != "0" ]];do
@@ -208,13 +211,16 @@ for RUNID in `echo $RUNIDS`; do
          then
 
          echo "TAG_LIST : $TAG_LIST"
-         # get data (retrieve_data function is defined in this script)
-         moo_wait
-         [[ $runTRP == 1 || $runBSF == 1 || $runMOC == 1 || $runMHT == 1  ]] && mooVyid=$(retrieve_data $RUNID $FREQ grid-V $TAG_LIST)
-         moo_wait
-         [[ $runTRP == 1 || $runBSF == 1 || $runMOC == 1 ]] && mooUyid=$(retrieve_data $RUNID $FREQ grid-U $TAG_LIST)
-         moo_wait
-         [[ $runTRP == 1 || $runQHF == 1 || $runTS == 1 || $runMOC == 1 || $runHTC == 1 || $runSTC == 1 || $runGSL_NAC == 1 || $runMHT == 1 || $runQHF == 1 || $runMedOVF == 1 || $runAABW == 1 ]] && mooTyid=$(retrieve_data $RUNID $FREQ grid-T $TAG_LIST)
+
+         if [[ $runRETRIEVE_DATA == 1 ]]; then
+            # get data (retrieve_data function is defined in this script)
+            moo_wait
+            [[ $runTRP == 1 || $runBSF == 1 || $runMOC == 1 || $runMHT == 1  ]] && mooVyid=$(retrieve_data $RUNID $FREQ grid-V $TAG_LIST)
+            moo_wait
+            [[ $runTRP == 1 || $runBSF == 1 || $runMOC == 1 ]] && mooUyid=$(retrieve_data $RUNID $FREQ grid-U $TAG_LIST)
+            moo_wait
+            [[ $runTRP == 1 || $runQHF == 1 || $runTS == 1 || $runMOC == 1 || $runHTC == 1 || $runSTC == 1 || $runGSL_NAC == 1 || $runMHT == 1 || $runQHF == 1 || $runMedOVF == 1 || $runAABW == 1 ]] && mooTyid=$(retrieve_data $RUNID $FREQ grid-T $TAG_LIST)
+         fi
 
          echo "mooTyid : $mooTyid"
          echo "mooUyid : $mooUyid"
