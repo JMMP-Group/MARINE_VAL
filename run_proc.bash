@@ -66,7 +66,7 @@ run_tool() {
    # echo "run_tool running $TOOL $flags $1 $2 $3"
    sbatchschopt='--wait ' #--qos=long '  
    sbatchrunopt="--dependency=afterany:${tmasks_sbatch} --job-name=P$$_${TOOL}_${1}_${2} --output=${JOBOUT_PATH}/${TOOL}${jobtag}_${3}_${1}.out"
-   if [[ -n "${@:4}" && "${@:4}" != ":" ]]; then
+   if [[ -n "${@:4}" && "${@:4}" != ":" && "${@:4}" != "::" ]]; then
       sbatchrunopt=$(echo "$sbatchrunopt" | sed "s/--dependency=afterany:/--dependency=afterany:${@:4}:/")
    fi
    exit_code=1
