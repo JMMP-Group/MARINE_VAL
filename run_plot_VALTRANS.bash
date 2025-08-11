@@ -41,27 +41,27 @@ if [[ $? -ne 0 ]]; then exit 42; fi
 
 ## Lombok Strait
 echo 'plot Lombok Strait time series'
-python ${SCRPATH}/plot_time_series.py -noshow -runid $RUNIDS -f *LombokStrait*${FREQ}*1.nc -var ptrp  -title "Lombok Strait inflow (Sv)" -dir ${DATPATH} -o "${KEY}_LombokStrait" -obs OBS/LombokStrait_obs.txt -force_zero_origin
+python ${SCRPATH}/plot_time_series.py -noshow -runid $RUNIDS -f *LombokStrait*${FREQ}*1.nc -var ptrp  -title "Lombok Strait outflow (Sv)" -dir ${DATPATH} -o "${KEY}_LombokStrait" -obs OBS/LombokStrait_obs.txt -force_zero_origin
 if [[ $? -ne 0 ]]; then exit 42; fi
 
 ## Ombai Strait
 echo 'plot Ombai Strait time series'
-python ${SCRPATH}/plot_time_series.py -noshow -runid $RUNIDS -f *OmbaiStrait*${FREQ}*1.nc -var mtrp -sf -1 -title "Ombai Strait inflow (Sv)" -dir ${DATPATH} -o "${KEY}_OmbaiStrait" -obs OBS/OmbaiStrait_obs.txt -force_zero_origin
+python ${SCRPATH}/plot_time_series.py -noshow -runid $RUNIDS -f *OmbaiStrait*${FREQ}*1.nc -var mtrp -sf -1 -title "Ombai Strait outflow (Sv)" -dir ${DATPATH} -o "${KEY}_OmbaiStrait" -obs OBS/OmbaiStrait_obs.txt -force_zero_origin
 if [[ $? -ne 0 ]]; then exit 42; fi
 
 ## Timor Passage
 echo 'plot Timor Passage time series'
-python ${SCRPATH}/plot_time_series.py -noshow -runid $RUNIDS -f *TimorPassage*${FREQ}*1.nc -var mtrp -sf -1 -title "Timor Passage inflow (Sv)" -dir ${DATPATH} -o "${KEY}_TimorPassage" -obs OBS/TimorPassage_obs.txt -force_zero_origin
+python ${SCRPATH}/plot_time_series.py -noshow -runid $RUNIDS -f *TimorPassage*${FREQ}*1.nc -var mtrp -sf -1 -title "Timor Passage outflow (Sv)" -dir ${DATPATH} -o "${KEY}_TimorPassage" -obs OBS/TimorPassage_obs.txt -force_zero_origin
 if [[ $? -ne 0 ]]; then exit 42; fi
 
-## Bering Strait - mtrp, ptrp, or something else?
+## Bering Strait - northward transport = mtrp in this case
 echo 'plot Bering Strait time series'
-python ${SCRPATH}/plot_time_series.py -noshow -runid $RUNIDS -f *BeringStrait*${FREQ}*1.nc -var ptrp  -title "Bering Strait inflow (Sv)" -dir ${DATPATH} -o "${KEY}_BeringStrait" -obs OBS/BeringStrait_obs.txt -force_zero_origin
+python ${SCRPATH}/plot_time_series.py -noshow -runid $RUNIDS -f *BeringStrait*${FREQ}*1.nc -var mtrp -sf -1  -title "Bering Strait northward flow (Sv)" -dir ${DATPATH} -o "${KEY}_BeringStrait" -obs OBS/BeringStrait_obs.txt -force_zero_origin
 if [[ $? -ne 0 ]]; then exit 42; fi
 
 ## Fram Strait - northward transport = ptrp
 echo 'plot Fram Strait time series'
-python ${SCRPATH}/plot_time_series.py -noshow -runid $RUNIDS -f *FramStrait*${FREQ}*1.nc -var ptrp  -title "Fram Strait inflow (Sv)" -dir ${DATPATH} -o "${KEY}_FramStrait" -obs OBS/FramStrait_obs.txt -force_zero_origin
+python ${SCRPATH}/plot_time_series.py -noshow -runid $RUNIDS -f *FramStrait*${FREQ}*1.nc -var ptrp  -title "Fram Strait northward flow (Sv)" -dir ${DATPATH} -o "${KEY}_FramStrait" -obs OBS/FramStrait_obs.txt -force_zero_origin
 if [[ $? -ne 0 ]]; then exit 42; fi
 
 # crop figure (rm legend)
