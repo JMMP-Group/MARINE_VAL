@@ -169,15 +169,25 @@ for RUNID in `echo $RUNIDS`; do
    if [ ! -d ${DATPATH}/${RUNID} ]; then mkdir -p ${DATPATH}/${RUNID} ; fi
    cd ${DATPATH}/${RUNID}
 
+   # Remove old links to nam_cdf_names and mesh_mask files and re-link
+   # to be sure we are using up-to-date versions.
+
    # check nam_cdf_names namelist
-   if [[ ! -L nam_cdf_names ]] ; then ln -s ${NMLPATH} nam_cdf_names ; fi
+   if [[ -L nam_cdf_names ]] ;then rm nam_cdf_names; fi
+   ln -s ${NMLPATH} nam_cdf_names 
 
    # check mesh mask
-   if [[ ! -L mesh.nc     ]] ; then ln -s ${MSKPATH}/${MESHMASK} mesh.nc ; fi
-   if [[ ! -L mask.nc     ]] ; then ln -s ${MSKPATH}/${MESHMASK} mask.nc ; fi
-   if [[ $needBATHY == 1 && ! -L bathy.nc    ]] ; then ln -s ${MSKPATH}/${BATHY} bathy.nc ; fi
+   if [[ -L mesh.nc     ]] ; then rm mesh.nc ; fi
+   ln -s ${MSKPATH}/${MESHMASK} mesh.nc
+   if [[ -L mask.nc     ]] ; then rm mask.nc ; fi
+   ln -s ${MSKPATH}/${MESHMASK} mask.nc 
+   if [[ $needBATHY == 1 ]] ; then
+       if [[ -L bathy.nc  ]] ; then rm bathy.nc ; fi
+       ln -s ${MSKPATH}/${BATHY} bathy.nc 
+   fi
    # subbasins file not currently used by any metrics
-   #if [ ! -L subbasin.nc ] ; then ln -s ${MSKPATH}/subbasins_${CONFIG}-GO6.nc subbasin.nc ; fi
+   #if [ -L subbasin.nc ] ; then rm subbasin.nc ; fi
+   #ln -s ${MSKPATH}/subbasins_${CONFIG}-GO6.nc subbasin.nc 
 
    echo "$RUNID ..."
 
