@@ -34,11 +34,15 @@ def read_cube(filename,fieldname):
     else:
         raise Exception("Could not find field ",fieldname," in file ",filename)
 
-    for coord in cube.coords(dim_coords=True):
-        if coord.var_name == "time_counter":
-            cube.remove_coord(coord)
-            iris.util.promote_aux_coord_to_dim_coord(cube,"time")
-            break
+    # If we have a dimension coordinate called "time_counter" and an auxillary
+    # coordinate called "time" then delete the former and promote the latter
+    # to be the dimension coordinate. Iris doesn't like having two time coordinates.
+    if "time" in [coord.var_name for coord in cube.coords(dim_coords=False)]:
+        for coord in cube.coords(dim_coords=True):
+            if coord.var_name == "time_counter":
+                cube.remove_coord(coord)
+                iris.util.promote_aux_coord_to_dim_coord(cube,"time")
+                break
 
     return cube
 
@@ -46,10 +50,12 @@ def get_weights(wgtsfile,wgtsname,cube):
     '''
     Try to read in a weights field from the specified file, or if the 
     file is specified as "measures", try to read the weights field as
-    a CellMeasure of the supplied cube.
+    a CellMeasure of the supplied cube. Weights get returned as masked
+    numpy arrays.
     '''
 
     if wgtsfile == "measures":
+        print("Reading weights "+wgtsname+" as cell measures.")
         for cell_measure in cube.cell_measures():
             if cell_measure.standard_name == wgtsname:
                 wgts = cell_measure.core_data()
@@ -59,7 +65,8 @@ def get_weights(wgtsfile,wgtsname,cube):
         else:
             raise Exception("Could not find "+wgtsname+" in cell measures of "+cube.var_name)
     else:
-        wgts = read_cube(wgtsfile,wgtsname)
+        print("Reading weights "+wgtsname+" as iris cube data.")
+        wgts = read_cube(wgtsfile,wgtsname).data[:]
     
     return wgts
 
@@ -136,23 +143,18 @@ def reduce_fields(infile,tmask,invars=None,coords=None,wgtsfiles=None,wgtsnames=
         wgtsfiles = [infile if wf == "self" else wf for wf in wgtsfiles]
         if len(wgtsfiles) != len(wgtsnames):
             raise Exception("Must specify one weights file or the same number as the number of weights fields")
-        if len(wgtsfiles) > 1 and wgtsfiles[0] == "measures":
-            # iris.analysis.maths.multiply won't work with a CellMeasure object as the first argument
-            # so move it to be the last argument
-            wgtsfiles.append(wgtsfiles.pop(0))
-            wgtsnames.append(wgtsnames.pop(0))
         wgts_list = [get_weights(wgtsfile,wgtsname,cubes[0]) for (wgtsfile,wgtsname) in zip(wgtsfiles,wgtsnames)]
         wgts=wgts_list[0]        
         if len(wgts_list) > 1:
             for wgts_to_multiply in wgts_list[1:]:
-                wgts = iris.analysis.maths.multiply(wgts, wgts_to_multiply, in_place=True)
+                wgts = wgts * wgts_to_multiply
         elif wgtsfiles[0] == "measures":
             # in this case, broadcast the weights to be the same shape as the cube... 
-            wgts = iris.cube.Cube(ma.ones(cubes[0].shape)[:] * wgts[:])
+            wgts = ma.ones(cubes[0].shape)[:] * wgts[:]
         
-        assert wgts.shape == cubes[0].shape, f"Weights cube must have shape {cubes[0].shape} but has shape {wgts.shape}"
+        assert wgts.shape == cubes[0].shape, f"Weights array must have shape {cubes[0].shape} but has shape {wgts.shape}"
 
-        wgts.data = ma.masked_where(tmask, wgts.data) # mask weights using tmask for lat, lon and depth
+        wgts[:] = ma.masked_where(tmask, wgts[:]) # mask weights using tmask for lat, lon and depth
 
     else:
         wgts = None
