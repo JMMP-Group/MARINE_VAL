@@ -39,7 +39,7 @@ echo TMASK: $TMASK
 
 ## calculate sss in Labrador Sea (same region as MXL)
 FILEOUT=SSSav_LabSea_${RUN_NAME}o_${FREQ}_${TAG}_grid-${GRID}.nc
-$SCRPATH/reduce_fields.py --surf -i $FILE -v so_pra -c longitude latitude -A mean -G measures -g cell_area \
+$SCRPATH/reduce_fields.py --surf -i $FILE -v so_pra -c longitude latitude -A mean -G mesh.nc mesh.nc -g e1t e2t \
 	                          -o tmp_$FILEOUT -m $TMASK
 
 #mv output file

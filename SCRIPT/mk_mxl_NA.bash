@@ -63,7 +63,7 @@ echo TMASK: $TMASK
 # averaging MXL depth in Lab Sea: 60° W–50° W, 55° N–62° N
 ncks -v area $FILE -A $FILEOUT
 ncatted -a cell_measures,somxl030,c,c,"area: area" -a coordinates,somxl030,c,c,"time_centered nav_lat nav_lon" $FILEOUT
-$SCRPATH/reduce_fields.py -i $FILEOUT -v somxl030 -c longitude latitude -A mean -G measures -g cell_area \
+$SCRPATH/reduce_fields.py -i $FILEOUT -v somxl030 -c longitude latitude -A mean -G mesh.nc mesh.nc -g e1t e2t \
 			    -o tmp_LAB_MXL_$FILEOUT -m $TMASK
 
 # mv output file

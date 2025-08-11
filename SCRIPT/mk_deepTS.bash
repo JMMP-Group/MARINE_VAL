@@ -67,28 +67,28 @@ if [[ "$area" == "AMU" ]]
 then
 
 echo mk_deepTS.bash: calculating AMU thetao
-$SCRPATH/reduce_fields.py -i $FILE -v thetao_pot -c longitude latitude depth -A mean -G self measures -g cell_thickness cell_area \
+$SCRPATH/reduce_fields.py -i $FILE -v thetao_pot -c longitude latitude depth -A mean -G self mesh.nc mesh.nc -g cell_thickness e1t e2t \
 	       -o AMU_thetao_$FILEOUT -m $TMASK
     
 elif [[ "$area" == "WROSS" ]]
 then
 
 echo mk_deepTS.bash: calculating WROSS so_pra
-$SCRPATH/reduce_fields.py -i $FILE -v so_pra -c longitude latitude depth -A mean -G self measures -g cell_thickness cell_area \
+$SCRPATH/reduce_fields.py -i $FILE -v so_pra -c longitude latitude depth -A mean -G self mesh.nc mesh.nc -g cell_thickness e1t e2t \
 	      -o WROSS_so_$FILEOUT -m $TMASK
 
 elif [[ "$area" == "EROSS" ]]
 then
 
 echo mk_deepTS.bash: calculating EROSS thetao
-$SCRPATH/reduce_fields.py -i $FILE -v thetao_pot -c longitude latitude depth -A mean -G self measures -g cell_thickness cell_area \
+$SCRPATH/reduce_fields.py -i $FILE -v thetao_pot -c longitude latitude depth -A mean -G self mesh.nc mesh.nc -g cell_thickness e1t e2t \
 	       -o EROSS_thetao_$FILEOUT -m $TMASK
 
 elif [[ "$area" == "WWED" ]]
 then
 
 echo mk_deepTS.bash: calculating WED so_pra 
-$SCRPATH/reduce_fields.py -i $FILE -v so_pra -c longitude latitude depth -A mean -G self measures -g cell_thickness cell_area \
+$SCRPATH/reduce_fields.py -i $FILE -v so_pra -c longitude latitude depth -A mean -G self mesh.nc mesh.nc -g cell_thickness e1t e2t \
 	      -o WED_so_$FILEOUT -m $TMASK
 
 fi
