@@ -32,7 +32,9 @@ export DATPATH=${DATADIR}/MARINE_VAL/
 
 # Observations
 export OBSPATH=YOUR/LOCAL/PATH/OBS_PATH_DIR
-export OBS_MESH=your_obs_mesh_file.nc
+export OBS_MESH=your_obs_mesh_file.nc 
+export OBS_ABS_SAL=${OBSPATH}/your_obs_abs_sal_file.nc # Absolute salinity
+export OBS_CON_TEM=${OBSPATH}/your_obs_con_tem_file.nc # Conservative temperature
 export runOBS=1      # run observations for HTC, STC and MEDOVF
 
 # Retrieve data from MASS
