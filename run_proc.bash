@@ -292,15 +292,17 @@ for RUNID in `echo $RUNIDS`; do
       echo "TAG03_LIST : $TAG03_LIST"
 
       # get data (retrieve_data function are defined in this script)
-      moo_wait
-      [[ $runDEEPTS == 1 ]]                                              && mooDJFsid=$(retrieve_data $RUNID 1s grid-T $TAGDJF_LIST)
-      moo_wait
-      [[ $runSIE == 1 || $runMLD_Weddell == 1 ]]                         && mooT09mid=$(retrieve_data $RUNID 1m grid-T $TAG09_LIST)
-      moo_wait
-      [[ $runSIE == 1 ]]                                                 && mooT02mid=$(retrieve_data $RUNID 1m grid-T $TAG02_LIST)
-      moo_wait
-      [[ $runSIE == 1 || $runMLD_LabSea == 1 ]]                          && mooT03mid=$(retrieve_data $RUNID 1m grid-T $TAG03_LIST)
-
+      if [[ $runRETRIEVE_DATA == 1 ]]; then
+         moo_wait
+         [[ $runDEEPTS == 1 ]]                                              && mooDJFsid=$(retrieve_data $RUNID 1s grid-T $TAGDJF_LIST)
+         moo_wait
+         [[ $runSIE == 1 || $runMLD_Weddell == 1 ]]                         && mooT09mid=$(retrieve_data $RUNID 1m grid-T $TAG09_LIST)
+         moo_wait
+         [[ $runSIE == 1 ]]                                                 && mooT02mid=$(retrieve_data $RUNID 1m grid-T $TAG02_LIST)
+         moo_wait
+         [[ $runSIE == 1 || $runMLD_LabSea == 1 ]]                          && mooT03mid=$(retrieve_data $RUNID 1m grid-T $TAG03_LIST)
+      fi
+      
       echo "mooDJFsid : $mooDJFsid"
       echo "mooT09mid : $mooT09mid"
       echo "mooT03mid : $mooT03mid"
