@@ -38,7 +38,7 @@ export OBS_CON_TEM=${OBSPATH}/your_obs_con_tem_file.nc # Conservative temperatur
 export runOBS=1      # run observations for HTC, STC and MEDOVF
 
 # Retrieve data from MASS
-runRETRIEVE_DATA=0  # Set to 1 to retrieve data from MASS, 0 if you have previously downloaded the data
+runRETRIEVE_DATA=1  # Set to 1 to retrieve data from MASS, 0 if you have previously downloaded the data
 
 RUNALL=0       # run all possible metrics
 
