@@ -47,14 +47,13 @@ if [[ ! -f $OBS_DONE_FLAG ]]; then
    # while having always consistent observational values
 
    echo 'mk_htc.bash: Calculate Obs Heat content SPG NA metrics.'
-   FILET="${OBSPATH}/woa13v2.omip-clim.con_tem_gosi10p1-025_flooded.nc"
 
    # calculate heat content of NA subpolar gyre --> area of heat content for each layer
    FILEOUT=HEATC_NA_WOA13v2_heatc.nc
    ijbox=$($CDFPATH/cdffindij -w ${MIN_LON} ${MAX_LON} ${MIN_LAT} ${MAX_LAT} -c $MESHF -p T | tail -2 | head -1 )
    echo "ijbox : $ijbox"
    # assumes 75 levels in ocean:
-   $CDFPATH/cdfheatc -f $FILET -zoom ${ijbox} 1 75 -M ${TMASK} tmask -o $FILEOUT
+   $CDFPATH/cdfheatc -f $OBS_CON_TEM -zoom ${ijbox} 1 75 -M ${TMASK} tmask -o $FILEOUT
    # compute subp_obs
    ${SCRPATH}/mk_compute_obs_stats.bash heatc3d time_counter $FILEOUT WOA13v2 HTC_subp_obs.txt
 fi

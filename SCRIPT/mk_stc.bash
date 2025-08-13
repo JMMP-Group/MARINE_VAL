@@ -47,14 +47,13 @@ if [[ ! -f $OBS_DONE_FLAG ]]; then
    # while having always consistent observational values
 
    echo 'mk_stc.bash: Calculate Obs Salt content SPG NA metrics.'
-   FILET="${OBSPATH}/woa13v2.omip-clim.abs_sal_gosi10p1-025_flooded.nc"
 
    # calculate salt content of NA subpolar gyre
    FILEOUT=SALTC_NA_WOA13v2_saltc.nc
    ijbox=$($CDFPATH/cdffindij -w ${MIN_LON} ${MAX_LON} ${MIN_LAT} ${MAX_LAT} -c $MESHF -p T | tail -2 | head -1 )
    echo "ijbox : $ijbox"
    # assumes 75 levels in ocean:
-   $CDFPATH/cdfsaltc -f $FILET -zoom ${ijbox} 1 75 -M ${TMASK} tmask -o $FILEOUT
+   $CDFPATH/cdfsaltc -f $OBS_ABS_SAL -zoom ${ijbox} 1 75 -M ${TMASK} tmask -o $FILEOUT
    # compute subp_obs
    ${SCRPATH}/mk_compute_obs_stats.bash saltc3d time_counter $FILEOUT WOA13v2 STC_subp_obs.txt
 fi
