@@ -1,7 +1,8 @@
 name: marval
 channels:
   - conda-forge
-  - conda-mo-internal
+  - defaults
+  # - conda-mo-internal
 dependencies:
   - python=3.10.6
   - iris=3.11.0
