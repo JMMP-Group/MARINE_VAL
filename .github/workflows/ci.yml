@@ -1,0 +1,36 @@
+# .github/workflows/ci.yml
+
+name: Integration Test
+on:
+  push:
+    branches: ['*']
+  pull_request:
+    branches: ['*']
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Miniconda
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          environment-file: marval.yml
+          auto-activate-base: false
+          python-version: 3.10.6
+
+      - name: Make scripts executable
+        run: |
+          chmod +x run_proc.bash
+          chmod +x tests/run_test_setup.bash
+          chmod +x tests/run_tests.bash
+          chmod +x tests/test_valid_run.bash
+          chmod +x tests/test_missing_deps.bash
+          chmod +x tests/test_user_choices.bash
+          chmod +x tests/test_missing_args.bash
+          chmod +x tests/test_invalid_paths.bash
+          
+      - name: Run integration tests
+        run: ./tests/run_tests.bash
