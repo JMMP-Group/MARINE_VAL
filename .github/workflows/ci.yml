@@ -32,5 +32,10 @@ jobs:
           chmod +x tests/test_missing_args.bash
           chmod +x tests/test_invalid_paths.bash
           
+      - name: Debugging
+        run: |
+          echo "Current working directory: $(pwd)"
+          echo "PATH: $PATH"
+
       - name: Run integration tests
-        run: ./tests/run_tests.bash
+        run: bash ./tests/run_tests.bash
