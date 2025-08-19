@@ -23,4 +23,3 @@ dependencies:
   - xoak
   - scikit-learn
   - pys2index
-  - cartopy
