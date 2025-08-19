@@ -1,5 +1,5 @@
 #!/bin/bash
-# test_setup.bash
+# run_test_setup.bash
 
 # Exit immediately if a command exits with a non-zero status.
 set -e
@@ -14,7 +14,8 @@ export -f sbatch
 slurm_wait() { :; }
 moo_wait() { :; }
 sacct() { echo ""; }
-export -f slurm_wait moo_wait sacct
+squeue() { echo "P$$"; } # Add this new mock function
+export -f slurm_wait moo_wait sacct squeue
 
 # Function to set up the temporary environment for a test
 function setup_test_env() {
