@@ -3,7 +3,7 @@
 set -ex
 
 # Source the common setup script
-source ./run_test_setup.bash
+source ./tests/run_test_setup.bash
 
 echo "Running all integration tests..."
 
