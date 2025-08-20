@@ -4,7 +4,7 @@
 # Exit immediately if a command exits with a non-zero status.
 set -e
 
-# Mock functions from run_proc.bash
+# Mock slurm and mass commands for testing
 sbatch() { echo "MOCK SBATCH: $@"; }
 slurm_wait() { :; }
 moo_wait() { :; }
@@ -17,13 +17,13 @@ function setup_test_env() {
   export TMP_DIR=$(mktemp -d)
   
   # Create an empty param.bash and add the mock paths to it
-  touch "$TMP_DIR/param.bash"
-  echo "export MARINE_VAL=$TMP_DIR" >> "$TMP_DIR/param.bash"
-  echo "export MSKPATH=$TMP_DIR/MESH_MASK_DIR" >> "$TMP_DIR/param.bash"
-  echo "export CDFPATH=$TMP_DIR/CDFTOOLS_DIR/bin" >> "$TMP_DIR/param.bash"
-  echo "export NMLPATH=$TMP_DIR/nam_cdf_names" >> "$TMP_DIR/param.bash"
-  echo "export OBSPATH=$TMP_DIR/OBS_PATH_DIR" >> "$TMP_DIR/param.bash"
-  
+  > "param.bash"
+  echo "export MARINE_VAL=$TMP_DIR" >> "param.bash"
+  echo "export MSKPATH=$TMP_DIR/MESH_MASK_DIR" >> "param.bash"
+  echo "export CDFPATH=$TMP_DIR/CDFTOOLS_DIR/bin" >> "param.bash"
+  echo "export NMLPATH=$TMP_DIR/nam_cdf_names" >> "param.bash"
+  echo "export OBSPATH=$TMP_DIR/OBS_PATH_DIR" >> "param.bash"
+
   # Create the necessary directories and files
   mkdir -p "$TMP_DIR/CDFTOOLS_DIR/bin"
   mkdir -p "$TMP_DIR/MESH_MASK_DIR"
