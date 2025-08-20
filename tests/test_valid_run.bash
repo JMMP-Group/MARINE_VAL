@@ -5,8 +5,6 @@ echo "--- Test 1: A valid run ---"
 
 echo "Sourcing setup script..."
 source ./tests/run_test_setup.bash
-echo "Sourcing run_proc script..."
-source ./run_proc.bash
 
 echo "Setting up test environment..."
 setup_test_env
