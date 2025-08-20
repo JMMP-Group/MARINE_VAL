@@ -11,7 +11,7 @@ JOB_ID_COUNTER=1 # Global variable to simulate job IDs.
 
 
 sbatch() {
-  echo "MOCK SBATCH: $@"
+  # echo "MOCK SBATCH: $@"
   echo "Submitted batch job $JOB_ID_COUNTER"
   JOB_ID_COUNTER=$((JOB_ID_COUNTER + 1))
 }
