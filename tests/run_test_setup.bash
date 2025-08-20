@@ -19,12 +19,12 @@ function setup_test_env() {
   # Create an empty param.bash and add the mock paths to it
   > "param.bash"
   # cp run_proc.bash "$TMP_DIR/run_proc.bash"
-  echo "export MARINE_VAL=$TMP_DIR" >> "param.bash"
+  echo "export MARINE_VAL=." >> "param.bash"
   echo "export MSKPATH=$TMP_DIR/MESH_MASK_DIR" >> "param.bash"
   echo "export CDFPATH=$TMP_DIR/CDFTOOLS_DIR/bin" >> "param.bash"
   echo "export NMLPATH=$TMP_DIR/nam_cdf_names" >> "param.bash"
-  echo "export EXEPATH=$TMP_DIR" >> "param.bash"
-  echo "export SCRPATH=$TMP_DIR/SCRIPT" >> "param.bash"
+  echo "export EXEPATH=\${MARINE_VAL}" >> "param.bash"
+  echo "export SCRPATH=\${MARINE_VAL}/SCRIPT" >> "param.bash"
   echo "export DATPATH=$TMP_DIR/DATA" >> "param.bash"
   echo "export OBSPATH=$TMP_DIR/OBS_PATH_DIR" >> "param.bash"
   echo "export OBS_MESH=\${OBSPATH}/obs_mesh.nc" >> "param.bash"
@@ -41,7 +41,6 @@ function setup_test_env() {
   # Create the necessary directories and files
   mkdir -p "$MSKPATH"
   mkdir -p "$CDFPATH"
-  mkdir -p "$SCRPATH"
   mkdir -p "$DATPATH"
   mkdir -p "$OBSPATH"
 
