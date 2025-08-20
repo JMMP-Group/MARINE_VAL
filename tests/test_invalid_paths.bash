@@ -4,6 +4,7 @@ set -e
 echo "--- Test 5: Missing or Invalid File Paths ---"
 
 source ./tests/run_test_setup.bash
+source ../run_proc.bash
 
 setup_test_env
 

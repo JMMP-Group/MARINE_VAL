@@ -4,6 +4,7 @@ set -e
 echo "--- Test 3: User Choices from param.bash ---"
 
 source ./tests/run_test_setup.bash
+source ../run_proc.bash
 
 setup_test_env
 
