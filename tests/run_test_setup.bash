@@ -25,7 +25,7 @@ function setup_test_env() {
   # Create an empty param.bash and add the mock paths to it
   > "$PARAMS"
   # cp run_proc.bash "$TMP_DIR/run_proc.bash"
-  echo "export MARINE_VAL=." >> "$PARAMS"
+  echo "export MARINE_VAL=.." >> "$PARAMS"
   echo "export MSKPATH=$TMP_DIR/MESH_MASK_DIR" >> "$PARAMS"
   echo "export CDFPATH=$TMP_DIR/CDFTOOLS_DIR/bin" >> "$PARAMS"
   echo "export NMLPATH=$TMP_DIR/nam_cdf_names" >> "$PARAMS"
@@ -36,7 +36,7 @@ function setup_test_env() {
   echo "export OBS_MESH=\${OBSPATH}/obs_mesh.nc" >> "$PARAMS"
   echo "export OBS_ABS_SAL=\${OBSPATH}/obs_abs_sal.nc" >> "$PARAMS"
   echo "export OBS_CON_TEM=\${OBSPATH}/obs_con_tem.nc" >> "$PARAMS"
-  # echo "export runOBS=1" >> "param.bash"
+  # echo "export runOBS=1" >> "$PARAMS"
 
   echo "Contents of param.bash:"
   cat "$PARAMS"
