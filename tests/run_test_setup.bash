@@ -17,10 +17,12 @@ function setup_test_env() {
   export TMP_DIR=$(mktemp -d)
   export PARAMS="../param.bash"
 
-  cp ./run_proc.bash run_proc_orig.bash
-  sed '/moo_wait() {/,/^}/d; /slurm_wait() {/,/^}/d; /retrieve_data() {/,/^}/d; /run_tool() {/,/^}/d' "run_proc_orig.bash" > "run_proc.bash"
-  # echo "Contents of run_proc.bash:"
-  # cat run_proc.bash
+  if [ ! -f ../run_proc_orig.bash ]; then
+    mv ../run_proc.bash ../run_proc_orig.bash
+  fi
+  sed '/moo_wait() {/,/^}/d; /slurm_wait() {/,/^}/d; /retrieve_data() {/,/^}/d; /run_tool() {/,/^}/d' "../run_proc_orig.bash" > "../run_proc.bash"
+  echo "Contents of run_proc.bash:"
+  cat ../run_proc.bash
   
   # Create an empty param.bash and add the mock paths to it
   > "$PARAMS"
