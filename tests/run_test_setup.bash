@@ -4,6 +4,8 @@
 # Exit immediately if a command exits with a non-zero status.
 set -ex
 
+echo "Current working directory: $(pwd)"
+
 # Mock slurm and mass commands for testing
 sbatch() { echo "MOCK SBATCH: $@"; }
 slurm_wait() { :; }
