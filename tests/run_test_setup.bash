@@ -7,24 +7,52 @@ set -ex
 echo "Current working directory: $(pwd)"
 
 # Mock slurm and mass commands for testing
-sbatch() { echo "MOCK SBATCH: $@"; }
-slurm_wait() { :; }
-moo_wait() { :; }
-sacct() { echo ""; }
-squeue() { echo "P$$"; }
-export -f sbatch slurm_wait moo_wait sacct squeue
+JOB_ID_COUNTER=1 # Global variable to simulate job IDs.
+
+
+sbatch() {
+  echo "MOCK SBATCH: $@"
+  echo "Submitted batch job $JOB_ID_COUNTER"
+  JOB_ID_COUNTER=$((JOB_ID_COUNTER + 1))
+}
+
+squeue() {
+  if [ "$njob" -gt 0 ]; then
+    local jobs_to_return=$((njob - 1))
+    for ((i=1; i<=jobs_to_return; i++)); do
+      echo "MOCK_JOB_$i P$$"
+    done
+  fi
+}
+
+sacct() {
+  # This mock returns a string that grep can use to simulate a number of jobs.
+  # The number of jobs is hardcoded to prevent infinite loops in the mock wait functions.
+  # The original functions grep for "moo", "PENDING", or "RUNNING".
+  if [[ "$@" =~ "pd,r" ]]; then
+    echo "mock_job_1 moo\nmock_job_2 moo" # Simulates 2 running moo jobs
+  elif [[ "$@" =~ "PENDING" ]]; then
+    echo "mock_job_3 PENDING\nmock_job_4 PENDING" # Simulates 2 pending jobs
+  elif [[ "$@" =~ "RUNNING" ]]; then
+    echo "mock_job_5 RUNNING\nmock_job_6 RUNNING" # Simulates 2 running jobs
+  else
+    echo ""
+  fi
+}
+
+export -f sbatch sacct squeue
 
 # Function to set up the temporary environment for a test
 function setup_test_env() {
   export TMP_DIR=$(mktemp -d)
   export PARAMS="./param.bash"
 
-  if [ ! -f ./run_proc_orig.bash ]; then
-    mv ./run_proc.bash ./run_proc_orig.bash
-  fi
-  sed '/moo_wait() {/,/^}/d; /slurm_wait() {/,/^}/d; /retrieve_data() {/,/^}/d; /run_tool() {/,/^}/d' "./run_proc_orig.bash" > "./run_proc.bash"
-  echo "Contents of run_proc.bash:"
-  cat ./run_proc.bash
+  # if [ ! -f ./run_proc_orig.bash ]; then
+  #   mv ./run_proc.bash ./run_proc_orig.bash
+  # fi
+  # sed '/moo_wait() {/,/^}/d; /slurm_wait() {/,/^}/d; /retrieve_data() {/,/^}/d; /run_tool() {/,/^}/d' "./run_proc_orig.bash" > "./run_proc.bash"
+  # echo "Contents of run_proc.bash:"
+  # cat ./run_proc.bash
   
   # Create an empty param.bash and add the mock paths to it
   > "$PARAMS"
