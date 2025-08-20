@@ -18,7 +18,7 @@ function setup_test_env() {
   
   # Create an empty param.bash and add the mock paths to it
   > "param.bash"
-  cp run_proc.bash "$TMP_DIR/run_proc.bash"
+  # cp run_proc.bash "$TMP_DIR/run_proc.bash"
   echo "export MARINE_VAL=$TMP_DIR" >> "param.bash"
   echo "export MSKPATH=$TMP_DIR/MESH_MASK_DIR" >> "param.bash"
   echo "export CDFPATH=$TMP_DIR/CDFTOOLS_DIR/bin" >> "param.bash"
