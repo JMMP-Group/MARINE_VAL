@@ -1,7 +1,6 @@
 #!/bin/bash
 
-# Exit immediately if a command exits with a non-zero status.
-set -e
+set -ex
 
 # Source the common setup script
 source ./tests/run_test_setup.bash
