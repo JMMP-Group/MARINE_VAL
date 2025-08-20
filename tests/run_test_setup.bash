@@ -2,7 +2,7 @@
 # run_test_setup.bash
 
 # Exit immediately if a command exits with a non-zero status.
-set -e
+set -ex
 
 # Mock slurm and mass commands for testing
 sbatch() { echo "MOCK SBATCH: $@"; }
@@ -18,6 +18,7 @@ function setup_test_env() {
   
   # Create an empty param.bash and add the mock paths to it
   > "param.bash"
+  cp run_proc.bash "$TMP_DIR/run_proc.bash"
   echo "export MARINE_VAL=$TMP_DIR" >> "param.bash"
   echo "export MSKPATH=$TMP_DIR/MESH_MASK_DIR" >> "param.bash"
   echo "export CDFPATH=$TMP_DIR/CDFTOOLS_DIR/bin" >> "param.bash"
@@ -32,8 +33,8 @@ function setup_test_env() {
   touch "$TMP_DIR/MESH_MASK_DIR/mesh_mask.nc"
   touch "$TMP_DIR/MESH_MASK_DIR/bathy.nc"
   touch "$TMP_DIR/nam_cdf_names"
-  touch "$TMP_DIR/OBS_PATH_DIR/your_obs_abs_sal_file.nc"
-  touch "$TMP_DIR/OBS_PATH_DIR/your_obs_con_tem_file.nc"
+  touch "$TMP_DIR/OBS_PATH_DIR/obs_abs_sal.nc"
+  touch "$TMP_DIR/OBS_PATH_DIR/obs_con_tem.nc"
 }
 
 # Function to clean up the temporary environment after a test

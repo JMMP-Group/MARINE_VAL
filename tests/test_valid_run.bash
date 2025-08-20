@@ -14,7 +14,7 @@ setup_test_env
 echo "Changing to temporary directory..."
 cd "$TMP_DIR"
 echo "Running the process with valid parameters..."
-bash ../run_proc.bash -B bathy.nc -C 1 mesh_mask.nc 2020 2020 1m RUNID_TEST > output.txt 2>&1
+bash ./run_proc.bash -B $MSKPATH/bathy.nc -C 1 $MSKPATH/mesh_mask.nc 2020 2020 1m RUNID_TEST > output.txt 2>&1
 
 if ! grep -q "MOCK SBATCH: --output=.*mk_msks.out /.*/mk_msks.bash" output.txt; then
   echo "Test failed: Expected 'mk_msks.bash' job was not submitted."
