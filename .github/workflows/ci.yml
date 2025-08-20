@@ -38,4 +38,6 @@ jobs:
           echo "PATH: $PATH"
 
       - name: Run integration tests
-        run: bash ./tests/run_tests.bash
+        run: |
+          conda activate marval
+          bash ./tests/run_tests.bash
