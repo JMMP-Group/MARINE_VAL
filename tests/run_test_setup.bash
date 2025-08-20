@@ -17,19 +17,19 @@ export -f sbatch slurm_wait moo_wait sacct squeue
 # Function to set up the temporary environment for a test
 function setup_test_env() {
   export TMP_DIR=$(mktemp -d)
-  export PARAMS="../param.bash"
+  export PARAMS="./param.bash"
 
-  if [ ! -f ../run_proc_orig.bash ]; then
-    mv ../run_proc.bash ../run_proc_orig.bash
+  if [ ! -f ./run_proc_orig.bash ]; then
+    mv ./run_proc.bash ./run_proc_orig.bash
   fi
-  sed '/moo_wait() {/,/^}/d; /slurm_wait() {/,/^}/d; /retrieve_data() {/,/^}/d; /run_tool() {/,/^}/d' "../run_proc_orig.bash" > "../run_proc.bash"
+  sed '/moo_wait() {/,/^}/d; /slurm_wait() {/,/^}/d; /retrieve_data() {/,/^}/d; /run_tool() {/,/^}/d' "./run_proc_orig.bash" > "./run_proc.bash"
   echo "Contents of run_proc.bash:"
-  cat ../run_proc.bash
+  cat ./run_proc.bash
   
   # Create an empty param.bash and add the mock paths to it
   > "$PARAMS"
   # cp run_proc.bash "$TMP_DIR/run_proc.bash"
-  echo "export MARINE_VAL=.." >> "$PARAMS"
+  echo "export MARINE_VAL=." >> "$PARAMS"
   echo "export MSKPATH=$TMP_DIR/MESH_MASK_DIR" >> "$PARAMS"
   echo "export CDFPATH=$TMP_DIR/CDFTOOLS_DIR/bin" >> "$PARAMS"
   echo "export NMLPATH=$TMP_DIR/nam_cdf_names" >> "$PARAMS"
