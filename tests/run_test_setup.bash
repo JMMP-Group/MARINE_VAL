@@ -15,36 +15,34 @@ export -f sbatch slurm_wait moo_wait sacct squeue
 # Function to set up the temporary environment for a test
 function setup_test_env() {
   export TMP_DIR=$(mktemp -d)
+  export PARAMS="../param.bash"
 
   cp ./run_proc.bash run_proc_orig.bash
-  
-  # Sanitize the copied script by removing function definitions and save the result.
   sed '/moo_wait() {/,/^}/d; /slurm_wait() {/,/^}/d; /retrieve_data() {/,/^}/d; /run_tool() {/,/^}/d' "run_proc_orig.bash" > "run_proc.bash"
-
-  echo "Contents of run_proc.bash:"
-  cat run_proc.bash
+  # echo "Contents of run_proc.bash:"
+  # cat run_proc.bash
   
   # Create an empty param.bash and add the mock paths to it
-  > "param.bash"
+  > "$PARAMS"
   # cp run_proc.bash "$TMP_DIR/run_proc.bash"
-  echo "export MARINE_VAL=." >> "param.bash"
-  echo "export MSKPATH=$TMP_DIR/MESH_MASK_DIR" >> "param.bash"
-  echo "export CDFPATH=$TMP_DIR/CDFTOOLS_DIR/bin" >> "param.bash"
-  echo "export NMLPATH=$TMP_DIR/nam_cdf_names" >> "param.bash"
-  echo "export EXEPATH=\${MARINE_VAL}" >> "param.bash"
-  echo "export SCRPATH=\${MARINE_VAL}/SCRIPT" >> "param.bash"
-  echo "export DATPATH=$TMP_DIR/DATA" >> "param.bash"
-  echo "export OBSPATH=$TMP_DIR/OBS_PATH_DIR" >> "param.bash"
-  echo "export OBS_MESH=\${OBSPATH}/obs_mesh.nc" >> "param.bash"
-  echo "export OBS_ABS_SAL=\${OBSPATH}/obs_abs_sal.nc" >> "param.bash"
-  echo "export OBS_CON_TEM=\${OBSPATH}/obs_con_tem.nc" >> "param.bash"
+  echo "export MARINE_VAL=." >> "$PARAMS"
+  echo "export MSKPATH=$TMP_DIR/MESH_MASK_DIR" >> "$PARAMS"
+  echo "export CDFPATH=$TMP_DIR/CDFTOOLS_DIR/bin" >> "$PARAMS"
+  echo "export NMLPATH=$TMP_DIR/nam_cdf_names" >> "$PARAMS"
+  echo "export EXEPATH=\${MARINE_VAL}" >> "$PARAMS"
+  echo "export SCRPATH=\${MARINE_VAL}/SCRIPT" >> "$PARAMS"
+  echo "export DATPATH=$TMP_DIR/DATA" >> "$PARAMS"
+  echo "export OBSPATH=$TMP_DIR/OBS_PATH_DIR" >> "$PARAMS"
+  echo "export OBS_MESH=\${OBSPATH}/obs_mesh.nc" >> "$PARAMS"
+  echo "export OBS_ABS_SAL=\${OBSPATH}/obs_abs_sal.nc" >> "$PARAMS"
+  echo "export OBS_CON_TEM=\${OBSPATH}/obs_con_tem.nc" >> "$PARAMS"
   # echo "export runOBS=1" >> "param.bash"
 
   echo "Contents of param.bash:"
-  cat param.bash
+  cat "$PARAMS"
 
   # Source the param.bash file to set environment variables
-  source "param.bash"
+  source "$PARAMS"
 
   # Create the necessary directories and files
   mkdir -p "$MSKPATH"
