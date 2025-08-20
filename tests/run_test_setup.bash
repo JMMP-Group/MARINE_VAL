@@ -15,6 +15,14 @@ export -f sbatch slurm_wait moo_wait sacct squeue
 # Function to set up the temporary environment for a test
 function setup_test_env() {
   export TMP_DIR=$(mktemp -d)
+
+  cp ./run_proc.bash run_proc_orig.bash
+  
+  # Sanitize the copied script by removing function definitions and save the result.
+  sed '/moo_wait() {/,/}/d; /slurm_wait() {/,/}/d; /retrieve_data() {/,/}/d; /run_tool() {/,/}/d' "run_proc_orig.bash" > "run_proc.bash"
+
+  echo "Contents of run_proc.bash:"
+  cat run_proc.bash
   
   # Create an empty param.bash and add the mock paths to it
   > "param.bash"
