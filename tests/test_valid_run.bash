@@ -17,6 +17,11 @@ JOBOUT="$TMP_DIR/test_valid_run_out.txt"
 echo "Running the process with valid parameters..."
 source ./run_proc.bash -B bathy.nc -C 1 mesh_mask.nc 2020 2020 1m RUNID_TEST > "$JOBOUT" 2>&1
 
+# { source ./run_proc.bash -B bathy.nc -C 1 mesh_mask.nc 2020 2020 1m RUNID_TEST; } > "$JOBOUT" 2>&1
+
+echo "--- Output from run_proc.bash ---"
+cat "$JOBOUT"
+
 if ! grep -q "MOCK SBATCH: --output=.*mk_msks.out /.*/mk_msks.bash" "$JOBOUT"; then
   echo "Test failed: Expected 'mk_msks.bash' job was not submitted."
   cleanup_test_env
