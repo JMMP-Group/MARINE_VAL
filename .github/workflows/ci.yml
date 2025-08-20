@@ -38,7 +38,4 @@ jobs:
           echo "PATH: $PATH"
 
       - name: Run integration tests
-        run: |
-          source /usr/share/miniconda/etc/profile.d/conda.sh
-          conda activate marval
-          bash ./tests/run_tests.bash
+        run: bash ./tests/run_tests.bash
