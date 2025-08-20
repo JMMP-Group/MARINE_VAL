@@ -23,18 +23,35 @@ function setup_test_env() {
   echo "export MSKPATH=$TMP_DIR/MESH_MASK_DIR" >> "param.bash"
   echo "export CDFPATH=$TMP_DIR/CDFTOOLS_DIR/bin" >> "param.bash"
   echo "export NMLPATH=$TMP_DIR/nam_cdf_names" >> "param.bash"
+  echo "export EXEPATH=$TMP_DIR" >> "param.bash"
+  echo "export SCRPATH=$TMP_DIR/SCRIPT" >> "param.bash"
+  echo "export DATPATH=$TMP_DIR/DATA" >> "param.bash"
   echo "export OBSPATH=$TMP_DIR/OBS_PATH_DIR" >> "param.bash"
+  echo "export OBS_MESH=\${OBSPATH}/obs_mesh.nc" >> "param.bash"
+  echo "export OBS_ABS_SAL=\${OBSPATH}/obs_abs_sal.nc" >> "param.bash"
+  echo "export OBS_CON_TEM=\${OBSPATH}/obs_con_tem.nc" >> "param.bash"
+  # echo "export runOBS=1" >> "param.bash"
+
+  echo "Contents of param.bash:"
+  cat param.bash
+
+  # Source the param.bash file to set environment variables
+  source "param.bash"
 
   # Create the necessary directories and files
-  mkdir -p "$TMP_DIR/CDFTOOLS_DIR/bin"
-  mkdir -p "$TMP_DIR/MESH_MASK_DIR"
-  mkdir -p "$TMP_DIR/OBS_PATH_DIR"
-  touch "$TMP_DIR/CDFTOOLS_DIR/bin/cdf_tool"
-  touch "$TMP_DIR/MESH_MASK_DIR/mesh_mask.nc"
-  touch "$TMP_DIR/MESH_MASK_DIR/bathy.nc"
-  touch "$TMP_DIR/nam_cdf_names"
-  touch "$TMP_DIR/OBS_PATH_DIR/obs_abs_sal.nc"
-  touch "$TMP_DIR/OBS_PATH_DIR/obs_con_tem.nc"
+  mkdir -p "$MSKPATH"
+  mkdir -p "$CDFPATH"
+  mkdir -p "$SCRPATH"
+  mkdir -p "$DATPATH"
+  mkdir -p "$OBSPATH"
+
+  touch "$NMLPATH"
+  touch "$CDFPATH/cdf_tool"
+  touch "$MSKPATH/mesh_mask.nc"
+  touch "$MSKPATH/bathy.nc"
+  touch "$OBS_MESH"
+  touch "$OBS_ABS_SAL"
+  touch "$OBS_CON_TEM"
 }
 
 # Function to clean up the temporary environment after a test
