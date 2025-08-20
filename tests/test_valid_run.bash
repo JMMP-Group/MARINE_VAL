@@ -5,6 +5,8 @@ echo "--- Test 1: A valid run ---"
 
 echo "Current working directory: $(pwd)"
 
+ls -a
+
 echo "Sourcing setup script..."
 source ./tests/run_test_setup.bash
 
