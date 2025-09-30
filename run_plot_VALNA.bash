@@ -41,18 +41,18 @@ fi
 if [[ $runAMOC == 1 ]]; then 
 
    # 1) timeseries of AMOC at 26.5N (maximum in z)
-   #echo 'plot max(AMOC_z) at 26.5N time series'
-   #python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f rapid_z/*moc_z_RAPID*${FREQ}*.nc -var Total_max_amoc_rapid -title "AMOC @26.5N (Sv)" -dir ${DATPATH} -o ${KEY}_AMOC -obs OBS/AMOC_max_obs.txt
-   #if [[ $? -ne 0 ]]; then exit 42; fi
+   echo 'plot max(AMOC_z) at 26.5N time series'
+   python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f rapid_z/*moc_z_RAPID*${FREQ}*.nc -var Total_max_amoc_rapid -title "AMOC @26.5N (Sv)" -dir ${DATPATH} -o ${KEY}_AMOC -obs OBS/AMOC_max_obs.txt
+   if [[ $? -ne 0 ]]; then exit 42; fi
 
    # 2) AMOC profiles (in z space) at 26.5N
-   #echo 'plot RAPID mocz'
-   #python SCRIPT/plot_rapid_mocz.py -runid $RUNIDS -dir ${DATPATH} -o ${KEY}_rapid_mocz -st ${FREQ} -p moc_z_RAPID -obs ${OBS_RPD_PRF}
+   echo 'plot RAPID mocz'
+   python SCRIPT/plot_rapid_mocz.py -runid $RUNIDS -dir ${DATPATH} -o ${KEY}_rapid_mocz -st ${FREQ} -p moc_z_RAPID -obs ${OBS_RPD_PRF}
    
    # 3) Zonally integrated mean AMOC in depth space
-   #echo 'plot zonally integrated mean AMOC in depth space'
-   #python SCRIPT/plot_zonint_amoc_z.py -runid $RUNIDS -dir ${DATPATH} -o ${KEY}_amoc_z -p AMOC_depth
-   #if [[ $? -ne 0 ]]; then exit 42; fi
+   echo 'plot zonally integrated mean AMOC in depth space'
+   python SCRIPT/plot_zonint_amoc_z.py -runid $RUNIDS -dir ${DATPATH} -o ${KEY}_amoc_z -p AMOC_depth
+   if [[ $? -ne 0 ]]; then exit 42; fi
 
    # 4) Zonally integrated mean AMOC in sigma_2000 space
    echo 'plot zonally integrated mean AMOC in sigma_2000 space'
