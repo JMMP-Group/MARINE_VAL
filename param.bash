@@ -31,11 +31,17 @@ export SCRPATH=${MARINE_VAL}/SCRIPT/
 export DATPATH=${DATADIR}/MARINE_VAL/
 
 # Observations
+# 1) Observations for HTC, STC and MEDOVF
 export OBSPATH=YOUR/LOCAL/PATH/OBS_PATH_DIR
 export OBS_MESH=your_obs_mesh_file.nc 
 export OBS_ABS_SAL=${OBSPATH}/your_obs_abs_sal_file.nc # Absolute salinity
 export OBS_CON_TEM=${OBSPATH}/your_obs_con_tem_file.nc # Conservative temperature
 export runOBS=1      # run observations for HTC, STC and MEDOVF
+# 2) Observations for RAPID overturning, downloaded from
+#       *) https://rapid.ac.uk/download-confirm/moc_netcdf
+#       *) https://rapid.ac.uk/download-confirm/moc_vertical_netcdf
+export OBS_RPD_MOC=YOUR/LOCAL/PATH/RAPID_OBS_PATH_DIR/moc_transports.nc
+export OBS_RPD_PRF=YOUR/LOCAL/PATH/RAPID_OBS_PATH_DIR/moc_vertical.nc
 
 # Retrieve data from MASS
 runRETRIEVE_DATA=1  # Set to 1 to retrieve data from MASS, 0 if you have previously downloaded the data
@@ -68,7 +74,14 @@ runHTC=0            # North Atlantic subpolar gyre heat content
                     #     in model output. Therefore, the user needs to 
                     #     explicitly activate this diagnostic.
 runSTC=0            # North Atlantic subpolar gyre salt content
-runAMOC=0           # AMOC at 26.5N at max. depth
+runAMOC=1           # AMOC meridonal cross-sections in z end density spaces
+runRAPID=1          # Overturning streamfunction in z space at at 26.5N:
+                    # vertical profile and max(MOC)z.
+runOSNAP=0          # Overturning streamfunction profile in density space accros OSNAP 
+                    # East and West arrays.
+                    # NB: Because of the observations, OSNAP metrics should be computed only 
+                    #     using monthly outputs and for the 2014-2016 period. Therefore,
+                    #     the user needs to explicitly activate this diagnostic here.
 runMLD_LabSea=0     # Mixed layer depth in Labrador Sea in March
 runSSS_LabSea=0     # Mean SSS anomaly in Labrador Sea
 runSST_NWCorner=0   # Mean SST anomaly off Newfoundland
@@ -80,11 +93,6 @@ runSST_NWCorner=0   # Mean SST anomaly off Newfoundland
 
 runGSL_NAC=0        # GS separation latitude and NA current latitude
 runMedOVF=0         # Mediterranean overflow water max salinity and corresponding depth
-runOSNAP=0          # Overturning streamfunction profile in density space accros OSNAP 
-                    # East and West arrays.
-                    # NB: Because of the observations, OSNAP metrics should be computed only 
-                    #     using monthly outputs and for the 2014-2016 period. Therefore,
-                    #     the user needs to explicitly activate this diagnostic.
 
 # VALTRANS (Transports and exchanges in straits)
 runMargSea=0        # Marginal Seas exchanges: Gibraltar, Bab el Mandeb, Strait of Hormuz
@@ -114,15 +122,15 @@ if [[ $RUNVALNA == 1 || $RUNALL == 1 ]]; then
    #runHTC=1
    runSTC=1
    runAMOC=1
+   runRAPID=1
+   #runOSNAP=1 # if you want to use this, you need to explicitely activate it!
    #runMHT=1 # if you want to use this, you need to explicitely activate it!
    runMLD_LabSea=1
    runSSS_LabSea=1
    runSST_NWCorner=1
-#  Disabled since not yet working
-#  runOVF=1
+   #runOVF=1 # Disabled since not yet working
    runGSL_NAC=1
    runMedOVF=1
-   #runOSNAP=1 # if you want to use this, you need to explicitely activate it!
 fi
 if [[ $RUNVALTRANS == 1 || $RUNALL == 1 ]]; then
    runITF=1
