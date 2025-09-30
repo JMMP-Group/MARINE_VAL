@@ -66,7 +66,7 @@ if [[ $? -ne 0 ]]; then
    exit 1
 fi
 
-#2.Compute MOC in depth space
+#2. Compute MOC in depth space
 xsec_file=$(ls nemoXsec_${RUN_NAME}o_${FREQ}_${TAG}_${section}.nc)
 echo "xsec_file = $xsec_file"
 label=${section}_${RUN_NAME}o_${FREQ}_${TAG}
@@ -78,6 +78,7 @@ if [[ $? -ne 0 ]]; then
    exit 1
 fi
 
+# Old code using CDFTOOL - kept just for testing now
 #FILEOUT=nemo_${RUN_NAME}o_${FREQ}_${TAG}_moc.nc
 #$CDFPATH/cdfmoc -v $FILEV -u $FILEU -t $FILET -s $FILES -rapid -o tmp_$FILEOUT
 #if [[ $? -eq 99 || $? -eq 0 ]]; then
