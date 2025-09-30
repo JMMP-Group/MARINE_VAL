@@ -24,3 +24,4 @@ dependencies:
   - scikit-learn
   - pys2index
   - cartopy
+  - f90nml
