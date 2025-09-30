@@ -49,9 +49,9 @@ runRETRIEVE_DATA=1  # Set to 1 to retrieve data from MASS, 0 if you have previou
 RUNALL=0       # run all possible metrics
 
 # diagnostics bundles
-RUNVALSO=1     # Southern Ocean metrics
-RUNVALNA=1     # North Atlantic metrics
-RUNVALTRANS=1  # Transports/exchanges in straits
+RUNVALSO=0     # Southern Ocean metrics
+RUNVALNA=0     # North Atlantic metrics
+RUNVALTRANS=0  # Transports/exchanges in straits
 
 # DISABLED, SINCE IT IS NOT WORKING YET
 #RUNVALGLO=0    # Global metrics
@@ -70,12 +70,12 @@ runAABW=0           # Volume of water for a given sigma4 threshold
 # VALNA (North Atlantic)
 runBSF_NA=0         # North Atlantic subpolar gyre strength
 runHTC=0            # North Atlantic subpolar gyre heat content
-                    # NB: MHT metric only works if relevant diagnostic 
+runSTC=0            # North Atlantic subpolar gyre salt content
+runMHT=0            # NB: MHT metric only works if relevant diagnostic 
                     #     in model output. Therefore, the user needs to 
                     #     explicitly activate this diagnostic.
-runSTC=0            # North Atlantic subpolar gyre salt content
-runAMOC=1           # AMOC meridonal cross-sections in z end density spaces
-runRAPID=1          # Overturning streamfunction in z space at at 26.5N:
+runAMOC=0           # AMOC meridonal cross-sections in z end density spaces
+runRAPID=0          # Overturning streamfunction in z space at at 26.5N:
                     # vertical profile and max(MOC)z.
 runOSNAP=0          # Overturning streamfunction profile in density space accros OSNAP 
                     # East and West arrays.
