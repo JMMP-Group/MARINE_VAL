@@ -55,27 +55,29 @@ ax = fig.add_subplot(spec[:1])
 
 for e, runid in enumerate([args.runid[0]] + args.runid):
      
-    wrkdir = args.datpath[0] + "/" + runid + "/"
+    wrkdir = args.datpath[0] + "/" + runid + "/osnap/"
     time = "t"
     sigm = "rho_bins"
     moc = "osnap_moc_sig"
 
     # observations 
     if e == 0:
-       obs_stem = 'obs_west' if 'west' in args.stem[0] else 'obs_east'
+       #obs_stem = 'obs_west' if 'west' in args.stem[0] else 'obs_east'
        cpltname, cpltcolor = 'obs', 'black'
        print(f"Name: {cpltname}, Color: {cpltcolor}")
-       ds = xr.open_dataset(wrkdir+args.prefix[0]+"_"+obs_stem+".nc")
+       ds = xr.open_dataset(wrkdir+args.prefix[0]+"_"+args.stem[0]+"_obs.nc")
     else:
        # projections
        _, cpltname, _, cpltcolor = parse_dbfile(runid)
        print(f"Name: {cpltname}, Color: {cpltcolor}")
-       ds = xr.open_mfdataset(wrkdir+args.prefix[0]+"*"+args.stem[0]+".nc",combine='nested',concat_dim="t")
+       ds = xr.open_mfdataset(wrkdir+args.prefix[0]+"_"+args.stem[0]+"*1m*.nc",combine='nested',concat_dim="t")
 
     alpha = 0.2
 
-    mocsig_mean = ds[moc].mean(dim=time).values
-    mocsig_std = ds[moc].std(dim=time).values
+    mocsig = ds[moc]
+    if e == 0: mocsig = -1.0 * mocsig
+    mocsig_mean = mocsig.mean(dim=time).values
+    mocsig_std = mocsig.std(dim=time).values
     sigma = ds[sigm].values 
     ax.plot(mocsig_mean, sigma, color=cpltcolor, linestyle="-", linewidth=2.5, label=cpltname)
     if e == 0:

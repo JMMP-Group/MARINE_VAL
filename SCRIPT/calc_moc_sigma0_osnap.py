@@ -10,7 +10,6 @@ in sigma-theta space accross a model transect.
 
 import sys
 import numpy as np
-from numba import jit, float64
 import xarray as xr
 import nsv
 import gsw
@@ -47,7 +46,6 @@ def depth2rho(vflux, rho, minsig, maxsig, stpsig):
 
     return bins_sect, vflux_rho      
 
-#@jit(nopython=True)
 def rho_bin_loop(vflux, rho, bins):
     nt  = vflux.shape[0]
     nx  = vflux.shape[2]
@@ -72,7 +70,7 @@ if __name__ == "__main__":
      maxsig   = float(sys.argv[4])
      stpsig   = float(sys.argv[5])
 
-     if "obs_osnap" in Fsection:
+     if "obs_" in Fsection:
 
         ds = nsv.Standardizer().osnap
 
@@ -156,7 +154,7 @@ if __name__ == "__main__":
          # integrate bottom to top
          MOC_rho[t,:] = tmp[::-1].cumsum()[::-1]
 
-     if "obs_osnap" in Fsection: MOC_rho[:,:] = -1.*MOC_rho[:,:]
+     if "_obs" in Fsection: MOC_rho[:,:] = -1.*MOC_rho[:,:]
 
      # Saving datarray and netCDF file
      ds_moc = xr.Dataset(
@@ -173,5 +171,5 @@ if __name__ == "__main__":
      
 
      enc = {"time_centered"        : {"_FillValue": None }}
-     ds_moc.to_netcdf('osnap_moc_sigma0_' + label + '.nc', encoding=enc, unlimited_dims={'t':True})
+     ds_moc.to_netcdf('moc_sigma0_' + label + '.nc', encoding=enc, unlimited_dims={'t':True})
 
