@@ -30,20 +30,18 @@ class run(object):
         for kf,cf in enumerate(cfile):
             try:
                 ncid    = nc.Dataset(cf)
-
                 ncvtime = ncid.variables[ctime]
                 if 'units' in ncvtime.ncattrs():
                     cunits = ncvtime.units
                 else:
                     cunits = "seconds since 1900-01-01 00:00:00"
-    
                 # define calendar
                 if 'calendar' in ncvtime.ncattrs():
                     ccalendar = ncvtime.calendar
                 else:
                     ccalendar = "noleap"
                 time = nc.num2date(ncid.variables[ctime][:].squeeze(), cunits, ccalendar)
-        
+                
                 # convert to proper datetime object
                 if isinstance(time,(list,np.ndarray)):
                     ntime = time.shape[0]

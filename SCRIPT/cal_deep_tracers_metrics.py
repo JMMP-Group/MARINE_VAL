@@ -190,6 +190,8 @@ def calc_max_diag(data, tmask, mesh, args):
             f.write(f"std = {max_depth.std(dim=[lat, lon]).values[0]}\n")
     
     else:
+        max_diag['time_counter'] = args.time_counter
+        max_depth['time_counter'] = args.time_counter
         max_diag['time_centered'] = args.time_centered
         max_depth['time_centered'] = args.time_centered
 
