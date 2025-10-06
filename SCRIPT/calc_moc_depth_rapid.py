@@ -21,10 +21,10 @@ if __name__ == "__main__":
      int_dir  = sys.argv[3] # direction of integration: "top2bot" or "bot2top"
 
      ds = xr.open_dataset(Fsection).squeeze(dim='y')
-     ds = ds.rename_dims({'time_counter':'t','deptht':'z'})
+     #ds = ds.rename_dims({'time_counter':'t','deptht':'z'})
 
      vnorm = ds.vo
-     timed = ds.time_centered.data
+     timed = ds.time_centered#.data
      depthw = ds.gdepw_1d.squeeze().data
 
      #MODEL grid metrics       
@@ -55,12 +55,12 @@ if __name__ == "__main__":
 
      # Compute MOC from flux in density bins
      print('Compute the overturning streamfunction in depth coordinates')
-     nt = vflux.t.size
-     nz = vflux.z.size
+     nt = vflux.time_counter.size
+     nz = vflux.deptht.size
      ny = 1
      nx = 1
      MOC_z = np.zeros((nt, nz, ny, nx))
-     for t in range(vflux.t.size):
+     for t in range(nt):
          # Integrate along x
          xint = -vflux[t,:,:].sum(dim='x').values
          # Convert from m3/s to Sv
@@ -75,12 +75,12 @@ if __name__ == "__main__":
                          Total_max_amoc_rapid=(["time_counter","y","x"], np.nanmax(MOC_z.data, axis=1)), 
                    ),
                    coords=dict(
-                         time_centered=(["time_counter"], timed),
+                         time_centered=(["time_counter"]), #timed),
                          depthw=(["depthw"], depthw),
                    ),
                    attrs=dict(description="Overturning streamfunction profile in depth space at the RAPID array and its maximum"),
               )
-     
+     ds_moc["time_centered"] = timed
 
      enc = {"time_centered"        : {"_FillValue": None }}
      ds_moc.to_netcdf('moc_z_' + label + '.nc', encoding=enc, unlimited_dims={'time_counter':True})

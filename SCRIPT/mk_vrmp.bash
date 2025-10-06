@@ -47,7 +47,7 @@ fi
 if [[ ! -L mesh_h.nc     ]] ; then ln -s mesh_amoc.nc mesh_h.nc ; fi
 if [[ ! -L mesh_z.nc     ]] ; then ln -s mesh_amoc.nc mesh_z.nc ; fi
 if [[ ! -L mask.nc       ]] ; then ln -s mesh_amoc.nc mask.nc   ; fi
-if [[ ! -L nam_cdf_names ]] ; then 
+if [[ ! -f nam_cdf_names ]] ; then 
    cp $DATPATH/$RUNID/nam_cdf_names nam_cdf_names_ori
    f90nml -g nammeshmask \
           -v cn_fzgr='mesh_z.nc' \

@@ -185,7 +185,7 @@ def calc_max_diag(data, tmask, mesh, args):
             f.write(f"std = {max_diag.std(dim=[lat, lon]).values[0]}\n")
 
         with open(f"{args.marvaldir[0]}/OBS/{args.obsout[0]}_{args.diagvar.lower()}_depth.txt", "w") as f:
-            f.write(f"ref = Depth of max {args.diagvar.lower()} {args.obsref[0]}\n")
+            f.write(f"ref = Depth of Max {args.diagvar.lower()} {args.obsref[0]}\n")
             f.write(f"mean = {max_depth.mean(dim=[lat, lon]).values[0]}\n")
             f.write(f"std = {max_depth.std(dim=[lat, lon]).values[0]}\n")
     

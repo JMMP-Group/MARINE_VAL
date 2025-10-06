@@ -70,7 +70,9 @@ if __name__ == "__main__":
      maxsig   = float(sys.argv[4])
      stpsig   = float(sys.argv[5])
 
-     if "obs_" in Fsection:
+     print(Fsection)
+
+     if "_obs" in Fsection:
 
         ds = nsv.Standardizer().osnap
 
@@ -85,7 +87,7 @@ if __name__ == "__main__":
         ds = compute_potential_sigma(ds)
         
         vnorm = ds.velo
-        timed = ds.time.data
+        timed = ds.time#.data
 
         # OSNAP observational grid metrics
         depth_o = ds.depth.values
@@ -114,7 +116,7 @@ if __name__ == "__main__":
                             )
 
         vnorm = ds.vo
-        timed = ds.time_centered.data
+        timed = ds.time_centered #.data
 
         #MODEL grid metrics       
         zz = ds.e3v_0.values
@@ -163,12 +165,12 @@ if __name__ == "__main__":
                          max_osnap_moc_sig=(["t"], np.nanmax(MOC_rho.data, axis=1)), 
                    ),
                    coords=dict(
-                         time_centered=(["t"], timed),
+                         time_centered=(["t"]),# timed),
                          rho_bins=(["rho_bins"], bins_sect),
                    ),
                    attrs=dict(description="Overturning streamfunction profile in sigma-0 space and its maximum timeseries"),
               )
-     
+     ds_moc["time_centered"] = timed 
 
      enc = {"time_centered"        : {"_FillValue": None }}
      ds_moc.to_netcdf('moc_sigma0_' + label + '.nc', encoding=enc, unlimited_dims={'t':True})
