@@ -64,6 +64,8 @@ for e, runid in enumerate([args.runid[0]] + args.runid):
        cpltname, cpltcolor = 'obs', 'black'
        print(f"Name: {cpltname}, Color: {cpltcolor}")
        ds = xr.open_dataset(args.obsfile[0])
+       startdate = np.datetime_as_string(ds.time.values[0])[:10]
+       enddate   = np.datetime_as_string(ds.time.values[-1])[:10]
     else:
        # simulations
        wrkdir = args.datpath[0] + runid + "/rapid_z/"
@@ -76,13 +78,16 @@ for e, runid in enumerate([args.runid[0]] + args.runid):
                               combine='nested',
                               concat_dim=time
             )
-
+       startdate = np.datetime_as_string(np.datetime64(ds.time_centered.values[0]))[:10]
+       enddate = np.datetime_as_string(np.datetime64(ds.time_centered.values[-1]))[:10]
+ 
     alpha = 0.2
 
     mocz_mean = ds[moc].mean(dim=time).squeeze().values
     mocz_std  = ds[moc].std(dim=time).values
     depth     = ds[z].values 
-    ax.plot(mocz_mean, depth, color=cpltcolor, linestyle="-", linewidth=2.5, label=cpltname)
+    lab_info = cpltname + "\n" + startdate + "->" + enddate
+    ax.plot(mocz_mean, depth, color=cpltcolor, linestyle="-", linewidth=2.5, label=lab_info)
     if e == 0:
        ax.fill_betweenx(depth, 
                         mocz_mean+mocz_std, 

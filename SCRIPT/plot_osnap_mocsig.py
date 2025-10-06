@@ -66,20 +66,25 @@ for e, runid in enumerate([args.runid[0]] + args.runid):
        cpltname, cpltcolor = 'obs', 'black'
        print(f"Name: {cpltname}, Color: {cpltcolor}")
        ds = xr.open_dataset(wrkdir+args.prefix[0]+"_"+args.stem[0]+"_obs.nc")
+       startdate = np.datetime_as_string(ds.time_centered.isel(t=0).values)[:10]
+       enddate   = np.datetime_as_string(ds.time_centered.isel(t=-1).values)[:10]
     else:
        # projections
        _, cpltname, _, cpltcolor = parse_dbfile(runid)
        print(f"Name: {cpltname}, Color: {cpltcolor}")
        ds = xr.open_mfdataset(wrkdir+args.prefix[0]+"_"+args.stem[0]+"*1m*.nc",combine='nested',concat_dim="t")
+       startdate = np.datetime_as_string(np.datetime64(ds.time_centered.values[0]))[:10]
+       enddate = np.datetime_as_string(np.datetime64(ds.time_centered.values[-1]))[:10]
 
     alpha = 0.2
 
     mocsig = ds[moc]
-    if e == 0: mocsig = -1.0 * mocsig
+    #if e == 0: mocsig = -1.0 * mocsig
     mocsig_mean = mocsig.mean(dim=time).values
     mocsig_std = mocsig.std(dim=time).values
     sigma = ds[sigm].values 
-    ax.plot(mocsig_mean, sigma, color=cpltcolor, linestyle="-", linewidth=2.5, label=cpltname)
+    lab_info = cpltname + "\n" + startdate + "->" + enddate
+    ax.plot(mocsig_mean, sigma, color=cpltcolor, linestyle="-", linewidth=2.5, label=lab_info)
     if e == 0:
        ax.fill_betweenx(sigma, mocsig_mean+mocsig_std, mocsig_mean-mocsig_std, alpha=alpha, facecolor=cpltcolor)
     
