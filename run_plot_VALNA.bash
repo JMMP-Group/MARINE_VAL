@@ -119,11 +119,11 @@ fi
 if [[ $runMedOVF == 1 ]]; then
 
    # max practical salinity in med overflow   
-   python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f *${FREQ}*_medovf_mean.nc -var so_pra -title "Med Outflow Max Salinity" -dir ${DATPATH} -o ${KEY}_medovf_salinity -obs OBS/MEDOVF_so_abs.txt
+   python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f *${FREQ}*_MEDOVF_mean.nc -var so_pra -title "Med Outflow Max Salinity" -dir ${DATPATH} -o ${KEY}_medovf_salinity -obs OBS/MEDOVF_so_abs.txt
    if [[ $? -ne 0 ]]; then exit 42; fi
 
    # depth of max practical salinity in med overflow
-   python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f *${FREQ}*_medovf_mean_depth.nc -var deptht -title "Med Outflow Depth of Max Salinity (m)" -dir ${DATPATH} -o ${KEY}_medovf_depth -obs OBS/MEDOVF_so_abs_depth.txt
+   python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f *${FREQ}*_MEDOVF_mean_depth.nc -var gdept_0 -title "Med Outflow Depth of Max Salinity (m)" -dir ${DATPATH} -o ${KEY}_medovf_depth -obs OBS/MEDOVF_so_abs_depth.txt
    if [[ $? -ne 0 ]]; then exit 42; fi
 
 fi
@@ -134,38 +134,43 @@ if [[ $runOSNAP == 1 ]]; then
    echo 'plot OSNAP west mocsig'
    python SCRIPT/plot_osnap_mocsig.py -runid $RUNIDS -dir ${DATPATH} -o ${KEY}_osnap_mocsig_west -st OSNAPwest -p moc_sigma0
    echo 'plot OSNAP west mocsig max time series'
-   python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f osnap*${FREQ}*OSNAPwest.nc -var 'max_osnap_moc_sig' -title "OSNAP west mocsig" -dir ${DATPATH} -o ${KEY}_OSNAP_west -obs OBS/OSNAP_mocsig_west.txt
+   python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f osnap/*OSNAPwest*1m*.nc -var 'max_osnap_moc_sig' -title "OSNAP west mocsig" -dir ${DATPATH} -o ${KEY}_OSNAP_west -obs OBS/OSNAP_mocsig_west.txt
 
    # OSNAP East
    echo 'plot OSNAP east mocsig'
    python SCRIPT/plot_osnap_mocsig.py -runid $RUNIDS -dir ${DATPATH} -o ${KEY}_osnap_mocsig_east -st OSNAPeast -p moc_sigma0
    echo 'plot OSNAP east mocsig max time series'
-   python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f osnap*${FREQ}*OSNAPeast.nc -var 'max_osnap_moc_sig' -title "OSNAP east mocsig" -dir ${DATPATH} -o ${KEY}_OSNAP_east -obs OBS/OSNAP_mocsig_east.txt
+   python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f osnap/*OSNAPeast*1m*.nc -var 'max_osnap_moc_sig' -title "OSNAP east mocsig" -dir ${DATPATH} -o ${KEY}_OSNAP_east -obs OBS/OSNAP_mocsig_east.txt
 
 fi
 
-# crop figure (rm legend)
-convert ${KEY}_BSF.png                     -crop 1240x1040+0+0 tmp01.png
-convert ${KEY}_HTC.png                     -crop 1240x1040+0+0 tmp02.png
-convert ${KEY}_AMOC.png                    -crop 1240x1040+0+0 tmp03.png
-## convert ${KEY}_OHT.png                     -crop 1240x1040+0+0 tmp04.png
+# crop timeseries plots (rm legend)
+convert ${KEY}_BSF.png             -crop 1240x1040+0+0 tmp01.png
+convert ${KEY}_HTC.png             -crop 1240x1040+0+0 tmp02.png #
+convert ${KEY}_STC.png             -crop 1240x1040+0+0 tmp03.png #
+convert ${KEY}_AMOC.png            -crop 1240x1040+0+0 tmp04.png
+convert ${KEY}_MXL_LAB_MEAN.png    -crop 1240x1040+0+0 tmp05.png 
+convert ${KEY}_SSS_LabSea.png      -crop 1240x1040+0+0 tmp06.png #
+convert ${KEY}_SST_newf.png        -crop 1240x1040+0+0 tmp07.png #
+convert ${KEY}_GSL.png             -crop 1240x1040+0+0 tmp08.png #
+convert ${KEY}_NAC.png             -crop 1240x1040+0+0 tmp09.png #
+convert ${KEY}_medovf_salinity.png -crop 1240x1040+0+0 tmp10.png #
+convert ${KEY}_medovf_depth.png    -crop 1240x1040+0+0 tmp11.png #
+convert ${KEY}_OSNAP_west.png      -crop 1240x1040+0+0 tmp12.png #
+convert ${KEY}_OSNAP_east.png      -crop 1240x1040+0+0 tmp13.png #
 
-convert ${KEY}_MXL_LAB_MEAN.png            -crop 1240x1040+0+0 tmp05.png
-convert ${KEY}_SSS_LabSea.png              -crop 1240x1040+0+0 tmp06.png
-convert ${KEY}_SST_newf.png                -crop 1240x1040+0+0 tmp07.png
-convert FIGURES/box_NA.png  -trim -bordercolor White -border 2 tmp08.png
+ln -s ${KEY}_rapid_mocz.png tmp14.png
+ln -s ${KEY}_osnap_mocsig_west.png tmp15.png
+ln -s ${KEY}_osnap_mocsig_east.png tmp16.png
 
+#convert ${KEY}_OHT.png  -crop 1240x1040+0+0 tmp04.png
 ## convert ${KEY}_OVF_S.png                   -crop 1240x1040+0+0 tmp09.png
 ## convert ${KEY}_OVF_T.png                   -crop 1240x1040+0+0 tmp10.png
-convert ${KEY}_GSL.png                     -crop 1240x1040+0+0 tmp11.png
-convert ${KEY}_NAC.png                     -crop 1240x1040+0+0 tmp12.png
 
-convert ${KEY}_medovf_salinity.png        -crop 1240x1040+0+0 tmp11.png
-convert ${KEY}_medovf_depth.png            -crop 1240x1040+0+0 tmp12.png
-
+convert FIGURES/box_NA.png  -trim -bordercolor White -border 2 tmp00.png
 # trim figure (remove white area)
-convert legend.png      -trim    -bordercolor White -border 20 tmp13.png
-convert runidname.png   -trim    -bordercolor White -border 20 tmp14.png
+convert legend.png      -trim    -bordercolor White -border 20 tmp-2.png
+convert runidname.png   -trim    -bordercolor White -border 20 tmp-1.png
 
 ## ORIGINAL SET OF VALNA METRICS:
 ## # compose the image
@@ -176,16 +181,28 @@ convert runidname.png   -trim    -bordercolor White -border 20 tmp14.png
 
 ## REDUCED SET OF METRICS:
 # compose the image
-convert \( tmp01.png tmp02.png tmp03.png +append \) \
-        \( tmp05.png tmp06.png tmp08.png +append \) \
-        \( tmp07.png tmp11.png tmp12.png +append \) \
-           tmp13.png tmp14.png -append -trim -bordercolor White -border 50 $KEY.png
+#convert \( tmp01.png tmp02.png tmp03.png +append \) \
+#        \( tmp05.png tmp06.png tmp08.png +append \) \
+#        \( tmp07.png tmp11.png tmp12.png +append \) \
+#           tmp13.png tmp14.png -append -trim -bordercolor White -border 50 $KEY.png
 
+# compose surface dynamics and T/S plot
+convert \( tmp02.png tmp03.png tmp06.png +append \) \
+        \( tmp07.png tmp00.png tmp09.png +append \) \
+        \( tmp08.png tmp10.png tmp11.png +append \) \
+           tmp-2.png tmp-1.png -append -trim -bordercolor White -border 50 ${KEY}-1.png
+
+# compose deep dynamics
+convert \( tmp01.png tmp12.png tmp13.png +append \) \
+        \( tmp05.png tmp00.png tmp04.png +append \) \
+        \( tmp14.png tmp15.png tmp16.png +append \) \
+           tmp-2.png tmp-1.png -append -trim -bordercolor White -border 50 ${KEY}-2.png
+  
 # save figure
 mv ${KEY}_*.png FIGURES/.
 mv ${KEY}_*.txt FIGURES/.
-mv tmp13.png FIGURES/${KEY}_legend.png
-mv tmp14.png FIGURES/${KEY}_runidname.png
+mv tmp-2.png FIGURES/${KEY}_legend.png
+mv tmp-1.png FIGURES/${KEY}_runidname.png
 
 # clean
 rm tmp??.png
@@ -193,4 +210,5 @@ rm runidname.png
 rm legend.png
 
 #display
-display -resize 30% $KEY.png
+display -resize 30% $KEY-1.png
+display -resize 30% $KEY-2.png

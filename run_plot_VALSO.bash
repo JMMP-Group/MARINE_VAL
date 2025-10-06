@@ -11,66 +11,72 @@ RUNIDS=${@:3}
 FREQs="1s"
 DENSITY_THRESHOLD=45.8 
 
-# ACC
-# Drake
-echo 'plot ACC time series'
-python ${SCRPATH}/plot_time_series.py -noshow -runid $RUNIDS -f *ACC_nemo_*${FREQ}*1.nc -var vtrp -sf -1 -title "ACC transport (Sv)" -dir ${DATPATH} -o "${KEY}_ACC" -obs OBS/ACC_obs.txt
-if [[ $? -ne 0 ]]; then exit 42; fi
-#echo 'plot ACC barotropic time series'
-#python ${SCRPATH}/plot_time_series.py -noshow -runid $RUNIDS -f *ACC_bottom_nemo*${FREQ}*1.nc -var vtrp -sf -1 -title "ACC barotropic transport (Sv)" -dir ${DATPATH} -o "${KEY}_ACC_bottom" -obs OBS/ACC_bottom_obs.txt
-#if [[ $? -ne 0 ]]; then exit 42; fi
-#echo 'plot ACC shelf break time series'
-#python ${SCRPATH}/plot_time_series.py -noshow -runid $RUNIDS -f *ACC_*${FREQ}*1.nc -var vtrp -sf -1 -title "ACC transport (Sv)" -dir ${DATPATH} -o "${KEY}_ACC_shelfbreak" -obs OBS/ACC_shelfbreak_obs.txt
-#if [[ $? -ne 0 ]]; then exit 42; fi
+# ACC - Drake passage
+if [[ $runACC == 1 ]]; then
+   echo 'plot ACC time series'
+   python ${SCRPATH}/plot_time_series.py -noshow -runid $RUNIDS -f *ACC_nemo_*${FREQ}*1.nc -var vtrp -sf -1 -title "ACC transport (Sv)" -dir ${DATPATH} -o "${KEY}_ACC" -obs OBS/ACC_obs.txt
+   if [[ $? -ne 0 ]]; then exit 42; fi
+   #echo 'plot ACC barotropic time series'
+   #python ${SCRPATH}/plot_time_series.py -noshow -runid $RUNIDS -f *ACC_bottom_nemo*${FREQ}*1.nc -var vtrp -sf -1 -title "ACC barotropic transport (Sv)" -dir ${DATPATH} -o "${KEY}_ACC_bottom" -obs OBS/ACC_bottom_obs.txt
+   #if [[ $? -ne 0 ]]; then exit 42; fi
+   #echo 'plot ACC shelf break time series'
+   #python ${SCRPATH}/plot_time_series.py -noshow -runid $RUNIDS -f *ACC_*${FREQ}*1.nc -var vtrp -sf -1 -title "ACC transport (Sv)" -dir ${DATPATH} -o "${KEY}_ACC_shelfbreak" -obs OBS/ACC_shelfbreak_obs.txt
+   #if [[ $? -ne 0 ]]; then exit 42; fi
+fi
 
-# GYRE
-# ROSS GYRE
-echo 'plot Ross Gyre time series'
-python ${SCRPATH}/plot_time_series.py -noshow -runid $RUNIDS -f *RG*${FREQ}*psi_SO.nc -var '(max_sobarstf|sobarstf)' -title "Ross Gyre (Sv)" -dir ${DATPATH} -o ${KEY}_RG -sf 0.000001 -obs OBS/RG_obs.txt
-if [[ $? -ne 0 ]]; then exit 42; fi
-# WED GYRE
-echo 'plot Weddell Gyre time series'
-python ${SCRPATH}/plot_time_series.py -noshow -runid $RUNIDS -f *WG*${FREQ}*psi_SO.nc -var '(max_sobarstf|sobarstf)' -title "Weddell Gyre (Sv)" -dir ${DATPATH} -o ${KEY}_WG -sf 0.000001 -obs OBS/WG_obs.txt
-if [[ $? -ne 0 ]]; then exit 42; fi
+# GYRES' strength
+if [[ $runBSF_SO == 1 ]]; then
+   # ROSS GYRE
+   echo 'plot Ross Gyre time series'
+   python ${SCRPATH}/plot_time_series.py -noshow -runid $RUNIDS -f *RG*${FREQ}*psi_SO.nc -var '(max_sobarstf|sobarstf)' -title "Ross Gyre (Sv)" -dir ${DATPATH} -o ${KEY}_RG -sf 0.000001 -obs OBS/RG_obs.txt
+   if [[ $? -ne 0 ]]; then exit 42; fi
+   # WED GYRE
+   echo 'plot Weddell Gyre time series'
+   python ${SCRPATH}/plot_time_series.py -noshow -runid $RUNIDS -f *WG*${FREQ}*psi_SO.nc -var '(max_sobarstf|sobarstf)' -title "Weddell Gyre (Sv)" -dir ${DATPATH} -o ${KEY}_WG -sf 0.000001 -obs OBS/WG_obs.txt
+   if [[ $? -ne 0 ]]; then exit 42; fi
+fi
 
-# HSSW
-# mean S WROSS
-echo 'plot mean bot S (WROSS) time series'
-python ${SCRPATH}/plot_time_series.py -noshow -runid $RUNIDS -f *WROSS*so*${FREQ}*deepTS.nc -var '(mean_3D_so_pra|so_pra)' -title "Mean deep sal. WROSS (PSU)" -dir ${DATPATH} -o ${KEY}_WROSS_mean_deep_so -obs OBS/WROSS_deepS_mean_obs.txt
-# mean S WWED
-if [[ $? -ne 0 ]]; then exit 42; fi
-echo 'plot mean bot S (WWED) time series'
-python ${SCRPATH}/plot_time_series.py -noshow -runid $RUNIDS -f *WED*so*${FREQs}*deepTS.nc   -var '(mean_3D_so_pra|so_pra)' -title "Mean deep sal. WWED  (PSU)" -dir ${DATPATH} -o ${KEY}_WWED_mean_deep_so  -obs OBS/WWED_deepS_mean_obs.txt
-if [[ $? -ne 0 ]]; then exit 42; fi
+if [[ $runDEEPTS == 1 ]]; then
+   # HSSW
+   # mean S WROSS
+   echo 'plot mean bot S (WROSS) time series'
+   python ${SCRPATH}/plot_time_series.py -noshow -runid $RUNIDS -f *WROSS*so*${FREQ}*deepTS.nc -var '(mean_3D_so_pra|so_pra)' -title "Mean deep sal. WROSS (PSU)" -dir ${DATPATH} -o ${KEY}_WROSS_mean_deep_so -obs OBS/WROSS_deepS_mean_obs.txt
+   if [[ $? -ne 0 ]]; then exit 42; fi
+   # mean S WWED 
+   echo 'plot mean bot S (WWED) time series'
+   python ${SCRPATH}/plot_time_series.py -noshow -runid $RUNIDS -f *WED*so*${FREQs}*deepTS.nc   -var '(mean_3D_so_pra|so_pra)' -title "Mean deep sal. WWED  (PSU)" -dir ${DATPATH} -o ${KEY}_WWED_mean_deep_so  -obs OBS/WWED_deepS_mean_obs.txt
+   if [[ $? -ne 0 ]]; then exit 42; fi
+   # CDW
+   # mean T AMU
+   echo 'plot mean bot T (AMU) time series'
+   python ${SCRPATH}/plot_time_series.py -noshow -runid $RUNIDS -f *AMU*thetao*${FREQ}*deepTS.nc   -var '(mean_3D_thetao_pot|thetao_pot)' -title "Mean deep temp. AMU (C)"   -dir ${DATPATH} -o ${KEY}_AMU_mean_deep_thetao   -obs OBS/AMU_deepT_mean_obs.txt
+   if [[ $? -ne 0 ]]; then exit 42; fi
+   # mean T EROSS
+   echo 'plot mean bot T (EROSS) time series'
+   python ${SCRPATH}/plot_time_series.py -noshow -runid $RUNIDS -f *EROSS*thetao*${FREQs}*deepTS.nc -var '(mean_3D_thetao_pot|thetao_pot)' -title "Mean deep temp. EROSS (C)" -dir ${DATPATH} -o ${KEY}_EROSS_mean_deep_thetao -obs OBS/EROSS_deepT_mean_obs.txt
+   if [[ $? -ne 0 ]]; then exit 42; fi
+fi
 
-# CDW
-# mean T AMU
-echo 'plot mean bot T (AMU) time series'
-python ${SCRPATH}/plot_time_series.py -noshow -runid $RUNIDS -f *AMU*thetao*${FREQ}*deepTS.nc   -var '(mean_3D_thetao_pot|thetao_pot)' -title "Mean deep temp. AMU (C)"   -dir ${DATPATH} -o ${KEY}_AMU_mean_deep_thetao   -obs OBS/AMU_deepT_mean_obs.txt
-if [[ $? -ne 0 ]]; then exit 42; fi
-# mean T EROSS
-echo 'plot mean bot T (EROSS) time series'
-python ${SCRPATH}/plot_time_series.py -noshow -runid $RUNIDS -f *EROSS*thetao*${FREQs}*deepTS.nc -var '(mean_3D_thetao_pot|thetao_pot)' -title "Mean deep temp. EROSS (C)" -dir ${DATPATH} -o ${KEY}_EROSS_mean_deep_thetao -obs OBS/EROSS_deepT_mean_obs.txt
-if [[ $? -ne 0 ]]; then exit 42; fi
-
-# MLD
-# max mld in WEDDELL GYRE
-echo 'plot max mld in Weddell Gyre time series'
-python ${SCRPATH}/plot_time_series.py -noshow -runid $RUNIDS -f *WMXL*1m*0901*T.nc -var '(max_somxzint1|somxzint1)' -title "Max Kara mld WG (m)" -dir ${DATPATH} -o ${KEY}_WG_max_karamld -obs OBS/WG_karamld_max_obs.txt
-if [[ $? -ne 0 ]]; then exit 42; fi
+if [[ $runMLD_Weddell == 1 ]]; then
+   # max mld in WEDDELL GYRE
+   echo 'plot max mld in Weddell Gyre time series'
+   python ${SCRPATH}/plot_time_series.py -noshow -runid $RUNIDS -f *WMXL*1m*0901*T.nc -var '(max_somxzint1|somxzint1)' -title "Max Kara mld WG (m)" -dir ${DATPATH} -o ${KEY}_WG_max_karamld -obs OBS/WG_karamld_max_obs.txt
+   if [[ $? -ne 0 ]]; then exit 42; fi
+fi
 
 # AABW
-# volume of water with sigma4 > threshold in Weddell sea
-echo 'plot Weddell Sea time series'
-python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f nemo*_${FREQ}_*_aabw_weddell_density_volume.nc \
+if [[ $runAABW == 1 ]]; then
+   # volume of water with sigma4 > threshold in the Weddell Sea
+   echo 'plot Weddell Sea time series'
+   python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f nemo*_${FREQ}_*_weddell_density_volume.nc \
     -var 'sigma4Vol' \-title "Weddell Sea volume with sigma4 > $DENSITY_THRESHOLD (m3)" -dir ${DATPATH} -o ${KEY}_aabw_${FREQ}_weddell
-if [[ $? -ne 0 ]]; then exit 42; fi
-
-# volume of water with sigma4 > threshold in Southern ocean
-echo 'plot Southern Ocean time series'
-python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f nemo*_${FREQ}_*_aabw_so_density_volume.nc \
+   if [[ $? -ne 0 ]]; then exit 42; fi
+   # volume of water with sigma4 > threshold in Southern ocean
+   echo 'plot Southern Ocean time series'
+   python SCRIPT/plot_time_series.py -noshow -runid $RUNIDS -f nemo*_${FREQ}_*_so_density_volume.nc \
     -var 'sigma4Vol' \-title "Southern Ocean volume with sigma4 > $DENSITY_THRESHOLD (m3)" -dir ${DATPATH} -o ${KEY}_aabw_${FREQ}_so
-if [[ $? -ne 0 ]]; then exit 42; fi
+   if [[ $? -ne 0 ]]; then exit 42; fi
+fi
 
 # crop figure (rm legend)
 convert ${KEY}_ACC.png                   -crop 1240x1040+0+0 tmp01.png
