@@ -13,6 +13,9 @@ PROC='runSTC'
 OBS_DONE_FLAG="${SCRPATH}/.obs_done_STC"
 GENERATED_TMASKS=($(jq -r ".${PROC}[]" "${SCRPATH}/tmasks_generated.json"))
 
+# Create woa-obs working directory if needed
+if [ ! -d woa_obs ]; then mkdir -p woa_obs ; fi
+
 # Only run obs section if runOBS is set
 if [[ "$runOBS" != "1" ]]; then touch $OBS_DONE_FLAG; fi
 
@@ -48,12 +51,16 @@ if [[ ! -f $OBS_DONE_FLAG ]]; then
 
    echo 'mk_stc.bash: Calculate Obs Salt content SPG NA metrics.'
 
+   cd woa_obs
+   if [[ ! -L mesh.nc       ]] ; then ln -s $MESHF                        . ; fi
+   if [[ ! -L nam_cdf_names ]] ; then ln -s $DATPATH/$RUNID/nam_cdf_names . ; fi
    # calculate salt content of NA subpolar gyre
    FILEOUT=SALTC_NA_WOA13v2_saltc.nc
    ijbox=$($CDFPATH/cdffindij -w ${MIN_LON} ${MAX_LON} ${MIN_LAT} ${MAX_LAT} -c $MESHF -p T | tail -2 | head -1 )
    echo "ijbox : $ijbox"
    # assumes 75 levels in ocean:
-   $CDFPATH/cdfsaltc -f $OBS_ABS_SAL -zoom ${ijbox} 1 75 -M ${TMASK} tmask -o $FILEOUT
+   $CDFPATH/cdfsaltc -f $OBS_ABS_SAL -zoom ${ijbox} 1 75 -M ${TMASK} tmask -o $DATPATH/$RUNID/$FILEOUT
+   cd ../
    # compute subp_obs
    ${SCRPATH}/mk_compute_obs_stats.bash saltc3d time_counter $FILEOUT WOA13v2 STC_subp_obs.txt
 fi
