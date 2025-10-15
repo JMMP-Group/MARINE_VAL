@@ -1,6 +1,6 @@
 #!/bin/bash
-#SBATCH --mem=100G
-#SBATCH --time=20
+#SBATCH --mem=200G
+#SBATCH --time=60
 #SBATCH --ntasks=1
 
 if [[ $# -ne 1 ]]; then echo 'mk_msh4vmap.bash [RUNID (mi-aa000)]'; exit 1 ; fi
