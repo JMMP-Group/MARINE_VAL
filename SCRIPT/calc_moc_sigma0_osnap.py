@@ -10,7 +10,6 @@ in sigma-theta space accross a model transect.
 
 import sys
 import numpy as np
-from numba import jit, float64
 import xarray as xr
 import nsv
 import gsw
@@ -47,7 +46,6 @@ def depth2rho(vflux, rho, minsig, maxsig, stpsig):
 
     return bins_sect, vflux_rho      
 
-#@jit(nopython=True)
 def rho_bin_loop(vflux, rho, bins):
     nt  = vflux.shape[0]
     nx  = vflux.shape[2]
@@ -72,7 +70,9 @@ if __name__ == "__main__":
      maxsig   = float(sys.argv[4])
      stpsig   = float(sys.argv[5])
 
-     if "obs_osnap" in Fsection:
+     print(Fsection)
+
+     if "_obs" in Fsection:
 
         ds = nsv.Standardizer().osnap
 
@@ -87,7 +87,7 @@ if __name__ == "__main__":
         ds = compute_potential_sigma(ds)
         
         vnorm = ds.velo
-        timed = ds.time.data
+        timed = ds.time#.data
 
         # OSNAP observational grid metrics
         depth_o = ds.depth.values
@@ -116,7 +116,7 @@ if __name__ == "__main__":
                             )
 
         vnorm = ds.vo
-        timed = ds.time_centered.data
+        timed = ds.time_centered #.data
 
         #MODEL grid metrics       
         zz = ds.e3v_0.values
@@ -156,7 +156,7 @@ if __name__ == "__main__":
          # integrate bottom to top
          MOC_rho[t,:] = tmp[::-1].cumsum()[::-1]
 
-     if "obs_osnap" in Fsection: MOC_rho[:,:] = -1.*MOC_rho[:,:]
+     if "_obs" in Fsection: MOC_rho[:,:] = -1.*MOC_rho[:,:]
 
      # Saving datarray and netCDF file
      ds_moc = xr.Dataset(
@@ -165,13 +165,13 @@ if __name__ == "__main__":
                          max_osnap_moc_sig=(["t"], np.nanmax(MOC_rho.data, axis=1)), 
                    ),
                    coords=dict(
-                         time_centered=(["t"], timed),
+                         time_centered=(["t"]),# timed),
                          rho_bins=(["rho_bins"], bins_sect),
                    ),
                    attrs=dict(description="Overturning streamfunction profile in sigma-0 space and its maximum timeseries"),
               )
-     
+     ds_moc["time_centered"] = timed 
 
      enc = {"time_centered"        : {"_FillValue": None }}
-     ds_moc.to_netcdf('osnap_moc_sigma0_' + label + '.nc', encoding=enc, unlimited_dims={'t':True})
+     ds_moc.to_netcdf('moc_sigma0_' + label + '.nc', encoding=enc, unlimited_dims={'t':True})
 

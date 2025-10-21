@@ -61,8 +61,8 @@
     cn_gphiv = 'gphiv'
     cn_gphif = 'gphif'   !: latitude
 
-    cn_gdept = 'gdept'                              
-    cn_gdepw = 'gdepw'   !: 1d dep variable         
+    cn_gdept = 'gdept_1d'                              
+    cn_gdepw = 'gdepw_1d'   !: 1d dep variable         
 
     cn_hdept = 'hdept'
     cn_hdepw = 'hdepw'   !: 2d dep variable
@@ -99,10 +99,15 @@
 !---------------------------------------
     cn_fzgr    = 'mesh.nc'    !: vertical mesh file
     cn_fhgr    = 'mesh.nc'    !: horizontal mesh file
-    cn_fmsk    = 'mesh.nc'    !: mesh mask file
+    cn_fmsk    = 'mask.nc'    !: mesh mask file
+    cn_fbasins = 'subbasinmask_amoc.nc'
 /
 
 !---------------------------------------
-&nammeshmask_var    ! Basin mask names
+&nammask    ! Basin mask names
 !---------------------------------------
+    cn_tmaskatl='atlmsk'               !:  atlantic mask in cn_fbasins
+    cn_tmaskpac='pacmsk'               !:  pacific mask in cn_fbasins
+    cn_tmaskind='indmsk'               !:  indian mask in cn_fbasins
 /
+

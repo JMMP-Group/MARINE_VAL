@@ -104,19 +104,26 @@ progress_bar() {
 }
 #=============================================================================================================================
 
-while getopts B:C: opt ; do
+while getopts B:C:V: opt ; do
   case $opt in
      B) BATHY=${OPTARG} ;;
      C) chunksize=${OPTARG} ;;
+     V) ZCOMSHMSK=${OPTARG} ;;
   esac   
 done
 shift `expr $OPTIND - 1`  
 
 if [[ -z "$chunksize" ]];then chunksize=1;fi
+echo ""
 echo "chunksize is $chunksize"
-echo "BATHY is $BATHY"
+if [[ ! -z "$BATHY" ]]; then echo "BATHY is $BATHY"; fi
+if [[ ! -z "$ZCOMSHMSK" ]];then
+   echo "Vertical remapping is activated:" 
+   echo "    the z-levels mesh_mask.nc is $ZCOMSHMSK"
+fi
+echo ""
 
-if [ $# -le 4 ]; then echo 'run_proc.sh [-C chunksize] [-B BATHY] [MESHMASK] [YEARB] [YEARE] [FREQ] [RUNID list]'; exit 42; fi
+if [ $# -le 4 ]; then echo 'run_proc.sh [-C chunksize] [-B BATHY] [-V ZCOMSHMSK] [MESHMASK] [YEARB] [YEARE] [FREQ] [RUNID list]'; exit 42; fi
 
 MESHMASK=$1
 YEARB=$2
@@ -129,11 +136,23 @@ RUNIDS=${@:5}
 # clean ERROR.txt file
 if [[ -f ERROR.txt ]]; then rm ERROR.txt ; fi
 
+# Check if the mesh_mask.nc is using GVC
+GVC=`ncdump -v ln_sco ${MSKPATH}/${MESHMASK} | sed -e "1,/data:/d" -e '$d' -e "s/ln_sco =//g" -e "s/;//g"`
+GVC=$(($GVC + 0))
+
+# Check which metrics we want to compute
+runTRP=0
+runBSF=0
+runTS=0
+runMOC=0
+needBATHY=0
+runVRMP=0
 [[ $runACC == 1 || $runMargSea == 1 || $runITF == 1 || $runNAtlOverflows == 1  || $runArcTrans == 1 ]] && runTRP=1
 [[ $runBSF_SO == 1 || $runBSF_NA == 1 ]] && runBSF=1
 [[ $runDEEPTS == 1 || $runSSS_LabSea == 1 || $runSST_SO == 1 || $runSST_NWCorner == 1 ]] && runTS=1
-[[ $runAMOC == 1 || $runOSNAP == 1 ]] && runMOC=1
-[[ $runTRP == 1 || $runOSNAP == 1 ]] && needBATHY=1
+[[ $runAMOC == 1 || $runRAPID == 1 || $runOSNAP == 1 ]] && runMOC=1
+[[ $runAMOC == 1 && $GVC == 1 ]] && export runVRMP=1
+[[ $runTRP == 1 || $runMOC == 1 || $runVRMP == 1 ]] && needBATHY=1
 
 # Check that everything is in place
 if [[ ! -d ${CDFPATH} || ! -n "$(ls -A "$CDFPATH")" ]] ; then  
@@ -157,6 +176,26 @@ if [[ $needBATHY == 1 && ! -f ${MSKPATH}/${BATHY} ]] ; then
    exit 41
 fi
 
+if [[ $runVRMP == 1 && ! -f ${ZCOMSHMSK} ]] ; then
+   echo "E R R O R : the z-levels mesh_mask.nc file for vertical rempping does not exist : ${TARGETMSHMSK}"
+   exit 41
+fi
+
+if [[ $needBATHY == 1 && $runVRMP == 1 ]] ; then
+   LVMSK=0
+   for var in "s2z_msk" "mask_loczgr"; do
+       lvmsk=`ncdump -h ${MSKPATH}/${BATHY} | grep ${var}`
+       if [[ ! -z "${lvmsk}" ]]; then LVMSK=$(($LVMSK + 1)); fi
+   done
+   if [[ $LVMSK == 0 ]]; then
+      echo "E R R O R : you want to carry out vertical remapping but the "
+      echo "            ${MSKPATH}/${BATHY} file"
+      echo "            that you are passing in input does not include any of"
+      echo "            the following two variables: s2z_msk or mask_loczgr, please check!!"
+      exit 41 
+   fi
+fi
+
 # loop over years
 echo ''
 for RUNID in `echo $RUNIDS`; do
@@ -176,8 +215,8 @@ for RUNID in `echo $RUNIDS`; do
    if [[ -L nam_cdf_names ]] ;then rm nam_cdf_names; fi
    ln -s ${NMLPATH} nam_cdf_names 
 
-   # check mesh mask
-   if [[ -L mesh.nc     ]] ; then rm mesh.nc ; fi
+   # check geometry files
+   if [[ -L mesh.nc     ]] ; then rm mesh.nc; fi
    ln -s ${MSKPATH}/${MESHMASK} mesh.nc
    if [[ -L mask.nc     ]] ; then rm mask.nc ; fi
    ln -s ${MSKPATH}/${MESHMASK} mask.nc 
@@ -185,11 +224,32 @@ for RUNID in `echo $RUNIDS`; do
        if [[ -L bathy.nc  ]] ; then rm bathy.nc ; fi
        ln -s ${MSKPATH}/${BATHY} bathy.nc 
    fi
+   if [[ $runVRMP == 1 ]] ; then
+      if [[ -L zco_mesh.nc ]] ; then rm zco_mesh.nc ; fi
+      ln -s ${ZCOMSHMSK} zco_mesh.nc
+   fi
+         
    # subbasins file not currently used by any metrics
    #if [ -L subbasin.nc ] ; then rm subbasin.nc ; fi
    #ln -s ${MSKPATH}/subbasins_${CONFIG}-GO6.nc subbasin.nc 
 
-   echo "$RUNID ..."
+   echo "================================================================="
+   echo "Computing the requested diagnostics for the $RUNID simulation ..."
+   echo "================================================================="
+   echo ""
+
+   # Conservative vertical remapping if needed
+   if [[ $runVRMP == 1 ]]; then
+      echo ""
+      echo "Computing z-level domain for conservative vertical remapping ..."
+      echo ""
+      msh4vmap_sbatch=$(sbatch --output=${JOBOUT_PATH}/mk_msh4vmap.out ${SCRPATH}/mk_msh4vmap.bash $RUNID | awk '{print $4}')
+   fi
+
+   # Generate subbasin mask for the Atlantic if needed
+   if [[ $runAMOC == 1 ]]; then
+      subbasin_sbatch=$(sbatch --output=${JOBOUT_PATH}/mk_subbasin.out ${SCRPATH}/mk_subbasin.bash $RUNID | awk '{print $4}')
+   fi
 
    njob=0
    LSTY=$(eval echo {${YEARB}..${YEARE}})
@@ -238,6 +298,14 @@ for RUNID in `echo $RUNIDS`; do
 
          for TAG in $TAG_LIST; do
             # run cdftools
+
+            if [[ $runVRMP == 1 ]]; then
+               jdepe="--dependency=afterany:$mooVyid:$mooUyid:$mooTyid:$msh4vmap_sbatch"
+               jname="--job-name=mk_vrmp_${TAG}_${RUNID}"
+               joutp="--output=${JOBOUT_PATH}/mk_vrmp_${FREQ}_${TAG}.out"
+               vrmp_sbatch=$(sbatch $jdepe $jname $joutp ${SCRPATH}/mk_vrmp.bash $RUNID $TAG $FREQ | awk '{print $4}') 
+            fi
+
             [[ $runBSF_SO == 1 ]]  && run_tool mk_psi_SO                 $TAG $RUNID $FREQ $mooVyid:$mooUyid
             [[ $runDEEPTS == 1 ]]  && run_tool mk_deepTS -A AMU          $TAG $RUNID $FREQ $mooTyid
             [[ $runDEEPTS == 1 ]]  && run_tool mk_deepTS -A WROSS        $TAG $RUNID $FREQ $mooTyid
@@ -259,7 +327,12 @@ for RUNID in `echo $RUNIDS`; do
             [[ $runITF == 1 ]]           && run_tool mk_trp  -S OmbaiStrait        $TAG $RUNID $FREQ $mooVyid:$mooUyid:$mooTyid
             [[ $runITF == 1 ]]           && run_tool mk_trp  -S TimorPassage       $TAG $RUNID $FREQ $mooVyid:$mooUyid:$mooTyid 
             [[ $runBSF_NA == 1 ]]        && run_tool mk_psi_NA    $TAG $RUNID $FREQ $mooVyid:$mooUyid
-            [[ $runAMOC == 1 ]]          && run_tool mk_amoc      $TAG $RUNID $FREQ $mooVyid:$mooUyid:$mooTyid
+            if [[ $runVRMP == 1 ]]; then
+               [[ $runAMOC == 1 ]] && run_tool mk_amoc $TAG $RUNID $FREQ $mooVyid:$mooUyid:$mooTyid:$vrmp_sbatch
+            else
+               [[ $runAMOC == 1 ]] && run_tool mk_amoc $TAG $RUNID $FREQ $mooVyid:$mooUyid:$mooTyid
+            fi
+            [[ $runRAPID == 1 ]]         && run_tool mk_rapid_moc $TAG $RUNID $FREQ $mooVyid:$mooUyid:$mooTyid
             [[ $runOSNAP == 1 ]]         && run_tool mk_osnap_moc $TAG $RUNID $FREQ $mooVyid:$mooUyid:$mooTyid
             [[ $runSST_NWCorner == 1 ]]  && run_tool mk_sst_NA    $TAG $RUNID $FREQ $mooTyid
             [[ $runSSS_LabSea == 1 ]]    && run_tool mk_sss       $TAG $RUNID $FREQ $mooTyid

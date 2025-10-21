@@ -18,6 +18,7 @@ def load_argument():
    parser.add_argument("-st", dest="stem", metavar='stem', help="stem of the file name to be used in the search", type=str, nargs=1, required=True)
    parser.add_argument("-p", dest="prefix", metavar='prefix', help="prefix of the file name to be used in the search", type=str, nargs=1, required=True)
    parser.add_argument("-runid", dest="runid", metavar='runid list', help="used to look information in runid.db", type=str, nargs='+' , required=True)
+   parser.add_argument("-obs", dest="obsfile", metavar='obs file', help="path to the RAPID obs file", type=str, nargs='+' , required=True)
 
    return parser.parse_args()
 
@@ -55,50 +56,58 @@ ax = fig.add_subplot(spec[:1])
 
 for e, runid in enumerate([args.runid[0]] + args.runid):
      
-    wrkdir = args.datpath[0] + "/" + runid + "/osnap/"
-    time = "t"
-    sigm = "rho_bins"
-    moc = "osnap_moc_sig"
-
-    # observations 
     if e == 0:
-       #obs_stem = 'obs_west' if 'west' in args.stem[0] else 'obs_east'
+       # observations
+       time = "time"
+       z = "depth"
+       moc = "stream_function_mar" 
        cpltname, cpltcolor = 'obs', 'black'
        print(f"Name: {cpltname}, Color: {cpltcolor}")
-       ds = xr.open_dataset(wrkdir+args.prefix[0]+"_"+args.stem[0]+"_obs.nc")
-       startdate = np.datetime_as_string(ds.time_centered.isel(t=0).values)[:10]
-       enddate   = np.datetime_as_string(ds.time_centered.isel(t=-1).values)[:10]
+       ds = xr.open_dataset(args.obsfile[0])
+       startdate = np.datetime_as_string(ds.time.values[0])[:10]
+       enddate   = np.datetime_as_string(ds.time.values[-1])[:10]
     else:
-       # projections
+       # simulations
+       wrkdir = args.datpath[0] + runid + "/rapid_z/"
+       time = "time_counter"
+       z = "depthw"
+       moc = "amoc_rapid"
        _, cpltname, _, cpltcolor = parse_dbfile(runid)
        print(f"Name: {cpltname}, Color: {cpltcolor}")
-       ds = xr.open_mfdataset(wrkdir+args.prefix[0]+"_"+args.stem[0]+"*1m*.nc",combine='nested',concat_dim="t")
+       ds = xr.open_mfdataset(wrkdir+args.prefix[0]+"*"+args.stem[0]+"*.nc",
+                              combine='nested',
+                              concat_dim=time
+            )
        startdate = np.datetime_as_string(np.datetime64(ds.time_centered.values[0]))[:10]
        enddate = np.datetime_as_string(np.datetime64(ds.time_centered.values[-1]))[:10]
-
+ 
     alpha = 0.2
 
-    mocsig = ds[moc]
-    #if e == 0: mocsig = -1.0 * mocsig
-    mocsig_mean = mocsig.mean(dim=time).values
-    mocsig_std = mocsig.std(dim=time).values
-    sigma = ds[sigm].values 
+    mocz_mean = ds[moc].mean(dim=time).squeeze().values
+    mocz_std  = ds[moc].std(dim=time).values
+    depth     = ds[z].values 
     lab_info = cpltname + "\n" + startdate + "->" + enddate
-    ax.plot(mocsig_mean, sigma, color=cpltcolor, linestyle="-", linewidth=2.5, label=lab_info)
+    ax.plot(mocz_mean, depth, color=cpltcolor, linestyle="-", linewidth=2.5, label=lab_info)
     if e == 0:
-       ax.fill_betweenx(sigma, mocsig_mean+mocsig_std, mocsig_mean-mocsig_std, alpha=alpha, facecolor=cpltcolor)
+       ax.fill_betweenx(depth, 
+                        mocz_mean+mocz_std, 
+                        mocz_mean-mocz_std, 
+                        alpha=alpha, 
+                        facecolor=cpltcolor
+       )
     
-ax.plot(mocsig_mean*0.0, sigma, color='black', linestyle="--", linewidth=0.5)
+ax.plot(mocz_mean*0.0, depth, color='black', linestyle="--", linewidth=0.5)
 plt.rc('legend', **{'fontsize':12})
 ax.legend(loc=1, ncol=1, frameon=False)
 ax.set_xlabel('Vol. Transport [Sv]')
-ax.set_ylabel(r'$\sigma_{\theta}$ [$kg\;m^{-3}$]')
-ax.set_ylim(26.8, 28.)
-if 'east' in args.stem[0]:
-   ax.set_xlim(-4,17)
-elif 'west' in args.stem[0]:
-   ax.set_xlim(-4,9)
+ax.set_ylabel('Depth [$m$]')
+#ax.set_ylim(0, 28.)
+#if 'east' in args.stem[0]:
+#   ax.set_xlim(-4,17)
+#elif 'west' in args.stem[0]:
+#   ax.set_xlim(-4,9)
 plt.gca().invert_yaxis()
+print("Saving "+ args.outfile[0] + ".png")
 plt.savefig(f"{args.outfile[0]}.png")
 
 

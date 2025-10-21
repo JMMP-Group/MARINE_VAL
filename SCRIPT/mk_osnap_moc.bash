@@ -7,9 +7,19 @@ RUNID=$1
 TAG=$2
 FREQ=$3
 
-conda activate pyogcm
+#conda activate pyogcm
 
 echo "RUNID, TAG, FREQ : $RUNID $TAG $FREQ"
+
+if [ "$FREQ" != "1m" ]; then
+   echo "For OSNAP metric $FREQ MUST be 1m, please change it!"
+   echo "E R R O R in : ./mk_osnap_moc.bash $@ (see SLURM/${RUNID}/osnmoc_${FREQ}_${TAG}.out)" >> ${EXEPATH}/ERROR.txt
+   exit 1
+fi
+
+# Create working directories if needed
+if [ ! -d osnap   ]; then mkdir -p osnap ; fi
+cd osnap
 
 # sigma-theta bins
 minsig=23.30
@@ -20,9 +30,9 @@ stpsig=0.01
 RUN_NAME=${RUNID#*-}
 
 # Check presence of input file
-FILEV=`ls [nu]*${RUN_NAME}o_${FREQ}_${TAG}*_grid[-_]V.nc`
-FILEU=`ls [nu]*${RUN_NAME}o_${FREQ}_${TAG}*_grid[-_]U.nc`
-FILET=`ls [nu]*${RUN_NAME}o_${FREQ}_${TAG}*_grid[-_]T.nc`
+FILEV=`ls $DATPATH/$RUNID/[nu]*${RUN_NAME}o_${FREQ}_${TAG}*_grid[-_]V.nc`
+FILEU=`ls $DATPATH/$RUNID/[nu]*${RUN_NAME}o_${FREQ}_${TAG}*_grid[-_]U.nc`
+FILET=`ls $DATPATH/$RUNID/[nu]*${RUN_NAME}o_${FREQ}_${TAG}*_grid[-_]T.nc`
 if [ ! -f $FILEV ] ; then 
    echo "$FILEV is missing; exit"
    echo "E R R O R in : ./mk_osnap_moc.bash $@ (see SLURM/${RUNID}/osnmoc_${FREQ}_${TAG}.out)" >> ${EXEPATH}/ERROR.txt
@@ -39,18 +49,42 @@ if [ ! -f $FILET ] ; then
    exit 1
 fi
 
+# Link the needed ancil files
+if [[ ! -L mesh.nc   ]] ; then ln -s $DATPATH/$RUNID/mesh.nc . ; fi
+if [[ ! -L mask.nc   ]] ; then ln -s $DATPATH/$RUNID/mask.nc . ; fi
+if [[ ! -L bathy.nc   ]] ; then ln -s $DATPATH/$RUNID/bathy.nc . ; fi
+
+# Modifying the namelist accordingly
+if [[ ! -f nam_cdf_names ]] ; then
+   cp $DATPATH/$RUNID/nam_cdf_names nam_cdf_names_ori
+   f90nml -g namvars \
+       -v cn_votemper='thetao_con' \
+       -v cn_vosaline='so_abs' \
+       -p nam_cdf_names_ori nam_cdf_names
+   rm nam_cdf_names_ori
+fi
+
 # Taking care of the observations
 for sec in "east" "west"; do
-    OBS_OSNAP="osnap_moc_sigma0_obs_"${sec}".nc"
+    section="OSNAP"${sec}
+    OBS_OSNAP="moc_sigma0_"${section}"_obs.nc"
     if [ ! -f $OBS_OSNAP ]; then 
-       python3 ${SCRPATH}/calc_moc_sigma0.py "obs_osnap_"$sec "obs_"$sec $minsig $maxsig $stpsig
+       echo "Computing OSNAP observations"
+       python3 ${SCRPATH}/calc_moc_sigma0_osnap.py $section"_obs" $section"_obs" $minsig $maxsig $stpsig
        if [[ $? -ne 0 ]]; then
-          echo "error when running calc_moc_sigma0.py; exit"
+          echo "error when running calc_moc_sigma0_osnap.py; exit"
           echo "E R R O R in : ./mk_osnap_moc.bash $@ (see SLURM/${RUNID}/mk_osnap_moc_${FREQ}_${TAG}.out)" >> ${EXEPATH}/ERROR.txt
           exit 1
        fi
+       if [ "$OBS_OSNAP" == "OSNAPwest"]; then
+          dates=`ncdump -i -v time_centered moc_sigma0_OSNAPwest_obs.nc | \
+                 sed -e "1,/data:/d" -e ':a' -e 'N' -e '$!ba' -e 's/\n//g' \
+                     -e "s/time_centered =//g" -e "s/;//g" -e "s/}//g" -e "s/ //g"`
+          yms_obs=`awk -F ',' '{print $1}'  <<< $dates | awk -F '-' '{print $1-$2}' | sed -e 's/"//g'`
+          yme_obs=`awk -F ',' '{print $NF}' <<< $dates | awk -F '-' '{print $1-$2}' | sed -e 's/"//g'`
+          echo "INFO: OSNAP observations cover the period from "$yms_obs" to "$yme_obs"."
+       fi 
     fi
-
    ${SCRPATH}/mk_compute_obs_stats.bash max_osnap_moc_sig t $OBS_OSNAP OSNAP OSNAP_mocsig_${sec}.txt
 done
 
@@ -78,12 +112,14 @@ for sec in "east" "west"; do
     # 2. Compute MOC in density space
     xsec_file=$(ls nemoXsec_${RUN_NAME}o_${FREQ}_${TAG}_${section}.nc)
     echo "xsec_file = $xsec_file"
-    label=${RUN_NAME}o_${FREQ}_${TAG}_${section}
-    python3 ${SCRPATH}/calc_moc_sigma0.py $xsec_file $label $minsig $maxsig $stpsig
+    label=${section}_${RUN_NAME}o_${FREQ}_${TAG}
+    python3 ${SCRPATH}/calc_moc_sigma0_osnap.py $xsec_file $label $minsig $maxsig $stpsig
     if [[ $? -ne 0 ]]; then
-       echo "error when running calc_moc_sigma0.py; exit"
+       echo "error when running calc_moc_sigma0_osnap.py; exit"
        echo "E R R O R in : ./mk_osnap_moc.bash $@ (see SLURM/${RUNID}/mk_osnap_moc_${FREQ}_${TAG}.out)" >> ${EXEPATH}/ERROR.txt
        exit 1
     fi
     
 done
+
+cd ../
