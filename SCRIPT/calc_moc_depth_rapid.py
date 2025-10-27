@@ -41,8 +41,13 @@ if __name__ == "__main__":
      area  = area.where(mask==1, 0.)
      vnorm = vnorm.where(mask==1, 0.)
  
+     # Compute velocity field after removing net transport through section
+     # (as done in obs)
+     avg_vnorm = (vnorm * area).sum() / area.sum()
+     vnorm_no_net = vnorm - avg_vnorm
+
      # Vflux
-     vflux = vnorm * area
+     vflux = vnorm_no_net * area
 
      # Dealing with the vertical integration direction
      if int_dir == "top2bot":
