@@ -198,6 +198,7 @@ fi
 
 # loop over years
 echo ''
+FREQ_IN=$FREQ
 for RUNID in `echo $RUNIDS`; do
 
    # set up jobout directory file
@@ -252,7 +253,15 @@ for RUNID in `echo $RUNIDS`; do
    fi
 
    njob=0
-   LSTY=$(eval echo {${YEARB}..${YEARE}})
+   # Allow for a stride > 1 if counting in years.
+   # Doesn't work for months at the moment.
+   if [[ $FREQ_IN =~ .*y$ ]];
+   then
+       stride=$(( $(echo $FREQ_IN | cut -d"y" -f1) ))
+       # reset FREQ here because the rest of the code expects FREQ=1y...
+       FREQ="1y"
+   fi
+   LSTY=$(eval echo {${YEARB}..${YEARE}..${stride}})
    if   [[ $FREQ == 1m ]]; then MONTHB=1  ; MONTHE=12 ; LSTM=$(eval echo {$MONTHB..$MONTHE}) ;
    elif [[ $FREQ == 1y ]]; then MONTHB=12 ; MONTHE=12 ; LSTM=$(eval echo {$MONTHB..$MONTHE}) ;
    else 
