@@ -298,7 +298,7 @@ for RUNID in `echo $RUNIDS`; do
             moo_wait
             [[ $runTRP == 1 || $runBSF == 1 || $runMOC == 1 ]] && mooUyid=$(retrieve_data $RUNID $FREQ grid-U $TAG_LIST)
             moo_wait
-            [[ $runTRP == 1 || $runQHF == 1 || $runTS == 1 || $runMOC == 1 || $runHTC == 1 || $runSTC == 1 || $runGSL_NAC == 1 || $runMHT == 1 || $runQHF == 1 || $runMedOVF == 1 || $runAABW == 1 ]] && mooTyid=$(retrieve_data $RUNID $FREQ grid-T $TAG_LIST)
+            [[ $runTRP == 1 || $runQHF == 1 || $runTprof == 1 || $runTS == 1 || $runMOC == 1 || $runHTC == 1 || $runSTC == 1 || $runGSL_NAC == 1 || $runMHT == 1 || $runQHF == 1 || $runMedOVF == 1 || $runAABW == 1 ]] && mooTyid=$(retrieve_data $RUNID $FREQ grid-T $TAG_LIST)
          fi
 
          echo "mooTyid : $mooTyid"
@@ -351,6 +351,7 @@ for RUNID in `echo $RUNIDS`; do
             #[[ $runOVF == 1 ]]           && run_tool mk_ovf       $TAG $RUNID $FREQ $mooTyid
             [[ $runMHT == 1 ]]     && run_tool mk_mht  $TAG $RUNID $FREQ $mooVyid:$mooTyid
             [[ $runQHF == 1 ]]     && run_tool mk_hfds $TAG $RUNID $FREQ $mooTyid 
+            [[ $runTprof == 1 ]]   && run_tool mk_Tprof $TAG $RUNID $FREQ $mooTyid 
             [[ $runMedOVF == 1 ]]   && run_tool mk_medovf $TAG $RUNID $FREQ $mooTyid
             [[ $runAABW == 1 ]] && run_tool mk_aabw $TAG $RUNID $FREQ $mooTyid
          done

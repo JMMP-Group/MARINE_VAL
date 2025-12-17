@@ -59,6 +59,7 @@ if int(os.environ['runOBS']) == 1:
 #########################################################################################################################################
 
 domains = {
+      "GLOBAL": {"W": -180.000, "E": 180.000, "S": -90.000, "N": 90.000, "tlon": 0, "tlat": 0},
       "AMU": {"W": -109.640, "E": -102.230, "S": -75.800, "N": -71.660, "tlon": -106, "tlat": -74},
       "EROSS": {"W": -176.790, "E": -157.820, "S": -78.870, "N": -77.520, "tlon": -167, "tlat": -78},
       "LAB_SEA": {"W": -60.000, "E": -50.000, "S": 55.000, "N": 62.000, "tlon": -55, "tlat": 58.5},
@@ -95,6 +96,9 @@ proc_tmask_map = {
      "runSST_SO": [{**domain_params("SO"), "mindepth": None, "maxdepth": 1.5, "obs": None}],
      "runSTC": [{**domain_params("NA_GYRE"), "minisobath": 1000, "maxisobath": None, "obs": None},
                 {**domain_params("NA_GYRE"), "minisobath": 1000, "maxisobath": None, "obs": 'woa13v2'}],
+     "runTprof": [{**domain_params("GLOBAL"), "mindepth": None, "maxdepth": None, "obs": None, "no_cluster": True},
+                  {**domain_params("GLOBAL"), "mindepth": None, "maxdepth": 1000, "obs": None, "no_cluster": True},
+                  {**domain_params("GLOBAL"), "mindepth": 1000, "maxdepth": None, "obs": None, "no_cluster": True}]
 }
 
 #########################################################################################################################################

@@ -16,10 +16,14 @@ def load_argument():
     parser.add_argument("-maxdepth", dest="max_depth", metavar="depth constraint", help="max depth limit of the domain", type=float, nargs=1, required=False)
     parser.add_argument("-minisobath", dest="min_isobath", metavar="isobath constraint", help="min isobath limit of the domain", type=float, nargs=1, required=False)
     parser.add_argument("-maxisobath", dest="max_isobath", metavar="isobath constraint", help="max isobath limit of the domain", type=float, nargs=1, required=False)
-    parser.add_argument("-tlon, --target_lon", dest="target_lon", metavar="target longitude", help="longitude which should be present in the largest cluster", type=float, nargs=1, required=True)
-    parser.add_argument("-tlat, --target_lat", dest="target_lat", metavar="target latitude", help="latitude which should be present in the largest cluster", type=float, nargs=1, required=True)
+    parser.add_argument("-no_cluster", dest="no_cluster", metavar="switch off clustering", help="Do not look for largest cluster", type=bool, nargs=1, required=False)
+    parser.add_argument("-tlon, --target_lon", dest="target_lon", metavar="target longitude", help="longitude which should be present in the largest cluster", type=float, nargs=1, required=False)
+    parser.add_argument("-tlat, --target_lat", dest="target_lat", metavar="target latitude", help="latitude which should be present in the largest cluster", type=float, nargs=1, required=False)
     parser.add_argument("-o, --outf", dest="outf", metavar="output file", help="name of output file", type=str, nargs=1, required=True)
     args = parser.parse_args()
+
+    if (not args.no_cluster and (not args.target_lon or not args.target_lon)):
+        parser.error("Must specify target_lon and target_lat if clustering is required.")
 
     if (args.min_depth or args.max_depth) and (args.min_isobath or args.max_isobath):
         parser.error("Specify either depth constraints (-mindepth/-maxdepth) OR isobath constraints (-minisobath/-maxisobath), not both.")
@@ -131,7 +135,8 @@ def main():
     masked_tmask = filter_lat_lon(tmask, mesh_data, args) # 1 x 75 x 1206 x 1440 array, 0 for all values outside the domain
     if (args.min_depth or args.max_depth or args.min_isobath or args.max_isobath):
         masked_tmask = filter_bathy_or_depth(masked_tmask, mesh_data, args) # 1 x 75 x 1206 x 1440 array, 0 for all values below the depth threshold
-    masked_tmask = filter_largest_cluster(masked_tmask, args) # 1 x 75 x 1206 x 1440 array, 0 for all values outside the largest cluster
+    if not args.no_cluster:
+        masked_tmask = filter_largest_cluster(masked_tmask, args) # 1 x 75 x 1206 x 1440 array, 0 for all values outside the largest cluster
     masked_tmask = masked_tmask.squeeze() # 75 x 1206 x 1440 array, removes the first dimension
     masked_tmask.to_netcdf(args.outf[0])
 

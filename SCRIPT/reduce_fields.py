@@ -75,7 +75,8 @@ def reduce_fields(infile,tmask,invars=None,coords=None,wgtsfiles=None,wgtsnames=
 
     aggregators = { "mean"     :  iris.analysis.MEAN ,
                     "min"      :  iris.analysis.MIN  ,
-                    "max"      :  iris.analysis.MAX    }
+                    "max"      :  iris.analysis.MAX  ,
+                    "sum"      :  iris.analysis.SUM    }
 
     if infile is None:
         raise Exception("Error: must specify input file")
@@ -148,7 +149,7 @@ def reduce_fields(infile,tmask,invars=None,coords=None,wgtsfiles=None,wgtsnames=
         if len(wgts_list) > 1:
             for wgts_to_multiply in wgts_list[1:]:
                 wgts = wgts * wgts_to_multiply
-        elif wgtsfiles[0] == "measures":
+        if wgts.shape != cubes[0].shape:
             # in this case, broadcast the weights to be the same shape as the cube... 
             wgts = ma.ones(cubes[0].shape)[:] * wgts[:]
         
