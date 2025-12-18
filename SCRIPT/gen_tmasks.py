@@ -96,6 +96,7 @@ proc_tmask_map = {
      "runSST_SO": [{**domain_params("SO"), "mindepth": None, "maxdepth": 1.5, "obs": None}],
      "runSTC": [{**domain_params("NA_GYRE"), "minisobath": 1000, "maxisobath": None, "obs": None},
                 {**domain_params("NA_GYRE"), "minisobath": 1000, "maxisobath": None, "obs": 'woa13v2'}],
+     "runQHF": [{**domain_params("GLOBAL"), "mindepth": None, "maxdepth": None, "obs": None, "no_cluster": True}],
      "runTprof": [{**domain_params("GLOBAL"), "mindepth": None, "maxdepth": None, "obs": None, "no_cluster": True},
                   {**domain_params("GLOBAL"), "mindepth": None, "maxdepth": 1000, "obs": None, "no_cluster": True},
                   {**domain_params("GLOBAL"), "mindepth": 1000, "maxdepth": None, "obs": None, "no_cluster": True}]
