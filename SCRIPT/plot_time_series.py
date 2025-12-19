@@ -13,12 +13,13 @@ import matplotlib.ticker as ticker
 
 # def class runid
 class run(object):
-    def __init__(self, runid, sf):
+    def __init__(self, runid, sf, dv):
         # parse dbfile
         self.runid, self.name, self.line, self.color = parse_dbfile(runid)
         self.sf = sf
+        self.dv = dv
 
-    def load_time_series(self, cfile, cvar):
+    def load_time_series(self, cfile, cvar, diff):
         # need to deal with mask, var and tag
         # need to do with the cdftools unit -> no unit !!!!
         # define time variable
@@ -29,6 +30,7 @@ class run(object):
         df=[None]*nf
         for kf,cf in enumerate(cfile):
             try:
+                print("Reading file ",cf)
                 ncid    = nc.Dataset(cf)
                 ncvtime = ncid.variables[ctime]
                 if 'units' in ncvtime.ncattrs():
@@ -59,7 +61,8 @@ class run(object):
         
                 # build series
                 cnam=get_varname(cf,cvar)
-                df[kf] = pd.Series(ncid.variables[cnam][:].squeeze()*self.sf, index = timeidx, name = self.name)
+                print('ncid.variables[cnam][:].squeeze() : ',ncid.variables[cnam][:].squeeze())
+                df[kf] = pd.Series(ncid.variables[cnam][:].squeeze()*self.sf/self.dv, index = timeidx, name = self.name)
 
             except Exception as e: 
                 print ('issue in trying to load file : '+cf)
@@ -69,6 +72,10 @@ class run(object):
 
         # build dataframe
         self.ts   = pd.DataFrame(pd.concat(df)).sort_index()
+        print('self.ts : ',self.ts)
+        if diff:
+            self.ts = self.ts.diff(axis=0)
+            print('DIFF self.ts : ',self.ts)
         self.mean = self.ts[self.name].mean()
         self.std  = self.ts[self.name].std()
         self.min  = self.ts[self.name].min()
@@ -131,11 +138,13 @@ def load_argument():
     parser.add_argument("-varf" , metavar='var list'   , help="variable to look for in the netcdf file ./runid_var.nc", type=str, nargs='+' , required=False)
     parser.add_argument("-title", metavar='title'      , help="subplot title (associated with var)"                   , type=str, nargs='+' , required=False)
     parser.add_argument("-dir"  , metavar='directory of input file' , help="directory of input file"                  , type=str, nargs=1   , required=False, default=['./'])
-    parser.add_argument("-sf"  , metavar='scale factor', help="scale factor"                             , type=float, nargs=1   , required=False, default=[1])
+    parser.add_argument("-sf"  , metavar='scale factor', help="scale factor"                                          , type=float, nargs=1   , required=False, default=[1])
+    parser.add_argument("-dv"  , metavar='divisor'     , help="divisor"                                               , type=float, nargs=1   , required=False, default=[1])
     parser.add_argument("-o"    , metavar='figure_name', help="output figure name without extension"                  , type=str, nargs=1   , required=False, default=['output'])
     # flag argument
-    parser.add_argument("-obs"  , metavar='obs mean and std file', help="obs mean and std file"          , type=str, nargs='+', required=False)
+    parser.add_argument("-obs"  , metavar='obs mean and std file', help="obs mean and std file"                       , type=str, nargs='+', required=False)
     parser.add_argument("-mean" , help="will plot model mean base on input netcdf file"                               , required=False, action="store_true")
+    parser.add_argument("-diff" , help="plot sequential differences"                                                  , required=False, action="store_true")
     parser.add_argument("-noshow" , help="do not display the figure (only save it)"                                   , required=False, action="store_true")
     parser.add_argument("-force_zero_origin" , help="force the y-origin to be at zero"                                , required=False, action="store_true")
     return parser.parse_args()
@@ -243,7 +252,7 @@ def main():
 
     for irun, runid in enumerate(args.runid):
         # initialise run
-        run_lst[irun] = run(runid, args.sf[0])
+        run_lst[irun] = run(runid, args.sf[0], args.dv[0])
 
     plt.figure(figsize=np.array([210, 210]) / 25.4)
  
@@ -306,7 +315,7 @@ def main():
                     print ('no file found with this pattern '+args.dir[0]+'/'+runid+'_'+cvar+'.nc')
                     sys.exit(42)
 
-            run_lst[irun].load_time_series(cfile, cvar)
+            run_lst[irun].load_time_series(cfile, cvar, args.diff)
             ts_lst[irun] = run_lst[irun].ts
             print("run_lst[irun] min/max : ",run_lst[irun].min,run_lst[irun].max)
             lg = ts_lst[irun].plot(ax=ax[ivar], legend=False, style=run_lst[irun].line,color=run_lst[irun].color,label=run_lst[irun].name, x_compat=True, linewidth=2, rot=0)

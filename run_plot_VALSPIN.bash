@@ -1,0 +1,91 @@
+#!/bin/bash -l
+
+if [ $# -eq 0 ] ; then echo 'need a [KEYWORD] (will be inserted inside the figure title and output name) and a list of id [RUNIDS RUNID ...] (definition of line style need to be done in RUNID.db)'; exit; fi
+
+. ./param.bash
+
+KEY=${1}
+FREQ=${2}
+RUNIDS=${@:3}
+
+FREQs="1s"
+
+# Global heat content as equivalent heat flux through surface.
+period_yrs=$(echo $FREQ | rev | cut -c2- | rev)
+period_secs=$(echo "scale=8; ${period_yrs}*360*86400" | bc)
+# heat capacity and density constants from NEMO:
+heat_cap=3991.0
+density=1026.0
+factor=$(echo "scale=12;${heat_cap}*${density}/${period_secs}" | bc)
+echo "factor is $factor"
+if [[ $runTprof == 1 ]]; then
+   echo 'plot global heat content as equivalent flux'
+   python ${SCRPATH}/plot_time_series.py -noshow -runid $RUNIDS -f *meanT-global_nemo_*${FREQ}*grid-T.nc -var thetao_pot_depth_integral -diff -sf ${factor} -title "Global implied heat flux (W/m2)" -dir ${DATPATH} -o "${KEY}_heatc_eqflx-global" 
+   if [[ $? -ne 0 ]]; then exit 42; fi
+fi
+
+# Global heat content top 1000m as equivalent heat flux through surface.
+period_yrs=$(echo $FREQ | rev | cut -c2- | rev)
+period_secs=$(echo "scale=8; ${period_yrs}*360*86400" | bc)
+# heat capacity and density constants from NEMO:
+heat_cap=3991.0
+density=1026.0
+factor=$(echo "scale=12;${heat_cap}*${density}/${period_secs}" | bc)
+echo "factor is $factor"
+if [[ $runTprof == 1 ]]; then
+   echo 'plot global heat content top 1000m as equivalent flux'
+   python ${SCRPATH}/plot_time_series.py -noshow -runid $RUNIDS -f *meanT-global-top-1000m_nemo_*${FREQ}*grid-T.nc -var thetao_pot_depth_integral -diff -sf ${factor} -title "Global top 1000m implied heat flux (W/m2)" -dir ${DATPATH} -o "${KEY}_heatc_eqflx-global-top-1000m" 
+   if [[ $? -ne 0 ]]; then exit 42; fi
+fi
+
+# Global heat content below 1000m as equivalent heat flux through surface.
+period_yrs=$(echo $FREQ | rev | cut -c2- | rev)
+period_secs=$(echo "scale=8; ${period_yrs}*360*86400" | bc)
+# heat capacity and density constants from NEMO:
+heat_cap=3991.0
+density=1026.0
+factor=$(echo "scale=12;${heat_cap}*${density}/${period_secs}" | bc)
+echo "factor is $factor"
+if [[ $runTprof == 1 ]]; then
+   echo 'plot global heat content below 1000m as equivalent flux'
+   python ${SCRPATH}/plot_time_series.py -noshow -runid $RUNIDS -f *meanT-global-below-1000m_nemo_*${FREQ}*grid-T.nc -var thetao_pot_depth_integral -diff -sf ${factor} -title "Global below 1000m implied heat flux (W/m2)" -dir ${DATPATH} -o "${KEY}_heatc_eqflx-global-below-1000m" 
+   if [[ $? -ne 0 ]]; then exit 42; fi
+fi
+
+
+# crop figure (rm legend)
+#convert ${KEY}_ACC.png                   -crop 1240x1040+0+0 tmp01.png
+#convert ${KEY}_ACC_bottom.png            -crop 1240x1040+0+0 tmp02.png
+#convert ${KEY}_ACC_shelfbreak.png        -crop 1240x1040+0+0 tmp03.png
+#convert ${KEY}_WG.png                    -crop 1240x1040+0+0 tmp02.png
+#convert ${KEY}_RG.png                    -crop 1240x1040+0+0 tmp03.png
+#convert ${KEY}_WWED_mean_deep_so.png      -crop 1240x1040+0+0 tmp04.png
+#convert ${KEY}_WROSS_mean_deep_so.png     -crop 1240x1040+0+0 tmp05.png
+#convert ${KEY}_AMU_mean_deep_thetao.png   -crop 1240x1040+0+0 tmp06.png
+# convert ${KEY}_aabw_${FREQ}_weddell.png -crop 1240x1040+0+0 tmp05.png
+# convert ${KEY}_aabw_${FREQ}_so.png      -crop 1240x1040+0+0 tmp06.png
+#convert ${KEY}_EROSS_mean_deep_thetao.png  -crop 1240x1040+0+0 tmp07.png
+#convert ${KEY}_WG_max_karamld.png        -crop 1240x1040+0+0 tmp08.png
+
+# trim figure (remove white area)
+#convert FIGURES/box_VALSO.png -trim -bordercolor White -border 40 tmp09.png
+#convert legend.png      -trim -bordercolor White -border 20 tmp10.png
+#convert runidname.png   -trim -bordercolor White -border 20 tmp11.png
+
+# compose the image
+#convert \( tmp01.png tmp02.png tmp03.png +append \) \
+#        \( tmp04.png tmp05.png tmp09.png +append \) \
+#        \( tmp06.png tmp07.png tmp08.png +append \) \
+#           tmp10.png tmp11.png -append -trim -bordercolor White -border 40 $KEY.png
+
+# save figure
+#mv ${KEY}_*.png FIGURES/.
+#mv ${KEY}_*.txt FIGURES/.
+#mv tmp10.png FIGURES/${KEY}_legend.png
+#mv tmp11.png FIGURES/${KEY}_runidname.png
+
+# clean
+#rm tmp??.png
+
+#display
+#display -resize 30% $KEY.png
