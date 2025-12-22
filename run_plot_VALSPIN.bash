@@ -54,38 +54,27 @@ fi
 
 
 # crop figure (rm legend)
-#convert ${KEY}_ACC.png                   -crop 1240x1040+0+0 tmp01.png
-#convert ${KEY}_ACC_bottom.png            -crop 1240x1040+0+0 tmp02.png
-#convert ${KEY}_ACC_shelfbreak.png        -crop 1240x1040+0+0 tmp03.png
-#convert ${KEY}_WG.png                    -crop 1240x1040+0+0 tmp02.png
-#convert ${KEY}_RG.png                    -crop 1240x1040+0+0 tmp03.png
-#convert ${KEY}_WWED_mean_deep_so.png      -crop 1240x1040+0+0 tmp04.png
-#convert ${KEY}_WROSS_mean_deep_so.png     -crop 1240x1040+0+0 tmp05.png
-#convert ${KEY}_AMU_mean_deep_thetao.png   -crop 1240x1040+0+0 tmp06.png
-# convert ${KEY}_aabw_${FREQ}_weddell.png -crop 1240x1040+0+0 tmp05.png
-# convert ${KEY}_aabw_${FREQ}_so.png      -crop 1240x1040+0+0 tmp06.png
-#convert ${KEY}_EROSS_mean_deep_thetao.png  -crop 1240x1040+0+0 tmp07.png
-#convert ${KEY}_WG_max_karamld.png        -crop 1240x1040+0+0 tmp08.png
+convert ${KEY}_heatc_eqflx-global.png                   -crop 1240x1040+0+0 tmp01.png
+convert ${KEY}_heatc_eqflx-global-top-1000m.png         -crop 1240x1040+0+0 tmp02.png
+convert ${KEY}_heatc_eqflx-global-below-1000m.png       -crop 1240x1040+0+0 tmp03.png
 
 # trim figure (remove white area)
 #convert FIGURES/box_VALSO.png -trim -bordercolor White -border 40 tmp09.png
-#convert legend.png      -trim -bordercolor White -border 20 tmp10.png
-#convert runidname.png   -trim -bordercolor White -border 20 tmp11.png
+convert legend.png      -trim -bordercolor White -border 20 tmp10.png
+convert runidname.png   -trim -bordercolor White -border 20 tmp11.png
 
 # compose the image
-#convert \( tmp01.png tmp02.png tmp03.png +append \) \
-#        \( tmp04.png tmp05.png tmp09.png +append \) \
-#        \( tmp06.png tmp07.png tmp08.png +append \) \
-#           tmp10.png tmp11.png -append -trim -bordercolor White -border 40 $KEY.png
+convert \( tmp01.png tmp02.png tmp03.png +append \) \
+           tmp10.png tmp11.png -append -trim -bordercolor White -border 40 $KEY.png
 
 # save figure
-#mv ${KEY}_*.png FIGURES/.
-#mv ${KEY}_*.txt FIGURES/.
-#mv tmp10.png FIGURES/${KEY}_legend.png
-#mv tmp11.png FIGURES/${KEY}_runidname.png
+mv ${KEY}_*.png FIGURES/.
+mv ${KEY}_*.txt FIGURES/.
+mv tmp10.png FIGURES/${KEY}_legend.png
+mv tmp11.png FIGURES/${KEY}_runidname.png
 
 # clean
-#rm tmp??.png
+rm tmp??.png
 
-#display
-#display -resize 30% $KEY.png
+# display
+display -resize 30% $KEY.png
