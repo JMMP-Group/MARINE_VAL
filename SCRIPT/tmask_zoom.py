@@ -30,6 +30,22 @@ def load_argument():
     
     return args
 
+def fix_mesh_coords(mesh_data):
+    """
+    xarray and Iris only recognise "nav_lev" as a coordinate variable if the corresponding
+    dimension is also called "nav_lev". Sometimes the vertical dimension in mesh_mask files
+    is called "z" which messes things up later. This routine fixes this. 
+    We can't simply rename the dimension if the "nav_lev" variable already exists, so we rename
+    "nav_lev" then rename the dimension, then restore the "nav_lev" variable. We also have to
+    write out to file and read it in again to get xarray to register nav_lev as a coordinate
+    variable.
+    """
+    mesh_data = mesh_data.rename_vars({"nav_lev":"nav_lev1"}).rename_dims({"z":"nav_lev"}).rename_vars({"nav_lev1":"nav_lev"})
+    mesh_data.to_netcdf("mesh_fixed_dim.nc")
+    mesh_data = xr.open_dataset("mesh_fixed_dim.nc")
+    return mesh_data
+    
+
 def filter_lat_lon(array, mesh_data, args):
     """
     Filters the latitude and longitude values from the arguments.
@@ -131,6 +147,8 @@ def main():
 
     args = load_argument()
     mesh_data = xr.open_dataset(args.mesh[0])
+    if "nav_lev" not in mesh_data.coords:
+        mesh_data = fix_mesh_coords(mesh_data)
     tmask = mesh_data['tmask'] # 1 x 75 x 1206 x 1440 array, 1 for ocean, 0 for land
     masked_tmask = filter_lat_lon(tmask, mesh_data, args) # 1 x 75 x 1206 x 1440 array, 0 for all values outside the domain
     if (args.min_depth or args.max_depth or args.min_isobath or args.max_isobath):
