@@ -13,11 +13,11 @@ import matplotlib.ticker as ticker
 
 # def class runid
 class run(object):
-    def __init__(self, runid, sf, dv):
+    def __init__(self, runid, sf, window):
         # parse dbfile
         self.runid, self.name, self.line, self.color = parse_dbfile(runid)
         self.sf = sf
-        self.dv = dv
+        self.window = window
 
     def load_time_series(self, cfile, cvar, diff):
         # need to deal with mask, var and tag
@@ -30,7 +30,7 @@ class run(object):
         df=[None]*nf
         for kf,cf in enumerate(cfile):
             try:
-                print("Reading file ",cf)
+                # print("Reading file ",cf)
                 ncid    = nc.Dataset(cf)
                 ncvtime = ncid.variables[ctime]
                 if 'units' in ncvtime.ncattrs():
@@ -59,7 +59,7 @@ class run(object):
                         
                 # build series
                 cnam=get_varname(cf,cvar)
-                df[kf] = pd.Series(ncid.variables[cnam][:].squeeze()*self.sf/self.dv, index = timeidx, name = self.name)
+                df[kf] = pd.Series(ncid.variables[cnam][:].squeeze()*self.sf, index = timeidx, name = self.name)
 
             except Exception as e: 
                 print ('issue in trying to load file : '+cf)
@@ -69,6 +69,8 @@ class run(object):
 
         # build dataframe
         self.ts   = pd.DataFrame(pd.concat(df)).sort_index()
+        if self.window > 1:
+            self.ts = self.ts.rolling(self.window,center=True).mean()
         print('self.ts : ',self.ts)
         if diff:
             self.ts = self.ts.diff(axis=0)
@@ -135,8 +137,8 @@ def load_argument():
     parser.add_argument("-varf" , metavar='var list'   , help="variable to look for in the netcdf file ./runid_var.nc", type=str, nargs='+' , required=False)
     parser.add_argument("-title", metavar='title'      , help="subplot title (associated with var)"                   , type=str, nargs='+' , required=False)
     parser.add_argument("-dir"  , metavar='directory of input file' , help="directory of input file"                  , type=str, nargs=1   , required=False, default=['./'])
-    parser.add_argument("-sf"  , metavar='scale factor', help="scale factor"                                          , type=float, nargs=1   , required=False, default=[1])
-    parser.add_argument("-dv"  , metavar='divisor'     , help="divisor"                                               , type=float, nargs=1   , required=False, default=[1])
+    parser.add_argument("-sf"   , metavar='scale factor', help="scale factor"                                         , type=float, nargs=1   , required=False, default=[1])
+    parser.add_argument("-window", metavar='window'     , help="window"                                               , type=int, nargs=1   , required=False, default=[1])
     parser.add_argument("-o"    , metavar='figure_name', help="output figure name without extension"                  , type=str, nargs=1   , required=False, default=['output'])
     # flag argument
     parser.add_argument("-obs"  , metavar='obs mean and std file', help="obs mean and std file"                       , type=str, nargs='+', required=False)
@@ -249,7 +251,7 @@ def main():
 
     for irun, runid in enumerate(args.runid):
         # initialise run
-        run_lst[irun] = run(runid, args.sf[0], args.dv[0])
+        run_lst[irun] = run(runid, args.sf[0], args.window[0])
 
     plt.figure(figsize=np.array([210, 210]) / 25.4)
  
