@@ -140,6 +140,7 @@ def load_argument():
     parser.add_argument("-sf"   , metavar='scale factor', help="scale factor"                                         , type=float, nargs=1   , required=False, default=[1])
     parser.add_argument("-window", metavar='window'     , help="window"                                               , type=int, nargs=1   , required=False, default=[1])
     parser.add_argument("-o"    , metavar='figure_name', help="output figure name without extension"                  , type=str, nargs=1   , required=False, default=['output'])
+    parser.add_argument("-ylim" , metavar='y_limits'   , help="force limits on y-axis"                                , type=float, nargs=2 , required=False)
     # flag argument
     parser.add_argument("-obs"  , metavar='obs mean and std file', help="obs mean and std file"                       , type=str, nargs='+', required=False)
     parser.add_argument("-mean" , help="will plot model mean base on input netcdf file"                               , required=False, action="store_true")
@@ -353,6 +354,9 @@ def main():
         rmin[ivar],rmax[ivar]=get_ybnd(run_lst,obs_min[ivar],obs_max[ivar])
         if args.force_zero_origin:
             rmin[ivar]=0.0
+        if args.ylim is not None:
+            rmin[ivar]=args.ylim[0]
+            rmax[ivar]=args.ylim[1]
         ax[ivar].set_ylim([rmin[ivar],rmax[ivar]])
         ax[ivar].grid()
  
