@@ -262,6 +262,7 @@ for RUNID in `echo $RUNIDS`; do
        FREQ="1y"
    fi
    LSTY=$(eval echo {${YEARB}..${YEARE}..${stride}})
+   echo "LSTY is $LSTY"
    if   [[ $FREQ == 1m ]]; then MONTHB=1  ; MONTHE=12 ; LSTM=$(eval echo {$MONTHB..$MONTHE}) ;
    elif [[ $FREQ == 1y ]]; then MONTHB=12 ; MONTHE=12 ; LSTM=$(eval echo {$MONTHB..$MONTHE}) ;
    else 
@@ -286,7 +287,7 @@ for RUNID in `echo $RUNIDS`; do
          (( tagcount+=1 ))
          TAG_LIST="$TAG_LIST ${YEAR}${MONTH}01"
 
-         if [[ $tagcount == $chunksize || ( $YEAR == $YEARE && $MONTH == $MONTHE ) ]]
+         if [[ $tagcount == $chunksize || ( $YEAR > $((YEARE-stride)) && $MONTH == $MONTHE ) ]]
          then
 
          echo "TAG_LIST : $TAG_LIST"
