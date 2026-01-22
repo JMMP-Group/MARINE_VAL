@@ -51,12 +51,10 @@ class run(object):
     
                 timeidx=[None]*ntime
                 for itime in range(0, ntime):
-                    # We want timeidx to be in pandas Timestamp format which we achieve using
-                    # the pd.to_datetime function. The two-stage conversion via np.datetime64 is
-                    # necessary because the times as read in are cftime objects which pd.to_datetime
-                    # doesn't recognise. 
-                    timeidx[itime] = pd.to_datetime(np.datetime64(time[itime],'us'))
-        
+                    # Convert to python datetime format. Better to use this than pandas Timestamp
+                    # because the latter has a restriction on the total time range of ~500 years.
+                    timeidx[itime] = dt.datetime(time[itime].year,time[itime].month,time[itime].day)
+                        
                 # build series
                 cnam=get_varname(cf,cvar)
                 df[kf] = pd.Series(ncid.variables[cnam][:].squeeze()*self.sf, index = timeidx, name = self.name)
@@ -312,8 +310,8 @@ def main():
             lg = ts_lst[irun].plot(ax=ax[ivar], legend=False, style=run_lst[irun].line,color=run_lst[irun].color,label=run_lst[irun].name, x_compat=True, linewidth=2, rot=0)
             #
             # limit of time axis
-            mintime=min([mintime,ts_lst[irun].index[0].to_pydatetime().date()])
-            maxtime=max([maxtime,ts_lst[irun].index[-1].to_pydatetime().date()])
+            mintime=min([mintime,ts_lst[irun].index[0].date()])
+            maxtime=max([maxtime,ts_lst[irun].index[-1].date()])
             print("mintime, maxtime : ",mintime,maxtime)
 
         # set title
@@ -329,8 +327,8 @@ def main():
             if nyear/nyt < 8:
                 break
         print('nyt : ',nyt)
-        nmt=ts_lst[irun].index[0].to_pydatetime().date().month
-        ndt=ts_lst[irun].index[0].to_pydatetime().date().day
+        nmt=ts_lst[irun].index[0].date().month
+        ndt=ts_lst[irun].index[0].date().day
          
         ax[ivar].xaxis.set_major_locator(mdates.YearLocator(nyt,month=1,day=1))
         ax[ivar].tick_params(axis='both', labelsize=16)
