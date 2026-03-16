@@ -130,59 +130,35 @@ for MFILE in ${FILE_LST}; do
       if [[ $TIME -eq 0 ]]; then echo " $FILE is corrupted "; rm $FILE; fi
 
       if [[ "${GRID_CAT}" == "T" ]]; then
-         Tv10=$(ncdump -h $FILE | grep float | grep thetao[_\ ]con | cut -d' ' -f2 | cut -d'(' -f1 )
-         Sv10=$(ncdump -h $FILE | grep float | grep so[_\ ]abs | cut -d' ' -f2 | cut -d'(' -f1 )
-         Tv80=$(ncdump -h $FILE | grep float | grep thetao[_\ ]pot | cut -d' ' -f2 | cut -d'(' -f1 )
-         Sv80=$(ncdump -h $FILE | grep float | grep so[_\ ]pra | cut -d' ' -f2 | cut -d'(' -f1 )
-         #echo "Tv10= " $Tv10 ", Sv10= " $Sv10
-         #echo "Tv80= " $Tv80 ", Sv80= " $Sv80
-         if [[ "$Tv10" == "thetao_con" && "$Sv10" == "so_abs" ]]; then TEOS10=1; fi
-         if [[ "$Tv80" == "thetao_pot" && "$Sv80" == "so_pra" ]]; then EOS80=1; fi
-         echo "TEOS10= " $TEOS10 ", EOS80= " $EOS80
-
-         if [[ "$TEOS10" == 0 ]]; then
-            # If file has only one of thetao_con or so_abs, something has gone wrong
-            # delete and restore from MASS again. 
-            echo " $FILE is corrupted "; rm $FILE
-         elif [[ "$TEOS10" == 1 && "$EOS80" == 0 ]]; then
-            # If file has only TEOS10 variables, we need to compute the EOS80 ones. 
+         Tv=$(ncdump -h $FILE | grep float | grep thetao_pot | cut -d' ' -f2 | cut -d'(' -f1 )
+         Sv=$(ncdump -h $FILE | grep float | grep so_pra | cut -d' ' -f2 | cut -d'(' -f1 )
+         echo "Tv= " $Tv ", Sv= " $Sv
+         
+         if [[ "$Tv" == "thetao_pot" && "$Sv" == "so_pra" ]]; then
+            echo 'EOS80: nothing to do ... '
+            EOS80=1; 
+         else 
+            Tv=$(ncdump -h $FILE | grep float | grep thetao_con | cut -d' ' -f2 | cut -d'(' -f1 )
+            Sv=$(ncdump -h $FILE | grep float | grep so_abs | cut -d' ' -f2 | cut -d'(' -f1 )
+            if [[ "$Tv" == "thetao_con" && "$Sv" == "so_abs" ]]; then
+               echo 'converting to EOS80'
             CONVERT_EOS_LIST="$CONVERT_EOS_LIST $FILE"
+TEOS10=1; 
          else
-            echo 'nothing to do ... '
+               echo 'Check TS variables, removing file'
+               Tv=$(ncdump -h $FILE | grep float | grep thet | cut -d' ' -f2 | cut -d'(' -f1 )
+               Sv=$(ncdump -h $FILE | grep float | grep so | cut -d' ' -f2 | cut -d'(' -f1 )
+               echo "Tv= " $Tv ", Sv= " $Sv
+               rm $FILE
+            fi
+         
          fi
-      fi
-   fi
 
-   if [ ! -f $FILE ]; then
-      echo "downloading file ${FILE}"
-      MOO_GET_LIST="$MOO_GET_LIST $MFILE"
-      MOO_RESTORED_LIST="$MOO_RESTORED_LIST $FILE"
+      fi
    fi
 
 done
 
-if [[ -n "$MOO_GET_LIST" ]];then 
-  echo "Executing command : moo filter $FILTER $MOO_GET_LIST ."
-  moo filter $FILTER $MOO_GET_LIST .
-fi
-
-for FILE in $MOO_RESTORED_LIST;do
-   if [[ "${GRID_CAT}" == "T" ]]; then   
-      Tv10=$(ncdump -h $FILE | grep float | grep thetao[_\ ]c | cut -d' ' -f2 | cut -d'(' -f1 )
-      Sv10=$(ncdump -h $FILE | grep float | grep so[_\ ]a | cut -d' ' -f2 | cut -d'(' -f1 )
-      echo "$FILE : $Tv10 $Sv10"
-      if [[ "$Tv10" == "thetao_con" && "$Sv10" == "so_abs" ]]; then 
-         echo "hello!"
-         CONVERT_EOS_LIST="$CONVERT_EOS_LIST $FILE"
-      fi
-   fi 
-   # Set standard_name for depth coordinate so Iris will recognise it:
-   [[ "$FILE" =~ *grid-T\.nc ]] && depvar="deptht"
-   [[ "$FILE" =~ *grid-U\.nc ]] && depvar="depthu"
-   [[ "$FILE" =~ *grid-V\.nc ]] && depvar="depthv"
-   ncatted -a standard_name,${depvar},c,c,"depth" $FILE
-   #
-done
 
 for FILE in $CONVERT_EOS_LIST;do
    python3 ${EXEPATH}/SCRIPT/convert_nemo_eos80.py $FILE
