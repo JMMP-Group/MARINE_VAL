@@ -57,6 +57,69 @@ CONVERT_EOS_LIST=""
 TEOS10=0
 EOS80=0
 
+# Determine which files need to be downloaded 
+for MFILE in ${FILE_LST}; do
+   FILE=${MFILE#*${CRUM_FREQ}.nc.file/}
+   if [ ! -f $FILE ]; then
+      #echo "downloading file ${FILE}"
+      MOO_GET_LIST="$MOO_GET_LIST $MFILE"
+   fi
+done
+
+
+if [[ -n "$MOO_GET_LIST" ]];then 
+   echo "Executing command : moo filter $FILTER $MOO_GET_LIST ."
+   moo filter $FILTER $MOO_GET_LIST . 
+
+   FILE=${FILE#*${CRUM_FREQ}.nc.file/}
+   echo $FILE
+   # Set standard_name for depth coordinate so Iris will recognise it:
+   [[ "$FILE" =~ *grid-T\.nc ]] && depvar="deptht"
+   [[ "$FILE" =~ *grid-U\.nc ]] && depvar="depthu"
+   [[ "$FILE" =~ *grid-V\.nc ]] && depvar="depthv"
+   # In NEMO3.6 the following causes an error later-on as it creates another "depth" variable
+   if [[ "${usePRENEMO4:-0}" == "0" ]]; then
+      ncatted -a standard_name,"${depvar}",c,c,"depth" "$FILE"
+   fi
+
+   # Renaming variables to match what's used in SCRIPT's
+   if [[ "${useTEOS10:-1}" == "0" ]]; then 
+      echo "Model used EOS80"
+      if [[ $FILE == *grid-T.nc ]]; then         
+         ncks -v ${cn_votemper} $FILE tmp.nc
+         ncrename -v "${cn_votemper},thetao_pot" tmp.nc
+         ncks -A tmp.nc $FILE
+         rm -f tmp.nc
+
+         ncks -v ${cn_vosaline} $FILE tmp.nc
+         ncrename -v "${cn_vosaline},so_pra" tmp.nc
+         ncks -A tmp.nc $FILE
+         rm -f tmp.nc
+      fi
+   elif  [[ "${useTESO10:-1}" == "1" ]]; then 
+      echo "Model used TEOS10"
+      if [[ $FILE == *grid-T.nc ]]; then   
+         echo ${cn_votemper}
+         ncks -v ${cn_votemper} $FILE tmp.nc
+         ncrename -v "${cn_votemper},thetao_con" tmp.nc
+         ncks -A tmp.nc $FILE
+         rm -f tmp.nc
+
+         echo ${cn_vosaline}
+         ncks -v ${cn_vosaline} $FILE tmp.nc
+         ncrename -v "${cn_vosaline},so_abs" tmp.nc
+         ncks -A tmp.nc $FILE
+         rm -f tmp.nc
+      fi
+   fi
+   ncks -v ${cn_somxl010} $FILE tmp.nc
+   ncrename -v "${cn_somxl010},somxzint1" tmp.nc 
+   ncks -A tmp.nc $FILE
+   rm -f tmp.nc
+fi
+
+
+
 for MFILE in ${FILE_LST}; do
    FILE=${MFILE#*${CRUM_FREQ}.nc.file/}
    if [ -f $FILE ]; then 
