@@ -142,9 +142,9 @@ for MFILE in ${FILE_LST}; do
             Sv=$(ncdump -h $FILE | grep float | grep so_abs | cut -d' ' -f2 | cut -d'(' -f1 )
             if [[ "$Tv" == "thetao_con" && "$Sv" == "so_abs" ]]; then
                echo 'converting to EOS80'
-            CONVERT_EOS_LIST="$CONVERT_EOS_LIST $FILE"
-TEOS10=1; 
-         else
+               CONVERT_EOS_LIST="$CONVERT_EOS_LIST $FILE"
+               TEOS10=1; 
+            else 
                echo 'Check TS variables, removing file'
                Tv=$(ncdump -h $FILE | grep float | grep thet | cut -d' ' -f2 | cut -d'(' -f1 )
                Sv=$(ncdump -h $FILE | grep float | grep so | cut -d' ' -f2 | cut -d'(' -f1 )
