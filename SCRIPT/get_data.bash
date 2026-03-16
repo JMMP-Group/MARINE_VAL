@@ -13,6 +13,24 @@ TAGLIST=${@:4}
 FILTER=${EXEPATH}/FILTERS/filter_${GRID}
 GRID_CAT=$(echo $GRID | awk -F'[-_]' '{print $NF}')
 
+# Source `param.bash` and get the switches 
+PARAM_FILE=${MARINE_VAL}/param.bash
+source "$PARAM_FILE"
+: ${useTEOS10:=1}  # Is this NEMO version using TEOS10 (default = yes/1) or EOS80 (0) 
+: ${usePRENEMO4:=0} # Is the NEMO version pre-NEMO4 (default = no/0)
+
+# Read variable names from the namelist (nam_cdf_names), if they exist replace the defaults
+if [[ -n "${NMLPATH}" && -f "${NMLPATH}" ]]; then
+   cn_votemper=$(sed -n "s/.*cn_votemper\s*=\s*'\([^']*\)'.*/\1/p" "${NMLPATH}")
+   cn_vosaline=$(sed -n "s/.*cn_vosaline\s*=\s*'\([^']*\)'.*/\1/p" "${NMLPATH}")
+   cn_somxl010=$(sed -n "s/.*cn_somxl010\s*=\s*'\([^']*\)'.*/\1/p" "${NMLPATH}")
+fi
+# fallback variable names as used in SCRIPT's
+: ${cn_votemper:=thetao_pot}
+: ${cn_vosaline:=so_pra}
+: ${cn_somxl010:=somxzint1}
+
+
 # get data
 if   [ $FREQ == '5d' ]; then CRUM_FREQ=ond;
 elif [ $FREQ == '1m' ]; then CRUM_FREQ=onm;
