@@ -1,13 +1,18 @@
-# MARINE_VAL for monitoring CMIP7 simulations 
-
+# MARINE_VAL for monitoring CMIP7 simulations
 See guidance to set up marine_val in (main) 
 
-## Purpose
-marine_val is adjusted here to work with outputs of UKESM1.3 and UKCM2, while trying to maintain the capability to runs with newer configurations and NEMO versions. 
-
-We want to use marine_val to monitor currently running simulations, therefore some changes are made e.g. to only process years that have not been processed before. 
+## Purpose of this branch
+marine_val is adjusted here to work with a larger variety of model outputs including UKESM1.3, UKESM2, and UKCM2 for CMIP7, and NEMO-MEDUSA runs with DA for CMUG (ORCA025). To be able to run all set-ups from the same directory, some changes to the logic of the toolbox are made to keep the experiments separated and keep the code tidy. Those changes may affect the capability to run e.g. GOSI10 simulations with this branch, though I tested most changes in u-dw515 (a GOSI10 beta version) to ensure it's still working. 
 
 ## Use 
-`run_and_update_monitoring.sh` is the file that combined processing and plotting. 
+* In main directory, `run_experiment.sh` is used for running `marine_val`. In it, you need to set `RUNEXP` and define with bash script is run (e.g. `sh "run_monitoring.sh"  `). 
+* `EXP/` contains directories with experiment set-ups for different ways to run `marine_val`. Each subdirectory should contain 
+  * a sh script that's defines suite id's, years, mesh mask, bathymetry file, the `./run_proc.bash` command, and plotting 
+  * one or multiple `param.bash` that define paths and metrics to be produced, one file for the "type" of suite that's supposed to be evaluated.
+  * one or multiple `nam_cdf_names` that defines e.g. variable names. 
+  * Optional (and to be added): `run_plot_XXX.bash` to produce specific summary plots. 
 
-Each model "type" gets its own `param_XXX.bash` and `nam_cdf_names_XXX` to be able to process and plot output from different sources together, e.g. the piControl runs of UKESM1.3 and UKCM2. `nam_cdf_names_XXX` is set in `param_XXX.bash`, while `param_XXX.bash` is linked in `run_and_update_monitoring.sh`.
+## Notes 
+The advantage of having this structure with definitions in `EXP/` is that it's reproducable how `marine_val` was run, e.g. which mesh mask was used. 
+
+## Issues 
