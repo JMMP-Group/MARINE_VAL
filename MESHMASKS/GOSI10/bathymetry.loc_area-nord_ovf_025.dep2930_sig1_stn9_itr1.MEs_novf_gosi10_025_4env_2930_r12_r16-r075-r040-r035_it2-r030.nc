@@ -1,0 +1,1 @@
+/data/users/andrea.rochner/TOOLBOXES/MESHMASKS/GOSI10/bathymetry.loc_area-nord_ovf_025.dep2930_sig1_stn9_itr1.MEs_novf_gosi10_025_4env_2930_r12_r16-r075-r040-r035_it2-r030.nc

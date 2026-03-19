@@ -1,0 +1,1 @@
+/data/users/andrea.rochner/TOOLBOXES/MESHMASKS/GOSI10/mesh_mask_MEs_novf_4env_2930_r12_r16-r075-r040-r035_it2-r030.nc
