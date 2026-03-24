@@ -135,7 +135,11 @@ if [[ "$xtrac" == "true" ]]; then
   echo "XTRAC section definition file is $secdef_file"
   $CDFPATH/cdf_xtrac_brokenline -t $FILET -u $FILEU -v $FILEV -l ${secdef_file} -b bathy.nc -vecrot -o nemoXsec_${RUN_NAME}o_${FREQ}_${TAG}_${BTM}
   if [[ $? -ne 0 ]]; then 
-     echo "error when running cdf_xtrac_brokenline; exit" ; echo "E R R O R in : ./mk_trp.bash $@ (see SLURM/${RUNID}/mk_trp_${section}_${FREQ}_${TAG}.out)" >> ${EXEPATH}/ERROR.txt ; exit 1
+     #for UKESM1.3 and UKCM2
+     $CDFPATH/cdf_xtrac_brokenline -t $FILET -u $FILEU -v $FILEV -l ${secdef_file} -b mesh.nc -vecrot -o nemoXsec_${RUN_NAME}o_${FREQ}_${TAG}_${BTM}
+     if [[ $? -ne 0 ]]; then
+        echo "error when running cdf_xtrac_brokenline; exit" ; echo "E R R O R in : ./mk_trp.bash $@ (see SLURM/${RUNID}/mk_trp_${section}_${FREQ}_${TAG}.out)" >> ${EXEPATH}/ERROR.txt ; exit 1
+     fi
   fi
 fi
 
