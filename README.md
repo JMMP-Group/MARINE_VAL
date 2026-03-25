@@ -15,4 +15,16 @@ marine_val is adjusted here to work with a larger variety of model outputs inclu
 ## Notes 
 The advantage of having this structure with definitions in `EXP/` is that it's reproducable how `marine_val` was run, e.g. which mesh mask was used. 
 
+**The mesh file**
+Can be produced while running the model: `namelist_ref ` > `&namdom` > `nn_msh=1` > produces per-processor mesh files > rebuild 
+It may need manual modification to change variable names, i.e. rename time (`time_counter`), bathymetry (`bathy_metry`), depth (`nav_lev`).
+In the respective `nam_cdf_names`, `cn_bathymet` needs to be the variable name from the mesh file, not bathymetry file. 
+
 ## Issues 
+
+`runSST_SO`: `mk_sst_so` only produces output file for GOSI10 (u-dw515), error for UKESM1.3 and UKCM2. No plots produced - no plotting in VALSO?
+
+`runACC`: Plotting the barootropic timeseries and shelfbreak timeseries is switched off - why? 
+
+
+
