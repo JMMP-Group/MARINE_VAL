@@ -17,7 +17,9 @@ The advantage of having this structure with definitions in `EXP/` is that it's r
 
 **The mesh file**
 Can be produced while running the model: `namelist_ref ` > `&namdom` > `nn_msh=1` > produces per-processor mesh files > rebuild 
+
 It may need manual modification to change variable names, i.e. rename time (`time_counter`), bathymetry (`bathy_metry`), depth (`nav_lev`).
+
 In the respective `nam_cdf_names`, `cn_bathymet` needs to be the variable name from the mesh file, not bathymetry file. 
 
 ## Issues 
