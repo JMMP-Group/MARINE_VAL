@@ -1,0 +1,167 @@
+#!/bin/bash -l
+
+ulimit -s unlimited
+
+##### USER CHOICES START ######
+
+# top level directory
+export MARINE_VAL=/data/users/andrea.rochner/TOOLBOXES/MARINE_VAL
+
+# Path of the folder where mesh_mask bathy and are locally stored 
+# (names of mesh mask and bathy are arguments to this script)
+export MSKPATH=${MARINE_VAL}/MESHMASKS
+
+# Path where cdftools executables are locally stored
+export CDFPATH=/data/users/andrea.rochner/TOOLBOXES/CDFTOOLS_jmmp/bin
+
+# Local path of the nam_cdf_names namelist.
+# You can use as a template the "nam_cdf_names_template"
+# file - you probably need to adapt to your need the following
+# namelists: namvars, nammeshmask, nammask  
+export NMLPATH=/data/users/andrea.rochner/TOOLBOXES/MARINE_VAL/nam_cdf_names_picontrol
+
+# toolbox location
+export EXEPATH=${MARINE_VAL}
+
+# SCRIPT location
+export SCRPATH=${MARINE_VAL}/SCRIPT/
+
+# Top-level working directory
+# (working dir for $RUNID = $DATPATH/$RUNID)
+export DATPATH=${SCRATCH}/MARINE_VAL/EXP_UKESM13_piControl
+
+# Observations
+# 1) Observations for HTC, STC and MEDOVF
+export OBSPATH=/data/users/nemo/data/observations/ocean/NOAA_WOA13v2/1955-2012/025/orca025
+export OBS_MESH=${OBSPATH}/mesh_mask_eORCA025_v3.2_r42.nc
+export OBS_ABS_SAL=${OBSPATH}/woa13v2.omip-clim.abs_sal_gosi10p1-025_for_marine_val.nc # Practical salinity
+export OBS_CON_TEM=${OBSPATH}/woa13v2.omip-clim.con_tem_gosi10p1-025_for_marine_val.nc # Potential temperature
+export runOBS=0      # run observations for HTC, STC and MEDOVF
+# 2) Observations for RAPID overturning, downloaded from
+#       *) https://rapid.ac.uk/download-confirm/moc_netcdf
+#       *) https://rapid.ac.uk/download-confirm/moc_vertical_netcdf
+export OBS_RPD_MOC=/data/users/nemo/obs_data/RAPID/MOC_timeseries/moc_transports.nc
+export OBS_RPD_PRF=/data/users/nemo/obs_data/RAPID/MOC_streamfunction_profiles/moc_vertical.nc
+
+# Retrieve data from MASS
+runRETRIEVE_DATA=1  # Set to 1 to retrieve data from MASS, 0 if you have previously downloaded the data
+
+# Set to 1 if you use output with NEMO3.6 (e.g. UKESM1.3)
+export usePRENEMO4=1
+export useTEOS10=0
+
+RUNALL=0       # run all possible metrics
+
+# diagnostics bundles
+RUNVALSO=1     # Southern Ocean metrics
+RUNVALNA=0     # North Atlantic metrics
+RUNVALTRANS=0  # Transports/exchanges in straits
+
+# DISABLED, SINCE IT IS NOT WORKING YET
+#RUNVALGLO=0    # Global metrics
+
+# custom:
+
+# VALSO (Southern Ocean)
+runACC=0            # Drake Passage net eastward transport
+runMLD_Weddell=0    # Max wintertime mixed layer depth in Weddell Sea
+runBSF_SO=0         # Max streamfunction in Weddell gyre and Ross gyre
+runDEEPTS=0         # Deep salinity in West Weddell and West Ross Seas
+                    # and deep temperature in Amundsen and East Ross Seas
+runSST_SO=0         # Mean Southern Ocean SST between ?? and ??
+runAABW=0           # Volume of water for a given sigma4 threshold
+
+# VALNA (North Atlantic)
+runBSF_NA=1         # North Atlantic subpolar gyre strength
+runHTC=1            # North Atlantic subpolar gyre heat content
+runSTC=1            # North Atlantic subpolar gyre salt content
+runMHT=0            # NB: MHT metric only works if relevant diagnostic 
+                    #     in model output. Therefore, the user needs to 
+                    #     explicitly activate this diagnostic.
+runAMOC=1           # AMOC meridonal cross-sections in z end density spaces
+runRAPID=1          # Overturning streamfunction in z space at at 26.5N:
+                    # vertical profile and max(MOC)z.
+runOSNAP=0          # Overturning streamfunction profile in density space accros OSNAP 
+                    # East and West arrays.
+                    # NB: Because of the observations, OSNAP metrics should be computed only 
+                    #     using monthly outputs and for the 2014-2016 period. Therefore,
+                    #     the user needs to explicitly activate this diagnostic here.
+runMLD_LabSea=1     # Mixed layer depth in Labrador Sea in March
+runSSS_LabSea=1     # Mean SSS anomaly in Labrador Sea
+runSST_NWCorner=1   # Mean SST anomaly off Newfoundland
+
+# DISABLED, SINCE IT IS NOT WORKING YET
+# runOVF=0            # Mean overflow bottom temperature and salinity (below 27.8 isopycnal) 
+#                     # at various locations. Currently, VALNA isolates and averages the 
+#                     # Irminger and Icelandic basins at the osnap observational cross-section.
+
+runGSL_NAC=1        # GS separation latitude and NA current latitude
+runMedOVF=0         # Mediterranean overflow water max salinity and corresponding depth
+
+# VALTRANS (Transports and exchanges in straits)
+runMargSea=0        # Marginal Seas exchanges: Gibraltar, Bab el Mandeb, Strait of Hormuz
+runITF=0            # Indonesian Throughflow: Lombok Strait, Ombai Strait, Timor Passage
+runNAtlOverflows=0  # North Atlantic deep overflows: Denmark Strait, Faroe Bank Channel
+runArcTrans=0       # Arctic transports: Fram Strait, Bering Strait, Davis Strait, Barents Sea
+
+# DISABLED, SINCE IT IS NOT WORKING YET
+# VALGLO (Global metrics)
+# The VALGLO package also includes a number of metrics in other packages above.
+#runMHT=0            # Atlantic(?) meridional heat transport
+#runSIE=0            # Arctic sea ice extent
+#runQHF=0            #
+
+##### USER CHOICES END ######
+
+if [[ $RUNVALSO == 1 || $RUNALL == 1 ]]; then
+   runACC=1 
+   runMLD_Weddell=1 
+   runBSF_SO=1 
+   runDEEPTS=1 
+   runSST_SO=1
+   runAABW=1
+fi
+if [[ $RUNVALNA == 1 || $RUNALL == 1 ]]; then
+   runBSF_NA=1
+   #runHTC=1
+   runSTC=1
+   runAMOC=1
+   runRAPID=1
+   #runOSNAP=1 # if you want to use this, you need to explicitely activate it!
+   #runMHT=1 # if you want to use this, you need to explicitely activate it!
+   runMLD_LabSea=1
+   runSSS_LabSea=1
+   runSST_NWCorner=1
+   #runOVF=1 # Disabled since not yet working
+   runGSL_NAC=1
+   runMedOVF=1
+fi
+if [[ $RUNVALTRANS == 1 || $RUNALL == 1 ]]; then
+   runITF=1
+   runMargSea=1
+   runNAtlOverflows=1
+   runArcTrans=1
+fi
+
+# Disabled since it is not ready yet 
+# if [[ $RUNVALGLO == 1 || $RUNALL == 1 ]]; then
+#    runACC=1 
+#    runAMOC=1
+#    runMHT=1
+#    runSIE=1
+#    runQHF=1
+#    runSST_NWCorner=1
+#    runSST_SO=1
+# fi
+   
+if [[ -z "$(conda env list | grep ^marval)" ]]
+then
+    echo "ERROR: marval conda environment not found."
+    echo "You need to create it using 'conda env create -f marval.yml'"
+    exit 11
+fi
+
+source /opt/conda/etc/profile.d/conda.sh # Ensure conda commands are available in this shell session
+#conda init
+conda activate marval
+echo `which python`
