@@ -177,7 +177,7 @@ if [[ $needBATHY == 1 && ! -f ${MSKPATH}/${BATHY} ]] ; then
 fi
 
 if [[ $runVRMP == 1 && ! -f ${ZCOMSHMSK} ]] ; then
-   echo "E R R O R : the z-levels mesh_mask.nc file for vertical rempping does not exist : ${TARGETMSHMSK}"
+   echo "E R R O R : the z-levels mesh_mask.nc file for vertical rempping does not exist : ${MSKPATH}/${MESHMASK}"
    exit 41
 fi
 
