@@ -78,7 +78,7 @@ conda env create -f marval.yml
 
 ```
 cd ../
-git clone git@github.com:JMMP-Group/nordic-seas-validation.git
+git clone https://github.com/JMMP-Group/nordic-seas-validation.git
 cd nordic-seas-validation.git
 conda activate marval
 pip install -e .
