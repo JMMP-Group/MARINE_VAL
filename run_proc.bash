@@ -6,12 +6,12 @@
 moo_wait() {
 # Limit the number of MASS retrievals that we submit in parallel. The recommendation is to keep
 # this to around 30 max. 
-let njobs=$(sacct -s pd,r | grep "moo" | wc -l)
+let njobs=$(squeue --format '%.100j' --noheader --user $USER | grep "moo" | wc -l)
 while (( ${njobs} > 25 ))
 do
-  let njobs=$(sacct -s pd,r | grep "moo" | wc -l)
+  let njobs=$(squeue --format '%.100j' --noheader --user $USER | grep "moo" | wc -l)
   echo "Number of MASS retrievals : $njobs. Sleeping."
-  sleep 10s
+  sleep 1m
 done
 }
 
@@ -23,13 +23,13 @@ slurm_wait() {
 # Now that we have chunking of MASS restores, a lot of processing jobs can be submitted all at once
 # after a chunk of files have been restored and might not all show up in the queue. So put in a short
 # sleep between each job submission as well.  
-sleep 0.1s
-let njobs=$(sacct | grep "PENDING" | wc -l)+$(sacct | grep "RUNNING" | wc -l)
+sleep 1s
+let njobs=$(squeue --format '%.100j' --noheader --user $USER | wc -l)
 while (( $njobs > 480 ))
 do
-  let njobs=$(sacct | grep "PENDING" | wc -l)+$(sacct | grep "RUNNING" | wc -l)
+  let njobs=$(squeue --format '%.100j' --noheader --user $USER | wc -l)
   echo "Number of slurm jobs : $njobs. Sleeping."
-  sleep 1m
+  sleep 2m
 done
 }
 
