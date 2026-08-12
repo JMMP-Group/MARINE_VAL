@@ -53,7 +53,7 @@ run_tool() {
    TOOL=$1;shift
    flags=""
    jobtag=""
-   while getopts S:s:A:B opt ; do
+   while getopts S:s:A:BM: opt ; do
      if [ "$opt" == "B" ];then  
         jobtag="${jobtag}_B" 
         flags="$flags -${opt}"
@@ -299,7 +299,7 @@ for RUNID in `echo $RUNIDS`; do
             moo_wait
             [[ $runTRP == 1 || $runBSF == 1 || $runMOC == 1 ]] && mooUyid=$(retrieve_data $RUNID $FREQ grid-U $TAG_LIST)
             moo_wait
-            [[ $runTRP == 1 || $runQHF == 1 || $runTprof == 1 || $runTS == 1 || $runMOC == 1 || $runHTC == 1 || $runSTC == 1 || $runGSL_NAC == 1 || $runMHT == 1 || $runQHF == 1 || $runMedOVF == 1 || $runAABW == 1 ]] && mooTyid=$(retrieve_data $RUNID $FREQ grid-T $TAG_LIST)
+            [[ $runTRP == 1 || $runQHF == 1 || $runTSdrift == 1 || $runTS == 1 || $runMOC == 1 || $runHTC == 1 || $runSTC == 1 || $runGSL_NAC == 1 || $runMHT == 1 || $runQHF == 1 || $runMedOVF == 1 || $runAABW == 1 ]] && mooTyid=$(retrieve_data $RUNID $FREQ grid-T $TAG_LIST)
          fi
 
          echo "mooTyid : $mooTyid"
@@ -352,9 +352,9 @@ for RUNID in `echo $RUNIDS`; do
             #[[ $runOVF == 1 ]]           && run_tool mk_ovf       $TAG $RUNID $FREQ $mooTyid
             [[ $runMHT == 1 ]]     && run_tool mk_mht  $TAG $RUNID $FREQ $mooVyid:$mooTyid
             [[ $runQHF == 1 ]]     && run_tool mk_hfds $TAG $RUNID $FREQ $mooTyid 
-            [[ $runTprof == 1 ]]   && run_tool mk_Tprof $TAG $RUNID $FREQ $mooTyid 
-            [[ $runMedOVF == 1 ]]   && run_tool mk_medovf $TAG $RUNID $FREQ $mooTyid
-            [[ $runAABW == 1 ]] && run_tool mk_aabw $TAG $RUNID $FREQ $mooTyid
+            [[ $runTSdrift == 1 ]] && run_tool mk_TSdrift -M GLOBAL $TAG $RUNID $FREQ $mooTyid 
+            [[ $runMedOVF == 1 ]]  && run_tool mk_medovf $TAG $RUNID $FREQ $mooTyid
+            [[ $runAABW == 1 ]]    && run_tool mk_aabw $TAG $RUNID $FREQ $mooTyid
          done
          let tagcount=0
          TAG_LIST=""

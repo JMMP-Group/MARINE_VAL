@@ -71,7 +71,7 @@ def get_weights(wgtsfile,wgtsname,cube):
     return wgts
 
 def reduce_fields(infile,tmask,invars=None,coords=None,wgtsfiles=None,wgtsnames=None,
-                  aggr=None,outfile=None,subout=None,surface=None):
+                  aggr=None,outfile=None,subout=None,norm=None,surface=None):
 
     aggregators = { "mean"     :  iris.analysis.MEAN ,
                     "min"      :  iris.analysis.MIN  ,
@@ -92,6 +92,15 @@ def reduce_fields(infile,tmask,invars=None,coords=None,wgtsfiles=None,wgtsnames=
     else:
         cubes = [read_cube(infile,varname) for varname in invars]
         
+    if norm and wgtsnames is not None:
+        print("Adding a norm cube")
+        cubes.append(cubes[0].copy())
+        cubes[-1].var_name="norm"
+        cubes[-1].data[:] = 1.0
+        # this line necessary because setting a value at a point automatically unmasks it
+        # so we need to apply the original mask again...
+        cubes[-1].data.mask = cubes[0].data.mask
+
     # Filter for subdomain
     tmask_cube = iris.load_cube(tmask[0])
     nav_lev_index = tmask_cube.coord_dims('nav_lev')[0]
@@ -192,10 +201,12 @@ if __name__=="__main__":
                          help="tmask file", nargs=1, type=str, required=True),
     parser.add_argument("-S", "--surf", dest="surface", action="store_true", 
                          help="flag to indicate surface-only reduction")
+    parser.add_argument("--norm", action="store_true",dest="norm",
+                         help="output norm - reduction applied to weights alone")
     args = parser.parse_args()
 
     reduce_fields(infile=args.infile,tmask=args.tmask,invars=args.invars,outfile=args.outfile,
                   wgtsfiles=args.wgtsfiles,wgtsnames=args.wgtsnames,coords=args.coords,aggr=args.aggr,
-                  subout=args.subout,surface=args.surface)
+                  subout=args.subout,surface=args.surface,norm=args.norm)
 
 

@@ -3,6 +3,20 @@
 #SBATCH --time=360
 #SBATCH --ntasks=1
 
+check_TS_var(){
+    # check standard_name attributes and extract relevant variable name from grep command
+    FILE=$1
+    TEOS10=0; EOS80=0
+    Tv10="";Sv10="";Tv80="";Sv80=""
+    Tv10=$(ncdump -h $FILE | grep "sea_water_conservative_temperature" | cut -d":" -f1)
+    Sv10=$(ncdump -h $FILE | grep "sea_water_absolute_salinity" | cut -d":" -f1)
+    Tv80=$(ncdump -h $FILE | grep "sea_water_potential_temperature" | cut -d":" -f1)
+    Sv80=$(ncdump -h $FILE | grep "sea_water_practical_salinity" | cut -d":" -f1)
+    if [[ -n "$Tv10" && -n "$Sv10" ]]; then TEOS10=1; fi
+    if [[ -n "$Tv80" && -n "$Sv80" ]]; then EOS80=1; fi
+    echo "TEOS10= " $TEOS10 ", EOS80= " $EOS80
+}    
+
 sleep 30
 
 RUNID=$1
@@ -36,8 +50,6 @@ done
 MOO_GET_LIST=""
 MOO_RESTORED_LIST=""
 CONVERT_EOS_LIST=""
-TEOS10=0
-EOS80=0
 
 for MFILE in ${FILE_LST}; do
    FILE=${MFILE#*${CRUM_FREQ}.nc.file/}
@@ -49,25 +61,16 @@ for MFILE in ${FILE_LST}; do
       if [[ $TIME -eq 0 ]]; then echo " $FILE is corrupted "; rm $FILE; fi
 
       if [[ "${GRID_CAT}" == "T" ]]; then
-         Tv10=$(ncdump -h $FILE | grep float | grep thetao[_\ ]con | cut -d' ' -f2 | cut -d'(' -f1 )
-         Sv10=$(ncdump -h $FILE | grep float | grep so[_\ ]abs | cut -d' ' -f2 | cut -d'(' -f1 )
-         Tv80=$(ncdump -h $FILE | grep float | grep thetao[_\ ]pot | cut -d' ' -f2 | cut -d'(' -f1 )
-         Sv80=$(ncdump -h $FILE | grep float | grep so[_\ ]pra | cut -d' ' -f2 | cut -d'(' -f1 )
-         #echo "Tv10= " $Tv10 ", Sv10= " $Sv10
-         #echo "Tv80= " $Tv80 ", Sv80= " $Sv80
-         if [[ "$Tv10" == "thetao_con" && "$Sv10" == "so_abs" ]]; then TEOS10=1; fi
-         if [[ "$Tv80" == "thetao_pot" && "$Sv80" == "so_pra" ]]; then EOS80=1; fi
-         echo "TEOS10= " $TEOS10 ", EOS80= " $EOS80
-
-         if [[ "$TEOS10" == 0 ]]; then
-            # If file has only one of thetao_con or so_abs, something has gone wrong
-            # delete and restore from MASS again. 
-            echo " $FILE is corrupted "; rm $FILE
-         elif [[ "$TEOS10" == 1 && "$EOS80" == 0 ]]; then
+         check_TS_var $FILE
+         if [[ "$TEOS10" == 1 && "$EOS80" == 0 ]]; then
             # If file has only TEOS10 variables, we need to compute the EOS80 ones. 
             CONVERT_EOS_LIST="$CONVERT_EOS_LIST $FILE"
+         elif [[ "$TEOS10" == 0 && "$EOS80" == 0 ]]; then
+            # We don't have a consistent set of T and S variables. 
+            # Try restoring the file again.
+            echo " $FILE may be corrupted "; rm $FILE
          else
-            echo 'nothing to do ... '
+            echo 'EOS80 fields in file: no conversion required.'
          fi
       fi
    fi
@@ -87,11 +90,8 @@ fi
 
 for FILE in $MOO_RESTORED_LIST;do
    if [[ "${GRID_CAT}" == "T" ]]; then   
-      Tv10=$(ncdump -h $FILE | grep float | grep thetao[_\ ]c | cut -d' ' -f2 | cut -d'(' -f1 )
-      Sv10=$(ncdump -h $FILE | grep float | grep so[_\ ]a | cut -d' ' -f2 | cut -d'(' -f1 )
-      echo "$FILE : $Tv10 $Sv10"
-      if [[ "$Tv10" == "thetao_con" && "$Sv10" == "so_abs" ]]; then 
-         echo "hello!"
+      check_TS_var $FILE
+      if [[ "$TEOS10" == 1 && "EOS80" == 0 ]]; then 
          CONVERT_EOS_LIST="$CONVERT_EOS_LIST $FILE"
       fi
    fi 
@@ -104,7 +104,6 @@ for FILE in $MOO_RESTORED_LIST;do
 done
 
 for FILE in $CONVERT_EOS_LIST;do
-   python3 ${EXEPATH}/SCRIPT/convert_nemo_eos80.py $FILE
-   #ncks -x -v thetao_con,so_abs $FILE -o ${FILE%.nc}_noTEOS10var.nc
-   #mv -f ${FILE%.nc}_noTEOS10var.nc $FILE
+   echo "Converting $Tv10 and $Sv10 to EOS80 variables in $FILE" 
+   ${EXEPATH}/SCRIPT/convert_nemo_eos80.py -i $FILE -T $Tv10 -S $Sv10
 done
