@@ -8,15 +8,33 @@ check_TS_var(){
     FILE=$1
     TEOS10=0; EOS80=0
     Tv10="";Sv10="";Tv80="";Sv80=""
-    Tv10=$(ncdump -h $FILE | grep "sea_water_conservative_temperature" | cut -d":" -f1)
-    Sv10=$(ncdump -h $FILE | grep "sea_water_absolute_salinity" | cut -d":" -f1)
-    Tv80=$(ncdump -h $FILE | grep "sea_water_potential_temperature" | cut -d":" -f1)
-    Sv80=$(ncdump -h $FILE | grep "sea_water_practical_salinity" | cut -d":" -f1)
+    Tv10=$(ncdump -h $FILE | grep "sea_water_conservative_temperature" | cut -d":" -f1 | xargs)
+    Sv10=$(ncdump -h $FILE | grep "sea_water_absolute_salinity" | cut -d":" -f1 | xargs)
+    Tv80=$(ncdump -h $FILE | grep "sea_water_potential_temperature" | cut -d":" -f1 | xargs)
+    Sv80=$(ncdump -h $FILE | grep "sea_water_practical_salinity" | cut -d":" -f1 | xargs)
     if [[ -n "$Tv10" && -n "$Sv10" ]]; then TEOS10=1; fi
     if [[ -n "$Tv80" && -n "$Sv80" ]]; then EOS80=1; fi
-    echo "TEOS10= " $TEOS10 ", EOS80= " $EOS80
+    echo "TEOS10=${TEOS10}, EOS80=${EOS80}"
 }    
 
+check_varnames(){
+    # find MLD and cell thicknesses using standard_name attribute and
+    # rename to what the scripts expect if necessary
+    FILE=$1
+    mldvar=$(ncdump -h $FILE | grep "ocean_mixed_layer_thickness" | cut -d":" -f1 | xargs)
+    if [[ -n "$mldvar" && "$mldvar" != "somxzint1" ]]
+    then
+        echo "Renaming $mldvar to somxzint1 in $FILE."
+	ncrename -v ${mldvar},somxzint1 $FILE
+    fi
+    thkvar=$(ncdump -h $FILE | grep "cell_thickness" | cut -d":" -f1 | xargs)
+    if [[ -n "$thkvar" && "$thkvar" != "thkcello" ]]
+    then
+        echo "Renaming $thkvar to thkcello in $FILE."
+	ncrename -v ${thkvar},thkcello $FILE
+    fi
+}
+       
 sleep 30
 
 RUNID=$1
@@ -73,6 +91,7 @@ for MFILE in ${FILE_LST}; do
             echo 'EOS80 fields in file: no conversion required.'
          fi
       fi
+      check_varnames $FILE
    fi
 
    if [ ! -f $FILE ]; then
@@ -91,10 +110,11 @@ fi
 for FILE in $MOO_RESTORED_LIST;do
    if [[ "${GRID_CAT}" == "T" ]]; then   
       check_TS_var $FILE
-      if [[ "$TEOS10" == 1 && "EOS80" == 0 ]]; then 
+      if [[ "$TEOS10" == "1" && "$EOS80" == "0" ]]; then 
          CONVERT_EOS_LIST="$CONVERT_EOS_LIST $FILE"
       fi
    fi 
+   check_varnames $FILE
    # Set standard_name for depth coordinate so Iris will recognise it:
    [[ "$FILE" =~ *grid-T\.nc ]] && depvar="deptht"
    [[ "$FILE" =~ *grid-U\.nc ]] && depvar="depthu"
