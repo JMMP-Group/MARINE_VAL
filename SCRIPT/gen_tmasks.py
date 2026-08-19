@@ -98,11 +98,8 @@ proc_tmask_map = {
                 {**domain_params("NA_GYRE"), "minisobath": 1000, "maxisobath": None, "obs": 'woa13v2'}],
      "runQHF": [{**domain_params("GLOBAL"), "mindepth": None, "maxdepth": None, "obs": None, "no_cluster": True}],
      "runTSdrift": [{**domain_params("GLOBAL"), "mindepth": None, "maxdepth": None, "obs": None, "no_cluster": True},
-                   {**domain_params("GLOBAL"), "mindepth": None, "maxdepth": 700, "obs": None, "no_cluster": True},
                    {**domain_params("GLOBAL"), "mindepth": None, "maxdepth": 1000, "obs": None, "no_cluster": True},
-                   {**domain_params("GLOBAL"), "mindepth": 700, "maxdepth": 2000, "obs": None, "no_cluster": True},
-                   {**domain_params("GLOBAL"), "mindepth": 1000, "maxdepth": None, "obs": None, "no_cluster": True},
-                   {**domain_params("GLOBAL"), "mindepth": 2000, "maxdepth": None, "obs": None, "no_cluster": True}]
+                   {**domain_params("GLOBAL"), "mindepth": 1000, "maxdepth": None, "obs": None, "no_cluster": True}],
 }
 
 #########################################################################################################################################

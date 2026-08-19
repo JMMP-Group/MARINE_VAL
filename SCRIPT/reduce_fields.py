@@ -71,7 +71,7 @@ def get_weights(wgtsfile,wgtsname,cube):
     return wgts
 
 def reduce_fields(infile,tmask,invars=None,coords=None,wgtsfiles=None,wgtsnames=None,
-                  aggr=None,outfile=None,subout=None,norm=None,surface=None):
+                  aggr=None,outfile=None,subout=None,norm=None,surface=None,masks_out=None):
 
     aggregators = { "mean"     :  iris.analysis.MEAN ,
                     "min"      :  iris.analysis.MIN  ,
@@ -105,9 +105,10 @@ def reduce_fields(infile,tmask,invars=None,coords=None,wgtsfiles=None,wgtsnames=
         cubes[-1].data.mask = cubes[0].data.mask
 
     # Filter for subdomain
-    tmask_cube = iris.load_cube(tmask[0])
-    nav_lev_index = tmask_cube.coord_dims('nav_lev')[0]
-    nav_lev_index = tuple([0 if i == nav_lev_index else slice(None) for i in range(tmask_cube.data.ndim)]) # index to filter surface
+    tmask_cube = read_cube(tmask[0],"tmask")
+    if 'nav_lev' in [coord.name() for coord in tmask_cube.coords()]:
+        nav_lev_index = tmask_cube.coord_dims('nav_lev')[0]
+        nav_lev_index = tuple([0 if i == nav_lev_index else slice(None) for i in range(tmask_cube.data.ndim)]) # index to filter surface
 
     for cube in cubes[1:]:
         assert cubes[0].shape == cube.shape, "All input cubes must have the same shape"
@@ -120,15 +121,21 @@ def reduce_fields(infile,tmask,invars=None,coords=None,wgtsfiles=None,wgtsnames=
             None
         )
         has_depth = depth_coord is not None
-
+        tmask_depth_coord = next(
+            (coord for coord in (list(tmask_cube.dim_coords) + list(tmask_cube.aux_coords))
+             if coord.var_name in ("deptht", "depthu", "depthv", "nav_lev") and len(coord.points) > 1),
+            None
+        )
+        tmask_has_depth = tmask_depth_coord is not None
+        
         if surface and has_depth:
             depth_index = cube.coord_dims(depth_coord)[0]
             depth_index = tuple([0 if i == depth_index else slice(None) for i in range(cube.data.ndim)]) # index to filter surface
             tmask = tmask_cube.data[nav_lev_index]
             cube = cube[depth_index]
-        elif surface or not has_depth:
+        elif (surface or not has_depth) and tmask_has_depth:
             tmask = tmask_cube.data[nav_lev_index]
-        elif has_depth:
+        else:
             tmask = tmask_cube.data
         
         tmask = ~tmask.astype(bool) # Ensure tmask is of type bool. Inverse values as ma.masked_where keeps False values.
@@ -184,6 +191,14 @@ def reduce_fields(infile,tmask,invars=None,coords=None,wgtsfiles=None,wgtsnames=
         
     iris.save(cubes_reduced, outfile, fill_value=fill_value)
 
+    if masks_out:
+        mask_cubes = cubes_reduced
+        for mask_cube in mask_cubes:
+            mask_cube.var_name = "tmask_"+mask_cube.var_name
+            mask_cube.data[:] = np.where(mask_cube.data.mask, 0, 1)
+            mask_cube.mask = False
+        iris.save(mask_cubes, outfile.replace(".nc","_tmasks.nc"))
+    
 if __name__=="__main__":
     import argparse
     parser = argparse.ArgumentParser()
@@ -209,10 +224,12 @@ if __name__=="__main__":
                          help="flag to indicate surface-only reduction")
     parser.add_argument("--norm", action="store_true",dest="norm",
                          help="output norm - reduction applied to weights alone")
+    parser.add_argument("--masks_out", action="store_true",dest="masks_out",
+                         help="output masks of reduced fields as 1/0 tmask fields")
     args = parser.parse_args()
 
     reduce_fields(infile=args.infile,tmask=args.tmask,invars=args.invars,outfile=args.outfile,
                   wgtsfiles=args.wgtsfiles,wgtsnames=args.wgtsnames,coords=args.coords,aggr=args.aggr,
-                  subout=args.subout,surface=args.surface,norm=args.norm)
+                  subout=args.subout,surface=args.surface,norm=args.norm,masks_out=args.masks_out)
 
 
