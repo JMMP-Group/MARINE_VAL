@@ -6,12 +6,14 @@ if [ $# -eq 0 ] ; then echo 'need a [KEYWORD] (will be inserted inside the figur
 
 ZERO_ORIGIN_FLAG=""
 WINDOW_FLAG=""
-while getopts ZW:Y: opt ; do
+while getopts ZW:X:Y:Z: opt ; do
   case $opt in
      Z) ZERO_ORIGIN_FLAG=" -force_zero_origin" ;;
      # window (integer > 1) for rolling mean
      W) WINDOW_FLAG=" -window ${OPTARG}" ;;
-     Y) YLIMITS=" -ylim ${OPTARG}" ;;
+     X) YLIMITS_OHCFLUX=" -ylim ${OPTARG}" ;;
+     Y) YLIMITS_MEANT=" -ylim ${OPTARG}" ;;
+     Z) YLIMITS_MEANS=" -ylim ${OPTARG}" ;;
   esac   
 done
 shift `expr $OPTIND - 1`  
@@ -34,9 +36,9 @@ FREQ="1y"
 factor=$base_factor
 if [[ $runTSdrift == 1 ]]; then
    echo 'plot global heat content as equivalent flux'
-   python ${SCRPATH}/plot_time_series.py -noshow -runid $RUNIDS -f *meanTS-GLOBAL_nemo_*${FREQ}*grid-T.nc -var heat_content_per_unit_area \
-	  -diff -sf ${factor} -title "Global implied TOA (W/m2)" -dir ${DATPATH} -o "${KEY}_heatc_eqflx-global" \
-	  $ZERO_ORIGIN_FLAG $WINDOW_FLAG $YLIMITS
+   python ${SCRPATH}/plot_time_series.py -noshow -runid $RUNIDS -f *meanTS-GLOBAL_nemo_*${FREQ}*grid-T.nc \
+	  -var heat_content_per_unit_area -diff -sf ${factor} -title "Global implied TOA (W/m2)" -dir ${DATPATH} \
+	  -o "${KEY}_heatc_eqflx-global" $ZERO_ORIGIN_FLAG $WINDOW_FLAG $YLIMITS_OHCFLUX
    if [[ $? -ne 0 ]]; then exit 42; fi
 fi
 
@@ -44,9 +46,9 @@ fi
 factor=$base_factor
 if [[ $runTSdrift == 1 ]]; then
    echo 'plot global heat content top 1000m as equivalent flux'
-   python ${SCRPATH}/plot_time_series.py -noshow -runid $RUNIDS -f *meanTS-GLOBAL_maxdepth-1000_nemo_*${FREQ}*grid-T.nc -var heat_content_per_unit_area \
-	  -diff -sf ${factor} -title "Global top 1000m implied TOA (W/m2)" -dir ${DATPATH} -o "${KEY}_heatc_eqflx-global-top-1000m" \
-	  $ZERO_ORIGIN_FLAG $WINDOW_FLAG $YLIMITS
+   python ${SCRPATH}/plot_time_series.py -noshow -runid $RUNIDS -f *meanTS-GLOBAL_maxdepth-1000_nemo_*${FREQ}*grid-T.nc \
+	  -var heat_content_per_unit_area -diff -sf ${factor} -title "Global top 1000m implied TOA (W/m2)" -dir ${DATPATH} \
+	  -o "${KEY}_heatc_eqflx-global-top-1000m" $ZERO_ORIGIN_FLAG $WINDOW_FLAG $YLIMITS_OHCFLUX
    if [[ $? -ne 0 ]]; then exit 42; fi
 fi
 
@@ -72,9 +74,63 @@ fi
 factor=$(echo "scale=12;${base_factor}*${surf_area}/${surf_area_glob}" | bc)
 if [[ $runTSdrift == 1 ]]; then
    echo 'plot global heat content below 1000m as equivalent flux'
-   python ${SCRPATH}/plot_time_series.py -noshow -runid $RUNIDS -f *meanTS-GLOBAL_mindepth-1000_nemo_*${FREQ}*grid-T.nc -var heat_content_per_unit_area \
-	  -diff -sf ${factor} -title "Global below 1000m implied TOA (W/m2)" -dir ${DATPATH} -o "${KEY}_heatc_eqflx-global-below-1000m" \
-	  $ZERO_ORIGIN_FLAG $WINDOW_FLAG $YLIMITS
+   python ${SCRPATH}/plot_time_series.py -noshow -runid $RUNIDS -f *meanTS-GLOBAL_mindepth-1000_nemo_*${FREQ}*grid-T.nc \
+	  -var heat_content_per_unit_area -diff -sf ${factor} -title "Global below 1000m implied TOA (W/m2)" -dir ${DATPATH} \
+	  -o "${KEY}_heatc_eqflx-global-below-1000m" $ZERO_ORIGIN_FLAG $WINDOW_FLAG $YLIMITS_OHCFLUX
+   if [[ $? -ne 0 ]]; then exit 42; fi
+fi
+
+# Global full-depth mean temperature.
+if [[ $runTSdrift == 1 ]]; then
+   echo 'plot global mean temperature'
+   python ${SCRPATH}/plot_time_series.py -noshow -runid $RUNIDS -f *meanTS-GLOBAL_nemo_*${FREQ}*grid-T.nc \
+	  -var thetao_pot -title "Global mean temperature (deg C)" -dir ${DATPATH} \
+	  -o "${KEY}_meanT-global" -yfmt "%.3f" $ZERO_ORIGIN_FLAG $WINDOW_FLAG $YLIMITS_MEANT
+   if [[ $? -ne 0 ]]; then exit 42; fi
+fi
+
+# Global 0-1000m mean temperature.
+if [[ $runTSdrift == 1 ]]; then
+   echo 'plot global 0-1000m mean temperature'
+   python ${SCRPATH}/plot_time_series.py -noshow -runid $RUNIDS -f *meanTS-GLOBAL_maxdepth-1000_nemo_*${FREQ}*grid-T.nc \
+	  -var thetao_pot -title "Global 0-1000m mean temperature (deg C)" -dir ${DATPATH} \
+	  -o "${KEY}_meanT-global-top-1000m" -yfmt "%.3f" $ZERO_ORIGIN_FLAG $WINDOW_FLAG $YLIMITS_MEANT
+   if [[ $? -ne 0 ]]; then exit 42; fi
+fi
+
+# Global 1000m+ mean temperature.
+if [[ $runTSdrift == 1 ]]; then
+   echo 'plot global 1000m+ mean temperature'
+   python ${SCRPATH}/plot_time_series.py -noshow -runid $RUNIDS -f *meanTS-GLOBAL_mindepth-1000_nemo_*${FREQ}*grid-T.nc \
+	  -var thetao_pot -title "Global 1000m+ mean temperature (deg C)" -dir ${DATPATH} \
+	  -o "${KEY}_meanT-global-below-1000m" -yfmt "%.3f" $ZERO_ORIGIN_FLAG $WINDOW_FLAG $YLIMITS_MEANT
+   if [[ $? -ne 0 ]]; then exit 42; fi
+fi
+
+# Global full-depth mean salinity.
+if [[ $runTSdrift == 1 ]]; then
+   echo 'plot global mean salinity'
+   python ${SCRPATH}/plot_time_series.py -noshow -runid $RUNIDS -f *meanTS-GLOBAL_nemo_*${FREQ}*grid-T.nc \
+	  -var so_pra -title "Global mean salinity (psu)" -dir ${DATPATH} \
+	  -o "${KEY}_meanS-global" -yfmt "%.3f" $ZERO_ORIGIN_FLAG $WINDOW_FLAG $YLIMITS_MEANT
+   if [[ $? -ne 0 ]]; then exit 42; fi
+fi
+
+# Global 0-1000m mean salinity.
+if [[ $runTSdrift == 1 ]]; then
+   echo 'plot global 0-1000m mean salinity'
+   python ${SCRPATH}/plot_time_series.py -noshow -runid $RUNIDS -f *meanTS-GLOBAL_maxdepth-1000_nemo_*${FREQ}*grid-T.nc \
+	  -var so_pra -title "Global 0-1000m mean salinity (psu)" -dir ${DATPATH} \
+	  -o "${KEY}_meanS-global-top-1000m" -yfmt "%.3f" $ZERO_ORIGIN_FLAG $WINDOW_FLAG $YLIMITS_MEANT
+   if [[ $? -ne 0 ]]; then exit 42; fi
+fi
+
+# Global 1000m+ mean salinity.
+if [[ $runTSdrift == 1 ]]; then
+   echo 'plot global 1000m+ mean salinity'
+   python ${SCRPATH}/plot_time_series.py -noshow -runid $RUNIDS -f *meanTS-GLOBAL_mindepth-1000_nemo_*${FREQ}*grid-T.nc \
+	  -var so_pra -title "Global 1000m+ mean salinity (psu)" -dir ${DATPATH} \
+	  -o "${KEY}_meanS-global-below-1000m" -yfmt "%.3f" $ZERO_ORIGIN_FLAG $WINDOW_FLAG $YLIMITS_MEANT
    if [[ $? -ne 0 ]]; then exit 42; fi
 fi
 
@@ -83,6 +139,12 @@ fi
 convert ${KEY}_heatc_eqflx-global.png                   -crop 1240x1040+0+0 tmp01.png
 convert ${KEY}_heatc_eqflx-global-top-1000m.png         -crop 1240x1040+0+0 tmp02.png
 convert ${KEY}_heatc_eqflx-global-below-1000m.png       -crop 1240x1040+0+0 tmp03.png
+convert ${KEY}_meanT-global.png                         -crop 1240x1040+0+0 tmp04.png
+convert ${KEY}_meanT-global-top-1000m.png               -crop 1240x1040+0+0 tmp05.png
+convert ${KEY}_meanT-global-below-1000m.png             -crop 1240x1040+0+0 tmp06.png
+convert ${KEY}_meanS-global.png                         -crop 1240x1040+0+0 tmp07.png
+convert ${KEY}_meanS-global-top-1000m.png               -crop 1240x1040+0+0 tmp08.png
+convert ${KEY}_meanS-global-below-1000m.png             -crop 1240x1040+0+0 tmp09.png
 
 # trim figure (remove white area)
 #convert FIGURES/box_VALSO.png -trim -bordercolor White -border 40 tmp09.png
@@ -91,6 +153,8 @@ convert runidname.png   -trim -bordercolor White -border 20 tmp11.png
 
 # compose the image
 convert \( tmp01.png tmp02.png tmp03.png +append \) \
+        \( tmp04.png tmp05.png tmp06.png +append \) \
+        \( tmp07.png tmp08.png tmp09.png +append \) \
            tmp10.png tmp11.png -append -trim -bordercolor White -border 40 $KEY.png
 
 # save figure

@@ -1,6 +1,7 @@
 import numpy as np
 import glob
 import netCDF4 as nc
+import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 import sys
@@ -72,14 +73,21 @@ class run(object):
         if self.window > 1:
             self.ts = self.ts.rolling(self.window,center=True).mean()
         print('self.ts : ',self.ts)
+        # set the limits for the time axis based on original time indices
+        # not the difference time indices
+        self.xlim = [ self.ts.index[0], self.ts.index[-1] ]
         if diff:
+            # offset the time indices to be half way between the times of the original series 
+            time_delta = self.ts.index[1] - self.ts.index[0]
+            half_time_delta = dt.timedelta(seconds=0.5*time_delta.total_seconds())
+            self.ts.index -= half_time_delta
             self.ts = self.ts.diff(axis=0)
-            print('DIFF self.ts : ',self.ts)
+            # print('DIFF self.ts : ',self.ts)
         self.mean = self.ts[self.name].mean()
         self.std  = self.ts[self.name].std()
         self.min  = self.ts[self.name].min()
         self.max  = self.ts[self.name].max()
-
+        
     def __str__(self):
         return 'runid = {}, name = {}, line = {}, color = {}'.format(self.runid, self.name, self.line, self.color)
 
@@ -141,6 +149,7 @@ def load_argument():
     parser.add_argument("-window", metavar='window'     , help="window"                                               , type=int, nargs=1   , required=False, default=[1])
     parser.add_argument("-o"    , metavar='figure_name', help="output figure name without extension"                  , type=str, nargs=1   , required=False, default=['output'])
     parser.add_argument("-ylim" , metavar='y_limits'   , help="force limits on y-axis"                                , type=float, nargs=2 , required=False)
+    parser.add_argument("-yfmt" , metavar='y_format'   , help="format string for y-axis tick labels"                  , type=str, nargs=1 , required=False)
     # flag argument
     parser.add_argument("-obs"  , metavar='obs mean and std file', help="obs mean and std file"                       , type=str, nargs='+', required=False)
     parser.add_argument("-mean" , help="will plot model mean base on input netcdf file"                               , required=False, action="store_true")
@@ -233,6 +242,8 @@ def parse_dbfile(runid):
 
 def main():
 
+    matplotlib.rcParams['axes.formatter.useoffset'] = False
+
 # load argument
     args = load_argument()
 
@@ -318,12 +329,8 @@ def main():
             run_lst[irun].load_time_series(cfile, cvar, args.diff)
             ts_lst[irun] = run_lst[irun].ts
             print("run_lst[irun] min/max : ",run_lst[irun].min,run_lst[irun].max)
-            lg = ts_lst[irun].plot(ax=ax[ivar], legend=False, style=run_lst[irun].line,color=run_lst[irun].color,label=run_lst[irun].name, x_compat=True, linewidth=2, rot=0)
-            #
-            # limit of time axis
-            mintime=min([mintime,ts_lst[irun].index[0].date()])
-            maxtime=max([maxtime,ts_lst[irun].index[-1].date()])
-            print("mintime, maxtime : ",mintime,maxtime)
+            lg = ts_lst[irun].plot(ax=ax[ivar], legend=False, style=run_lst[irun].line,color=run_lst[irun].color,\
+                                   label=run_lst[irun].name, x_compat=True, linewidth=2, rot=0 )
 
         # set title
         if (args.title):
@@ -331,7 +338,7 @@ def main():
 
         # set x axis
         nlabel=5
-        ndays=(maxtime-mintime).days
+        ndays=(run_lst[0].xlim[1] - run_lst[0].xlim[0]).days
         nyear=ndays/365
         print('nyear : ',nyear)
         for nyt in [1,2,5,10,20,50,100,200,500]:
@@ -340,7 +347,8 @@ def main():
         print('nyt : ',nyt)
         nmt=ts_lst[irun].index[0].date().month
         ndt=ts_lst[irun].index[0].date().day
-         
+        ax[ivar].set_xlim(run_lst[0].xlim)         
+
         ax[ivar].xaxis.set_major_locator(mdates.YearLocator(nyt,month=1,day=1))
         ax[ivar].tick_params(axis='both', labelsize=16)
         if (ivar != nvar-1):
@@ -352,8 +360,11 @@ def main():
             lt.set_ha('center')
  
         rmin[ivar],rmax[ivar]=get_ybnd(run_lst,obs_min[ivar],obs_max[ivar])
+        if args.yfmt is not None:
+            ax[ivar].yaxis.set_major_formatter(ticker.FormatStrFormatter(args.yfmt[0]))
         if args.force_zero_origin:
             rmin[ivar]=0.0
+        # ylim argument overrides force_zero_origin...
         if args.ylim is not None:
             rmin[ivar]=args.ylim[0]
             rmax[ivar]=args.ylim[1]
@@ -361,7 +372,7 @@ def main():
         ax[ivar].grid()
  
     # tidy up space
-    plt.subplots_adjust(left=0.1, right=0.8, bottom=0.2, top=0.92, wspace=0.15, hspace=0.15)
+    plt.subplots_adjust(left=0.15, right=0.85, bottom=0.2, top=0.92, wspace=0.15, hspace=0.15)
 
     # add legend
     add_legend(lg,ax[nvar-1])
