@@ -59,14 +59,15 @@ def filter_lat_lon(array, mesh_data, args):
     xr.array: Masked array.
     """
 
-    assert args.west[0] < args.east[0], "W (western limit) must be less than E (eastern limit)"
+    # Remove this check because we want to allow areas that straddle the date line (180E).
+    # assert args.west[0] < args.east[0], "W (western limit) must be less than E (eastern limit)"
     assert args.south[0] < args.north[0], "S (southern limit) must be less than N (northern limit)"
     assert -90 <= args.south[0] <= 90 and -90 <= args.north[0] <= 90, "Latitude values must be between -90 and 90"
     assert -180 <= args.west[0] <= 180 and -180 <= args.east[0] <= 180, "Longitude values must be between -180 and 180"
 
     if "nav_lon" in mesh_data.variables:
-       lat_grid = mesh_data['nav_lat'].values # 1206 x 1440 array, latitudes of each grid point
-       lon_grid = mesh_data['nav_lon'].values # 1206 x 1440 array, longitudes of each grid point
+       lat_grid = mesh_data['nav_lat'].values # latitudes of each grid point (2D array)
+       lon_grid = mesh_data['nav_lon'].values # longitudes of each grid point (2D array)
     else:
        lon_grid = mesh_data['glamt'].squeeze().values
        lat_grid = mesh_data['gphit'].squeeze().values
@@ -75,7 +76,15 @@ def filter_lat_lon(array, mesh_data, args):
     args.target_j = TARGET_J
     args.target_i = TARGET_I
 
-    domain_mask = (lat_grid >= args.south[0]) & (lat_grid <= args.north[0]) & (lon_grid >= args.west[0]) & (lon_grid <= args.east[0]) # 1206 x 1440 array, boolean mask for a given domain
+    if args.west[0] < args.east[0]:
+        # usual case
+        domain_mask = (lat_grid >= args.south[0]) & (lat_grid <= args.north[0]) & \
+                      (lon_grid >= args.west[0])  & (lon_grid <= args.east[0]) # boolean mask (2D array)
+    else:
+        # region straddles the date line (180E)
+        domain_mask = (lat_grid >= args.south[0]) & (lat_grid <= args.north[0]) & \
+                      ( ( (lon_grid >= args.west[0]) & (lon_grid <= 180.0) ) | \
+                      ( (lon_grid <= args.east[0]) & (lon_grid >= -180.0) ) ) # boolean mask (2D array)
 
     return array.where(domain_mask, 0)
 

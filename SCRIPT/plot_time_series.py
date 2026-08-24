@@ -20,7 +20,7 @@ class run(object):
         self.sf = sf
         self.window = window
 
-    def load_time_series(self, cfile, cvar, diff):
+    def load_time_series(self, cfile, cvar, lev=None, diff=None):
         # need to deal with mask, var and tag
         # need to do with the cdftools unit -> no unit !!!!
         # define time variable
@@ -31,7 +31,6 @@ class run(object):
         df=[None]*nf
         for kf,cf in enumerate(cfile):
             try:
-                # print("Reading file ",cf)
                 ncid    = nc.Dataset(cf)
                 ncvtime = ncid.variables[ctime]
                 if 'units' in ncvtime.ncattrs():
@@ -60,8 +59,11 @@ class run(object):
                         
                 # build series
                 cnam=get_varname(cf,cvar)
-                df[kf] = pd.Series(ncid.variables[cnam][:].squeeze()*self.sf, index = timeidx, name = self.name)
-
+                if lev is not None:
+                    df[kf] = pd.Series(ncid.variables[cnam][:].squeeze()[lev]*self.sf, index = timeidx, name = self.name)
+                else:
+                    df[kf] = pd.Series(ncid.variables[cnam][:].squeeze()*self.sf, index = timeidx, name = self.name)
+                    
             except Exception as e: 
                 print ('issue in trying to load file : '+cf)
                 print (e)
@@ -72,7 +74,6 @@ class run(object):
         self.ts   = pd.DataFrame(pd.concat(df)).sort_index()
         if self.window > 1:
             self.ts = self.ts.rolling(self.window,center=True).mean()
-        print('self.ts : ',self.ts)
         # set the limits for the time axis based on original time indices
         # not the difference time indices
         self.xlim = [ self.ts.index[0], self.ts.index[-1] ]
@@ -82,7 +83,6 @@ class run(object):
             half_time_delta = dt.timedelta(seconds=0.5*time_delta.total_seconds())
             self.ts.index -= half_time_delta
             self.ts = self.ts.diff(axis=0)
-            # print('DIFF self.ts : ',self.ts)
         self.mean = self.ts[self.name].mean()
         self.std  = self.ts[self.name].std()
         self.min  = self.ts[self.name].min()
@@ -143,6 +143,7 @@ def load_argument():
     parser.add_argument("-f"    , metavar='file list'  , help="file list to plot (default is runid_var.nc)"           , type=str, nargs='+' , required=False)
     parser.add_argument("-var"  , metavar='var list'   , help="variable to look for in the netcdf file ./runid_var.nc", type=str, nargs='+' , required=True )
     parser.add_argument("-varf" , metavar='var list'   , help="variable to look for in the netcdf file ./runid_var.nc", type=str, nargs='+' , required=False)
+    parser.add_argument("-lev"  , metavar='level'      , help="level index for multi-level variable"                  , type=int, nargs=1   , required=False )
     parser.add_argument("-title", metavar='title'      , help="subplot title (associated with var)"                   , type=str, nargs='+' , required=False)
     parser.add_argument("-dir"  , metavar='directory of input file' , help="directory of input file"                  , type=str, nargs=1   , required=False, default=['./'])
     parser.add_argument("-sf"   , metavar='scale factor', help="scale factor"                                         , type=float, nargs=1   , required=False, default=[1])
@@ -326,7 +327,7 @@ def main():
                     print ('no file found with this pattern '+args.dir[0]+'/'+runid+'_'+cvar+'.nc')
                     sys.exit(42)
 
-            run_lst[irun].load_time_series(cfile, cvar, args.diff)
+            run_lst[irun].load_time_series(cfile, cvar, lev=args.lev, diff=args.diff)
             ts_lst[irun] = run_lst[irun].ts
             print("run_lst[irun] min/max : ",run_lst[irun].min,run_lst[irun].max)
             lg = ts_lst[irun].plot(ax=ax[ivar], legend=False, style=run_lst[irun].line,color=run_lst[irun].color,\

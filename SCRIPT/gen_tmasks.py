@@ -72,7 +72,14 @@ domains = {
       "WG": {"W": -31.250, "E": 37.500, "S": -66.500, "N": -60.400, "tlon": 3, "tlat": -63.5},
       "WROSS": {"W": 157.100, "E": 173.333, "S": -78.130, "N": -74.040, "tlon": 165, "tlat": -77},
       "WEDATL": {"W": -65.500, "E": -20.000, "S": -90.000, "N": -24.000, "tlon": -43, "tlat": -57},
-      "WWED": {"W": -65.130, "E": -53.020, "S": -75.950, "N": -72.340, "tlon": -59, "tlat": -74}
+      "WWED": {"W": -65.130, "E": -53.020, "S": -75.950, "N": -72.340, "tlon": -59, "tlat": -74},
+      "BASIN_SO": {"W": -180.000, "E": 180.000, "S": -90.000, "N": -35.000, "tlon": 0, "tlat": -57},
+      "BASIN_ARC": {"W": -180.000, "E": 180.000, "S": 65.000, "N": 90.000, "tlon": 0, "tlat": 70},
+      "BASIN_NATL": {"W": -75.000, "E": 0.000, "S": 0.000, "N": 65.000, "tlon": 0, "tlat": 30},
+      "BASIN_SATL": {"W": -60.000, "E": 20.000, "S": -35.000, "N": 0.000, "tlon": 0, "tlat": -20},
+      "BASIN_IND": {"W": 20.000, "E": 120.000, "S": -35.000, "N": 20.000, "tlon": 90, "tlat": 0},
+      "BASIN_NPAC": {"W": 120.000, "E": -90.000, "S": 0.000, "N": 55.000, "tlon": 170, "tlat": 30},
+      "BASIN_SPAC": {"W": 120.000, "E": -75.000, "S": -35.000, "N": 0.000, "tlon": 170, "tlat": -25},
 }
 
 proc_tmask_map = {
@@ -100,6 +107,27 @@ proc_tmask_map = {
      "runTSdrift": [{**domain_params("GLOBAL"), "mindepth": None, "maxdepth": None, "obs": None, "no_cluster": True},
                    {**domain_params("GLOBAL"), "mindepth": None, "maxdepth": 1000, "obs": None, "no_cluster": True},
                    {**domain_params("GLOBAL"), "mindepth": 1000, "maxdepth": None, "obs": None, "no_cluster": True}],
+     "runTSdriftBasin": [{**domain_params("BASIN_SO"), "mindepth": None, "maxdepth": None, "obs": None, "no_cluster": True},
+                         {**domain_params("BASIN_SO"), "mindepth": None, "maxdepth": 1000, "obs": None, "no_cluster": True},
+                         {**domain_params("BASIN_SO"), "mindepth": 1000, "maxdepth": None, "obs": None, "no_cluster": True},
+                         {**domain_params("BASIN_ARC"), "mindepth": None, "maxdepth": None, "obs": None, "no_cluster": True},
+                         {**domain_params("BASIN_ARC"), "mindepth": None, "maxdepth": 1000, "obs": None, "no_cluster": True},
+                         {**domain_params("BASIN_ARC"), "mindepth": 1000, "maxdepth": None, "obs": None, "no_cluster": True},
+                         {**domain_params("BASIN_NATL"), "mindepth": None, "maxdepth": None, "obs": None, "no_cluster": True},
+                         {**domain_params("BASIN_NATL"), "mindepth": None, "maxdepth": 1000, "obs": None, "no_cluster": True},
+                         {**domain_params("BASIN_NATL"), "mindepth": 1000, "maxdepth": None, "obs": None, "no_cluster": True},
+                         {**domain_params("BASIN_SATL"), "mindepth": None, "maxdepth": None, "obs": None, "no_cluster": True},
+                         {**domain_params("BASIN_SATL"), "mindepth": None, "maxdepth": 1000, "obs": None, "no_cluster": True},
+                         {**domain_params("BASIN_SATL"), "mindepth": 1000, "maxdepth": None, "obs": None, "no_cluster": True},
+                         {**domain_params("BASIN_NPAC"), "mindepth": None, "maxdepth": None, "obs": None, "no_cluster": True},
+                         {**domain_params("BASIN_NPAC"), "mindepth": None, "maxdepth": 1000, "obs": None, "no_cluster": True},
+                         {**domain_params("BASIN_NPAC"), "mindepth": 1000, "maxdepth": None, "obs": None, "no_cluster": True},
+                         {**domain_params("BASIN_SPAC"), "mindepth": None, "maxdepth": None, "obs": None, "no_cluster": True},
+                         {**domain_params("BASIN_SPAC"), "mindepth": None, "maxdepth": 1000, "obs": None, "no_cluster": True},
+                         {**domain_params("BASIN_SPAC"), "mindepth": 1000, "maxdepth": None, "obs": None, "no_cluster": True},
+                         {**domain_params("BASIN_IND"), "mindepth": None, "maxdepth": None, "obs": None, "no_cluster": True},
+                         {**domain_params("BASIN_IND"), "mindepth": None, "maxdepth": 1000, "obs": None, "no_cluster": True},
+                         {**domain_params("BASIN_IND"), "mindepth": 1000, "maxdepth": None, "obs": None, "no_cluster": True}]
 }
 
 #########################################################################################################################################

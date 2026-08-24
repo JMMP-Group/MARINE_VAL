@@ -153,6 +153,7 @@ runVRMP=0
 [[ $runAMOC == 1 || $runRAPID == 1 || $runOSNAP == 1 ]] && runMOC=1
 [[ $runAMOC == 1 && $GVC == 1 ]] && export runVRMP=1
 [[ $runTRP == 1 || $runMOC == 1 || $runVRMP == 1 ]] && needBATHY=1
+[[ $runTSdriftBasin == 1 ]] && runTSdrift=1
 
 # Check that everything is in place
 if [[ ! -d ${CDFPATH} || ! -n "$(ls -A "$CDFPATH")" ]] ; then  
@@ -350,11 +351,18 @@ for RUNID in `echo $RUNIDS`; do
             [[ $runSTC == 1 ]]           && run_tool mk_stc       $TAG $RUNID $FREQ $mooTyid
             [[ $runGSL_NAC == 1 ]]       && run_tool mk_gsl_nac   $TAG $RUNID $FREQ $mooTyid
             #[[ $runOVF == 1 ]]           && run_tool mk_ovf       $TAG $RUNID $FREQ $mooTyid
-            [[ $runMHT == 1 ]]     && run_tool mk_mht  $TAG $RUNID $FREQ $mooVyid:$mooTyid
-            [[ $runQHF == 1 ]]     && run_tool mk_hfds $TAG $RUNID $FREQ $mooTyid 
-            [[ $runTSdrift == 1 ]] && run_tool mk_TSdrift -M GLOBAL $TAG $RUNID $FREQ $mooTyid 
-            [[ $runMedOVF == 1 ]]  && run_tool mk_medovf $TAG $RUNID $FREQ $mooTyid
-            [[ $runAABW == 1 ]]    && run_tool mk_aabw $TAG $RUNID $FREQ $mooTyid
+            [[ $runMHT == 1 ]]           && run_tool mk_mht  $TAG $RUNID $FREQ $mooVyid:$mooTyid
+            [[ $runQHF == 1 ]]           && run_tool mk_hfds $TAG $RUNID $FREQ $mooTyid 
+            [[ $runTSdrift == 1 ]]       && run_tool mk_TSdrift -M GLOBAL      $TAG $RUNID $FREQ $mooTyid 
+            [[ $runTSdriftBasin == 1 ]]  && run_tool mk_TSdrift -M BASIN_ARC   $TAG $RUNID $FREQ $mooTyid 
+            [[ $runTSdriftBasin == 1 ]]  && run_tool mk_TSdrift -M BASIN_NATL  $TAG $RUNID $FREQ $mooTyid 
+            [[ $runTSdriftBasin == 1 ]]  && run_tool mk_TSdrift -M BASIN_SATL  $TAG $RUNID $FREQ $mooTyid 
+            [[ $runTSdriftBasin == 1 ]]  && run_tool mk_TSdrift -M BASIN_NPAC  $TAG $RUNID $FREQ $mooTyid 
+            [[ $runTSdriftBasin == 1 ]]  && run_tool mk_TSdrift -M BASIN_SPAC  $TAG $RUNID $FREQ $mooTyid 
+            [[ $runTSdriftBasin == 1 ]]  && run_tool mk_TSdrift -M BASIN_IND   $TAG $RUNID $FREQ $mooTyid 
+            [[ $runTSdriftBasin == 1 ]]  && run_tool mk_TSdrift -M BASIN_SO    $TAG $RUNID $FREQ $mooTyid 
+            [[ $runMedOVF == 1 ]]        && run_tool mk_medovf $TAG $RUNID $FREQ $mooTyid
+            [[ $runAABW == 1 ]]          && run_tool mk_aabw $TAG $RUNID $FREQ $mooTyid
          done
          let tagcount=0
          TAG_LIST=""
