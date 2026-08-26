@@ -153,6 +153,7 @@ def load_argument():
     parser.add_argument("-yfmt" , metavar='y_format'   , help="format string for y-axis tick labels"                  , type=str, nargs=1 , required=False)
     # flag argument
     parser.add_argument("-obs"  , metavar='obs mean and std file', help="obs mean and std file"                       , type=str, nargs='+', required=False)
+    parser.add_argument("-legend" , help="label for separate legend figures"                                          , type=str, nargs=1,   required=False, default=[None])
     parser.add_argument("-mean" , help="will plot model mean base on input netcdf file"                               , required=False, action="store_true")
     parser.add_argument("-diff" , help="plot sequential differences"                                                  , required=False, action="store_true")
     parser.add_argument("-noshow" , help="do not display the figure (only save it)"                                   , required=False, action="store_true")
@@ -409,13 +410,19 @@ def main():
     else:
        plt.show()
 
+    if args.legend[0] is not None:
+        legend_tag=args.legend[0]
+    else:
+        legend_tag=args.o[0]
+    print("legend_tag : ",legend_tag)
+        
     # build specific legend figure 
     # (for bottom of standard VALSO-type plots)
     plt.figure(figsize=np.array([210*3, 210*3]) / 25.4)
     ax = plt.subplot(1, 1, 1)
     ax.axis('off')
     add_legend(lg,ax,ncol=4)
-    plt.savefig('legend.png', format='png', dpi=150)
+    plt.savefig(legend_tag+'_legend.png', format='png', dpi=150)
 
     # build specific legend figure
     # (with one dataset per line - useful for publication figures)
@@ -423,7 +430,7 @@ def main():
     ax = plt.subplot(1, 1, 1)
     ax.axis('off')
     add_legend(lg,ax,ncol=1)
-    plt.savefig('legend_one_dataset_per_line.png', format='png', dpi=150)
+    plt.savefig(legend_tag+'_legend_one_dataset_per_line.png', format='png', dpi=150)
 
     # build specific text figure
     plt.figure(figsize=np.array([210*3, 210*3]) / 25.4)
@@ -433,7 +440,7 @@ def main():
     for irun, runid in enumerate(args.runid):
         clabel[irun]=run_lst[irun].name+' = '+runid
     add_text(lg,ax,clabel,ncol=4,lvis=False)
-    plt.savefig('runidname.png', format='png', dpi=150)
+    plt.savefig(legend_tag+'_runidname.png', format='png', dpi=150)
 
 if __name__=="__main__":
     main()

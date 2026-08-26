@@ -120,7 +120,8 @@ do
       echo "plot ${AREA} ${LAYER} volume mean salinity"
       python ${SCRPATH}/plot_time_series.py -noshow -runid $RUNIDS -f *meanTS-${AREA}${layer_suffix}_nemo_*${FREQ}*grid-T.nc \
    	     -var so_pra -title "$AREA $layer_label mean salinity (psu)" -dir ${DATPATH} \
-	     -o "${KEY}_meanS-${AREA}${layer_suffix}" -yfmt "%.3f" $ZERO_ORIGIN_FLAG $WINDOW_FLAG $ZLIMITS_MEANT
+	     -o "${KEY}_meanS-${AREA}${layer_suffix}" -yfmt "%.3f" $ZERO_ORIGIN_FLAG $WINDOW_FLAG $ZLIMITS_MEANT \
+	     -legend "${KEY}_${AREA}"
       if [[ $? -ne 0 ]]; then exit 42; fi
 
    # end of loop on layers
@@ -138,13 +139,13 @@ do
    convert ${KEY}_meanS-${AREA}_mindepth-1000.png          -crop 1240x1040+0+0 tmp09_${AREA}.png
    if [[ "$AREA" == "GLOBAL" ]]
    then
-      convert ${KEY}_SST-GLOBAL.png                           -crop 1240x1040+0+0 tmp10.png
+      convert ${KEY}_SST-GLOBAL.png                           -crop 1240x1040+0+0 tmp10_${AREA}.png
    fi
       
    # trim figure (remove white area)
    #convert FIGURES/box_VALSO.png -trim -bordercolor White -border 40 tmp09.png
-   convert legend.png      -trim -bordercolor White -border 20 tmp11_${AREA}.png
-   convert runidname.png   -trim -bordercolor White -border 20 tmp12_${AREA}.png
+   convert "${KEY}_${AREA}_legend.png"      -trim -bordercolor White -border 20 tmp11_${AREA}.png
+   convert "${KEY}_${AREA}_runidname.png"   -trim -bordercolor White -border 20 tmp12_${AREA}.png
 
    # compose the image
    if [[ "$AREA" == "GLOBAL" ]]
@@ -164,12 +165,12 @@ do
    # save figure
    mv ${KEY}_heat*${AREA}*.png ${KEY}_mean*${AREA}*.png ${KEY}_SST*${AREA}*.png FIGURES/.
    mv ${KEY}_*${AREA}*.txt FIGURES/.
-   mv tmp11_${AREA}*.png FIGURES/${KEY}_legend.png
-   mv tmp12_${AREA}*.png FIGURES/${KEY}_runidname.png
+   mv tmp11_${AREA}*.png FIGURES/${KEY}_legend_${AREA}.png
+   mv tmp12_${AREA}*.png FIGURES/${KEY}_runidname_${AREA}.png
 
    # clean
-   rm tmp*.png
-
+   rm tmp*${AREA}*.png *${AREA}*legend*.png *${AREA}*runidname*.png
+   
    # display - commented out to let it churn through.
    # display -resize 30% ${KEY}_${AREA}.png
 
