@@ -30,7 +30,7 @@ runid0=$(echo $RUNIDS | cut -d" " -f1)
 for AREA in GLOBAL ARC NATL SATL NPAC SPAC IND SO
 do
     ${SCRPATH}/sbrun -d$PWD -m50G ./run_plot_VALDRIFT.bash -A ${AREA} ${WINDOW_FLAG} \
-	   ${YLIMITS_OHCFLUX} ${YLIMITS_MEANT} ${YLIMITS_MEANS} ${KEY} ${FREQ} ${RUNIDS};done
+	   ${YLIMITS_OHCFLUX} ${YLIMITS_MEANT} ${YLIMITS_MEANS} ${KEY} ${FREQ} ${RUNIDS}
 done
 
 exit 0
