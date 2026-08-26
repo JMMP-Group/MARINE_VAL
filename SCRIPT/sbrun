@@ -1,0 +1,127 @@
+#!/usr/bin/ksh
+#  
+# Script to run a general command on SPICE.
+# NB. If the command you want to run on SPICE includes
+# inverted commas then you need to escape these when you
+# type the command on linux, eg.
+#
+#  sbrun command --option \"option name\"
+#
+# Same goes for other special characters that you want
+# in the run script like ";" or "$".
+#
+# NB. The script and output appears in $HOME/sbatch_jobs
+#
+# Dave Storkey
+# September 2016
+#
+
+while getopts d:D:m:t:lu:RX opt
+do
+  case $opt in
+      d) dir=$OPTARG ;;
+      D) dirmk=$OPTARG ;;
+      m) mem_limit=$OPTARG  ;;
+      t) time_limit=$OPTARG  ;;
+      l) long_queue="true" ;;
+      u) ulimit_options=$OPTARG ;;
+      R) rhel7="true" ;;
+      X) no_scitools="true";;
+  esac
+done
+shift `expr $OPTIND - 1`
+command="$*"
+
+if [[ -z "$mem_limit" ]];then
+  mem_limit=10G
+fi
+if [[ -z "$time_limit" ]];then
+  if [[ "$long_queue" == "true" ]];then 
+    time_limit="24:00:00"  # 24 hours
+  else
+    time_limit="06:00:00"  # 6 hours
+  fi
+fi
+if [[ "$long_queue" == "true" ]];
+then 
+  queue="long"
+else
+  queue="normal"
+fi
+
+cmdname=$(echo $command | cut -d ' ' -f1 | sed 's/.sh//g')
+# if command is a moo command or a for-loop, make the name of the 
+# script a bit more informative...
+if [[ "$cmdname" == "moo" ]]; then
+  cmdname="${cmdname}_$(echo $command | cut -d ' ' -f2)"
+fi
+if [[ "$cmdname" == "for" ]]; then
+  cmdname="${cmdname}_$(echo $command | cut -d ';' -f2 | cut -d' ' -f2)"
+fi
+
+if [[ -n "$ulimit_options" ]]
+then
+   ulimit_command="ulimit $ulimit_options"
+else
+   ulimit_command=""
+fi
+
+if [[ ! -d $HOME/sbatch_jobs ]]
+then 
+  mkdir $HOME/sbatch_jobs
+fi 
+cd $HOME/sbatch_jobs
+submit_script=$(basename $cmdname)_$$.sh
+touch $submit_script
+chmod ugo+x $submit_script
+cat >> $submit_script <<EOF
+#!/bin/bash -l
+#SBATCH --mem=${mem_limit}
+#SBATCH --output=$(echo $submit_script | sed 's/.sh/.out/g')
+#SBATCH --error=$(echo $submit_script | sed 's/.sh/.err/g')
+#SBATCH --time=${time_limit}
+#SBATCH --ntasks=1
+#SBATCH --qos=${queue}
+
+EOF
+
+if [[ "$no_scitools" != "true" ]]
+then
+cat >> $submit_script <<EOF
+module load scitools
+
+EOF
+fi
+
+cat >> $submit_script <<EOF
+if [[ -n "$dir" ]]; then
+  if [[ ! -d "$dir" ]]; then
+    echo "ERROR: non-existent directory: $dir"
+    exit 11
+  else  
+    cd ${dir}
+  fi
+elif [[ -n "$dirmk" ]]; then 
+  if [[ ! -d "$dirmk" ]]; then 
+    mkdir -p $dirmk
+  fi
+  cd ${dirmk}
+fi
+
+${ulimit_command}
+${command}
+
+exit \$?
+
+EOF
+
+if [[ "$rhel7" == "true" ]]
+then 
+   sbatch --partition rhel7 $submit_script
+else
+   sbatch $submit_script
+fi
+
+cd ~-
+
+exit 0

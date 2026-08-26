@@ -4,11 +4,13 @@ if [ $# -eq 0 ] ; then echo 'need a [KEYWORD] (will be inserted inside the figur
 
 . ./param.bash
 
-ZERO_ORIGIN_FLAG=""
 WINDOW_FLAG=""
-while getopts ZW:X:Y:Z: opt ; do
+YLIMITS_OHCFLUX=""
+YLIMITS_MEANT=""
+YLIMITS_MEANS=""
+while getopts A:W:X:Y:Z: opt ; do
   case $opt in
-     Z) ZERO_ORIGIN_FLAG=" -force_zero_origin" ;;
+     A) AREAS="$OPTARG" ;;
      # window (integer > 1) for rolling mean
      W) WINDOW_FLAG=" -window ${OPTARG}" ;;
      X) YLIMITS_OHCFLUX=" -ylim ${OPTARG}" ;;
@@ -32,18 +34,30 @@ base_factor=$(echo "scale=12; 0.7/${period_secs}" | bc)
 # reset FREQ because filenames are always labelled "1y"
 FREQ="1y"
 
-if [[ $runTSdrift == 1 ]]
+if [[ -z "$AREAS" ]]
 then
-    AREAS="GLOBAL"
+   if [[ $runTSdrift == 1 ]]
+   then
+      AREAS="GLOBAL"
+   fi
+   if [[ $runTSdriftBasin == 1 ]]
+   then
+      AREAS="GLOBAL ARC NATL SATL NPAC SPAC IND SO"
+   fi
+   if [[ $runTSdrift != 1 && $runTSdriftBasin != 1 ]]
+   then
+      echo "Nothing to do: runTSdrift=0 and runTSdriftBasin=0."
+      exit 11
+   fi
 fi
-if [[ $runTSdriftBasin == 1 ]]
-then
-    AREAS="GLOBAL ARC NATL SATL NPAC SPAC IND SO"
-fi
-if [[ $runTSdrift != 1 && $runTSdriftBasin != 1 ]]
-then
-    echo "Nothing to do: runTSdrift=0 and runTSdriftBasin=0."
-    exit 11
+
+# Calculate surface area of global ocean to use to scale the surface area of the subvolumes. 
+file_meanTS_GLOBAL=$(ls ${DATPATH}/${runid0}/*meanTS-GLOBAL_nemo_*${FREQ}*grid-T.nc | head -n1)
+if [[ -e $file_meanTS_GLOBAL ]];then
+   surf_area_glob=$(ncdump $file_meanTS_GLOBAL | grep "surface_area =" | cut -d" " -f4)
+else
+   echo "Error: could not find any files matching ${DATPATH}/${runid0}/*meanTS-GLOBAL_nemo_*${FREQ}*grid-T.nc"
+   exit 15
 fi
 
 for AREA in $AREAS
@@ -51,9 +65,9 @@ do
    # Global mean SST.
    if [[ "${AREA}" == "GLOBAL" ]]; then
       echo 'plot global mean SST'
-      python ${SCRPATH}/plot_time_series.py -noshow -runid $RUNIDS -f *Tprof-GLOBAL_nemo_*${FREQ}*grid-T.nc \
+      python ${SCRPATH}/plot_time_series.py -noshow -runid $RUNIDS -f *Tprof-${AREA}_nemo_*${FREQ}*grid-T.nc \
 	     -var thetao_pot -lev 0 -title "Global mean SST (deg C)" -dir ${DATPATH} \
-	     -o "${KEY}_SST-global" -yfmt "%.3f" $ZERO_ORIGIN_FLAG $WINDOW_FLAG $YLIMITS_MEANT
+	     -o "${KEY}_SST-GLOBAL" -yfmt "%.3f" $ZERO_ORIGIN_FLAG $WINDOW_FLAG $YLIMITS_MEANT
       if [[ $? -ne 0 ]]; then exit 42; fi
    fi
 
@@ -78,12 +92,11 @@ do
       if [[ "$AREA" != "GLOBAL" || "$LAYER" == "1000m+" ]]
       then
 	 # We need to scale the top area of this volume by the surface area of the ocean.
-         # surf_area_glob should have already been calculated at this point.
          file_meanTS=$(ls ${DATPATH}/${runid0}/*meanTS-${AREA}${layer_suffix}_nemo_*${FREQ}*grid-T.nc | head -n1)
          if [[ -e $file_meanTS ]];then
             surf_area=$(ncdump $file_meanTS | grep "surface_area =" | cut -d" " -f4)
          else
-            echo "Error: could not find any files matching *meanTS-GLOBAL_mindepth-1000_nemo_*${FREQ}*grid-T.nc" 
+            echo "Error: could not find any files matching *meanTS-${AREA}${layer_suffix}_nemo_*${FREQ}*grid-T.nc" 
             exit 15
          fi
          factor=$(echo "scale=12;${base_factor}*${surf_area}/${surf_area_glob}" | bc)
@@ -95,17 +108,6 @@ do
    	     -var heat_content_per_unit_area -diff -sf ${factor} -title "$AREA ${layer_label} implied TOA (W/m2)" -dir ${DATPATH} \
 	     -o "${KEY}_heatc_eqflx-${AREA}${layer_suffix}" $ZERO_ORIGIN_FLAG $WINDOW_FLAG $YLIMITS_OHCFLUX
       if [[ $? -ne 0 ]]; then exit 42; fi
-      if [[ "$AREA" == "GLOBAL" && "$LAYER" == "full_depth" ]]
-      then
-         # Calculate surface area of global ocean to use to scale other regions. 
-         file_meanTS_GLOBAL=$(ls ${DATPATH}/${runid0}/*meanTS-GLOBAL_nemo_*${FREQ}*grid-T.nc | head -n1)
-         if [[ -e $file_meanTS_GLOBAL ]];then
-            surf_area_glob=$(ncdump $file_meanTS_GLOBAL | grep "surface_area =" | cut -d" " -f4)
-         else
-            echo "Error: could not find any files matching ${DATPATH}/${runid0}/*meanTS-GLOBAL_nemo_*${FREQ}*grid-T.nc"
-            exit 15
-         fi
-      fi
 	 
       # Volume mean temperature.
       echo "plot ${AREA} ${LAYER} volume mean temperature"
@@ -125,51 +127,51 @@ do
    done
 
    # crop figure (rm legend)
-   convert ${KEY}_heatc_eqflx-${AREA}.png                  -crop 1240x1040+0+0 tmp01.png
-   convert ${KEY}_heatc_eqflx-${AREA}_maxdepth-1000.png    -crop 1240x1040+0+0 tmp02.png
-   convert ${KEY}_heatc_eqflx-${AREA}_mindepth-1000.png    -crop 1240x1040+0+0 tmp03.png
-   convert ${KEY}_meanT-${AREA}.png                        -crop 1240x1040+0+0 tmp04.png
-   convert ${KEY}_meanT-${AREA}_maxdepth-1000.png          -crop 1240x1040+0+0 tmp05.png
-   convert ${KEY}_meanT-${AREA}_mindepth-1000.png          -crop 1240x1040+0+0 tmp06.png
-   convert ${KEY}_meanS-${AREA}.png                        -crop 1240x1040+0+0 tmp07.png
-   convert ${KEY}_meanS-${AREA}_maxdepth-1000.png          -crop 1240x1040+0+0 tmp08.png
-   convert ${KEY}_meanS-${AREA}_mindepth-1000.png          -crop 1240x1040+0+0 tmp09.png
+   convert ${KEY}_heatc_eqflx-${AREA}.png                  -crop 1240x1040+0+0 tmp01_${AREA}.png
+   convert ${KEY}_heatc_eqflx-${AREA}_maxdepth-1000.png    -crop 1240x1040+0+0 tmp02_${AREA}.png
+   convert ${KEY}_heatc_eqflx-${AREA}_mindepth-1000.png    -crop 1240x1040+0+0 tmp03_${AREA}.png
+   convert ${KEY}_meanT-${AREA}.png                        -crop 1240x1040+0+0 tmp04_${AREA}.png
+   convert ${KEY}_meanT-${AREA}_maxdepth-1000.png          -crop 1240x1040+0+0 tmp05_${AREA}.png
+   convert ${KEY}_meanT-${AREA}_mindepth-1000.png          -crop 1240x1040+0+0 tmp06_${AREA}.png
+   convert ${KEY}_meanS-${AREA}.png                        -crop 1240x1040+0+0 tmp07_${AREA}.png
+   convert ${KEY}_meanS-${AREA}_maxdepth-1000.png          -crop 1240x1040+0+0 tmp08_${AREA}.png
+   convert ${KEY}_meanS-${AREA}_mindepth-1000.png          -crop 1240x1040+0+0 tmp09_${AREA}.png
    if [[ "$AREA" == "GLOBAL" ]]
    then
-      convert ${KEY}_SST-global.png                           -crop 1240x1040+0+0 tmp10.png
+      convert ${KEY}_SST-GLOBAL.png                           -crop 1240x1040+0+0 tmp10.png
    fi
       
    # trim figure (remove white area)
    #convert FIGURES/box_VALSO.png -trim -bordercolor White -border 40 tmp09.png
-   convert legend.png      -trim -bordercolor White -border 20 tmp11.png
-   convert runidname.png   -trim -bordercolor White -border 20 tmp12.png
+   convert legend.png      -trim -bordercolor White -border 20 tmp11_${AREA}.png
+   convert runidname.png   -trim -bordercolor White -border 20 tmp12_${AREA}.png
 
    # compose the image
    if [[ "$AREA" == "GLOBAL" ]]
    then
-      convert \( tmp01.png tmp02.png tmp03.png +append \) \
-              \( tmp10.png +append \) \
-              \( tmp04.png tmp05.png tmp06.png +append \) \
-              \( tmp07.png tmp08.png tmp09.png +append \) \
-                 tmp11.png tmp12.png -append -trim -bordercolor White -border 40 ${KEY}_${AREA}.png
+      convert \( tmp01_${AREA}.png tmp02_${AREA}.png tmp03_${AREA}.png +append \) \
+              \( tmp10_${AREA}.png +append \) \
+              \( tmp04_${AREA}.png tmp05_${AREA}.png tmp06_${AREA}.png +append \) \
+              \( tmp07_${AREA}.png tmp08_${AREA}.png tmp09_${AREA}.png +append \) \
+                 tmp11_${AREA}.png tmp12_${AREA}.png -append -trim -bordercolor White -border 40 ${KEY}_${AREA}.png
    else
-      convert \( tmp01.png tmp02.png tmp03.png +append \) \
-              \( tmp04.png tmp05.png tmp06.png +append \) \
-              \( tmp07.png tmp08.png tmp09.png +append \) \
-                 tmp11.png tmp12.png -append -trim -bordercolor White -border 40 ${KEY}_${AREA}.png
+      convert \( tmp01_${AREA}.png tmp02_${AREA}.png tmp03_${AREA}.png +append \) \
+              \( tmp04_${AREA}.png tmp05_${AREA}.png tmp06_${AREA}.png +append \) \
+              \( tmp07_${AREA}.png tmp08_${AREA}.png tmp09_${AREA}.png +append \) \
+                 tmp11_${AREA}.png tmp12_${AREA}.png -append -trim -bordercolor White -border 40 ${KEY}_${AREA}.png
    fi
       
    # save figure
-   mv ${KEY}_heat*.png ${KEY}_mean*.png ${KEY}_SST*.png FIGURES/.
-   mv ${KEY}_*.txt FIGURES/.
-   mv tmp11.png FIGURES/${KEY}_legend.png
-   mv tmp12.png FIGURES/${KEY}_runidname.png
+   mv ${KEY}_heat*${AREA}*.png ${KEY}_mean*${AREA}*.png ${KEY}_SST*${AREA}*.png FIGURES/.
+   mv ${KEY}_*${AREA}*.txt FIGURES/.
+   mv tmp11_${AREA}*.png FIGURES/${KEY}_legend.png
+   mv tmp12_${AREA}*.png FIGURES/${KEY}_runidname.png
 
    # clean
-   rm tmp??.png
+   rm tmp*.png
 
-   # display
-   display -resize 30% ${KEY}_${AREA}.png
+   # display - commented out to let it churn through.
+   # display -resize 30% ${KEY}_${AREA}.png
 
 # end of loop on areas    
 done
