@@ -8,10 +8,10 @@ check_TS_var(){
     FILE=$1
     TEOS10=0; EOS80=0
     Tv10="";Sv10="";Tv80="";Sv80=""
-    Tv10=$(ncdump -h $FILE | grep "sea_water_conservative_temperature" | cut -d":" -f1 | xargs)
-    Sv10=$(ncdump -h $FILE | grep "sea_water_absolute_salinity" | cut -d":" -f1 | xargs)
-    Tv80=$(ncdump -h $FILE | grep "sea_water_potential_temperature" | cut -d":" -f1 | xargs)
-    Sv80=$(ncdump -h $FILE | grep "sea_water_practical_salinity" | cut -d":" -f1 | xargs)
+    Tv10=$(ncdump -h $FILE | grep "standard_name.*sea_water_conservative_temperature" | cut -d":" -f1 | xargs)
+    Sv10=$(ncdump -h $FILE | grep "standard_name.*sea_water_absolute_salinity" | cut -d":" -f1 | xargs)
+    Tv80=$(ncdump -h $FILE | grep "standard_name.*sea_water_potential_temperature" | cut -d":" -f1 | xargs)
+    Sv80=$(ncdump -h $FILE | grep "standard_name.*sea_water_practical_salinity" | cut -d":" -f1 | xargs)
     if [[ -n "$Tv10" && -n "$Sv10" ]]; then TEOS10=1; fi
     if [[ -n "$Tv80" && -n "$Sv80" ]]; then EOS80=1; fi
     echo "TEOS10=${TEOS10}, EOS80=${EOS80}"
