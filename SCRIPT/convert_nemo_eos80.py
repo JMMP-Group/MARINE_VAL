@@ -12,13 +12,19 @@ import gsw as gsw
 import xarray
 
 
-def main():
-    t_s_file = sys.argv[1] #input file
-    print(' File', t_s_file)
+def convert_nemo_eos80(t_s_file=None,Tvarname=None,Svarname=None):
+    if t_s_file is None:
+        raise Exception('Error: must specify input file name.')
+    else:
+        print(' File', t_s_file)
+    if Tvarname is None:
+        Tvarname='thetao_con'
+    if Svarname is None:
+        Svarname='so_abs'
     #Open needed Files
     ncfile = netCDF4.Dataset(t_s_file,'a')
-    SA = np.array(ncfile.variables['so_abs']).squeeze()
-    CT = np.array(ncfile.variables['thetao_con']).squeeze()
+    SA = np.array(ncfile.variables[Svarname]).squeeze()
+    CT = np.array(ncfile.variables[Tvarname]).squeeze()
     tdep   = np.array(ncfile.variables["deptht"]).squeeze()
     lon = np.array(ncfile.variables['nav_lon'])[:,:]
     lat = np.array(ncfile.variables['nav_lat'])[:,:]
@@ -74,4 +80,14 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-i", "--infile", action="store",dest="t_s_file",default=None,
+                         help="name of input file")
+    parser.add_argument("-T", "--tem", action="store",dest="Tvarname",default=None,
+                         help="name of Conservative Temperature variable")
+    parser.add_argument("-S", "--sal", action="store",dest="Svarname",default=None,
+                         help="name of Absolute Salinity variable")
+    args = parser.parse_args()
+
+    convert_nemo_eos80(t_s_file=args.t_s_file, Tvarname=args.Tvarname, Svarname=args.Svarname)
